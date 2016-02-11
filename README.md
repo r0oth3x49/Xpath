@@ -49,7 +49,7 @@ Options:<br />
     -C COL             DBMS database table column(s) to enumerate
     
   Example:<br />
-    xpath.py -u "http://www.test.com/index.php?id=1" --dbs
+    xpath.py -u "http://www.test.com/index.php?id=1" --dbs<br />
     xpath.py -u "http://www.test.com/" --data "index.php?id=1" --dbs
   
 ###  legal disclaimer:
