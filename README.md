@@ -3,11 +3,11 @@
 11-02-2016
 #### Requirements
 Python27
-* Prettytable<br />
-* Request<br />
-* Colorama<br/>
+Prettytable<br />
+Request<br />
+Colorama<br/>
 ##### How to install requierd modules.
-* pip install PrettyTable <br />
-#### Tested
-* Windows
-* Kali linux
+pip install PrettyTable <br />
+##### Tested
+Windows<br />
+Kali linux
