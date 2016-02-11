@@ -18,7 +18,7 @@ Kali linux 2.0</p>
 #### Usage
 <pre><code>
 xpath tool v1.0 - Automated Xpath Sql Injection
-Author: Nasir khan (r0ot h3x49) r0oth3x49@gmail.com
+Author: Nasir khan (<a href="http://anonpakforce.blogspot.com/">r0ot h3x49</a>)
 Usage: xpath.py -u <target> [options]
   Options:
     --version            show program's version number and exit
