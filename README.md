@@ -8,7 +8,7 @@ Use it at your own risk!, keep all files in the same (folder/dir).</p>
 #### Requirements:
 ###### Python27<br /><p>
 <li> Prettytable<br />
-<li> Request<br />
+<li> Requests <br />
 <li> Colorama</p>
 ##### How to install requierd modules.
 <p>pip install [required module] </p>
