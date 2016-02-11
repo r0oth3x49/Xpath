@@ -7,7 +7,7 @@ Prettytable<br />
 Request<br />
 Colorama<br/>
 ##### How to install requierd modules.
-pip install PrettyTable <br />
+pip install [ required module ] <br />
 ##### Tested
 Windows 7/8 <br />
 Kali linux 2.0
@@ -17,7 +17,7 @@ xpath tool v1.0 - Automated Xpath Sql Injection<br />
 Author: Nasir khan (r0ot h3x49) r0oth3x49@gmail.com<br />
 Usage: xpath.py -u <target> [options]<br />
 
-Options:
+Options:<br />
   -h, --help           show this help message and exit
 
   Target:<br />
