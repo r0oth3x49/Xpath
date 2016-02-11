@@ -7,5 +7,4 @@ Python27
 Prettytable
 Request
 #### Tested
-Windows
-Kali linux
+Windows/Kali linux
