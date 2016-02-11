@@ -4,7 +4,6 @@
 #### Requirements
 Python27
 ##### Modules
-Prettytable
-Request
+Prettytable<br />Request<br />Colorama
 #### Tested
 Windows/Kali linux
