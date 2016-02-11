@@ -3,8 +3,9 @@
 11-02-2016
 #### Requirements
 Python27
-* Prettytable
-* Request
+##### Modules
+Prettytable
+Request
 #### Tested
-* Windows
-* Kali linux
+Windows
+Kali linux
