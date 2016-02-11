@@ -9,5 +9,5 @@ Colorama<br/>
 ##### How to install requierd modules.
 pip install PrettyTable <br />
 ##### Tested
-Windows<br />
-Kali linux
+Windows 7<br />
+Kali linux 2.0
