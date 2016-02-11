@@ -46,8 +46,8 @@ Usage: xpath.py -u <target> [options]
     -T TBL             DBMS database tables(s) to enumerate
     -C COL             DBMS database table column(s) to enumerate
   Example:
-    xpath.py -u "http://www.test.com/index.php?id=1" --dbs<br />
-    xpath.py -u "http://www.test.com/" --data "index.php?id=1" --dbs
+    <p>xpath.py -u "http://www.test.com/index.php?id=1" --dbs<br />
+    xpath.py -u "http://www.test.com/" --data "index.php?id=1" --dbs</p>
   </pre></code>
 ###Legal disclaimer:
     <p>Usage of xpath for attacking targets without prior mutual consent is illegal. It is the end user's responsibility to obey all applicable local, state and federal laws. Developer assume no liability and are not responsible for any misuse or damage caused by this program.</p>
