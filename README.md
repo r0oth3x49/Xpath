@@ -1,16 +1,20 @@
 ## Xpath Automated SQL Injection
+<p>Xpath is a python open source Sql injector that automates the process of detecting xpath injection security flaws.</p>
+<p>At the moment, DBMS supported by Xpath mysql.</p>
+<p>Please note that this project is an early state. As such, you might find bugs, flaws or mulfunctions.
+Use it at your own risk!</p>
 #### Date 
 11-02-2016
 #### Requirements
-Python27<br />
+<p>Python27<br />
 Prettytable<br />
 Request<br />
-Colorama<br/>
+Colorama</p>
 ##### How to install requierd modules.
-pip install [ required module ] <br />
+<p>pip install [ required module ] </p>
 ##### Tested
-Windows 7/8 <br />
-Kali linux 2.0
+<p>Windows 7/8 <br />
+Kali linux 2.0</p>
 #### Usage
 <pre><code>
 xpath tool v1.0 - Automated Xpath Sql Injection
@@ -45,5 +49,5 @@ Usage: xpath.py -u <target> [options]
     xpath.py -u "http://www.test.com/index.php?id=1" --dbs<br />
     xpath.py -u "http://www.test.com/" --data "index.php?id=1" --dbs
   </pre></code>
-###  legal disclaimer:
-      Usage of xpath for attacking targets without prior mutual consent is illegal. It is the end user's responsibility to obey all applicable local, state and federal laws. Developer assume no liability and are not responsible for any misuse or damage caused by this program.
+###Legal disclaimer:
+    <p>Usage of xpath for attacking targets without prior mutual consent is illegal. It is the end user's responsibility to obey all applicable local, state and federal laws. Developer assume no liability and are not responsible for any misuse or damage caused by this program.</p>
