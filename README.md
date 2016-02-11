@@ -12,27 +12,27 @@ pip install [ required module ] <br />
 Windows 7/8 <br />
 Kali linux 2.0
 #### Usage
+<pre><code>
+xpath tool v1.0 - Automated Xpath Sql Injection
+Author: Nasir khan (r0ot h3x49) r0oth3x49@gmail.com
+Usage: xpath.py -u <target> [options]
 
-xpath tool v1.0 - Automated Xpath Sql Injection<br />
-Author: Nasir khan (r0ot h3x49) r0oth3x49@gmail.com<br />
-Usage: xpath.py -u <target> [options]<br />
-
-  Options:<br />
+  Options:
     --version            show program's version number and exit
     -h, --help           show this help message and exit
 
-  Target:<br />
+  Target:
     At least one of these options has to be provided to define the
     target(s)
 
     -u URL, --url=URL  Target URL (e.g. "http://www.site.com/vuln.php?id=1")
 
-  Request:<br />
+  Request:
     These options can be used to specify how to connect to the target URL
 
     --data=DATA        Data string to be sent through POST
 
-  Enumeration:<br />
+  Enumeration:
     These options can be used to enumerate the back-end database
     managment system information, structure and data contained in the
     tables.
@@ -52,5 +52,6 @@ Usage: xpath.py -u <target> [options]<br />
   Example:<br />
     xpath.py -u "http://www.test.com/index.php?id=1" --dbs<br />
     xpath.py -u "http://www.test.com/" --data "index.php?id=1" --dbs
+  </pre></code>
 ###  legal disclaimer:
       Usage of xpath for attacking targets without prior mutual consent is illegal. It is the end user's responsibility to obey all applicable local, state and federal laws. Developer assume no liability and are not responsible for any misuse or damage caused by this program.
