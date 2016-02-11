@@ -1,9 +1,13 @@
-# Xpath Automated SQL Injection
+## Xpath Automated SQL Injection
 #### Date 
 11-02-2016
 #### Requirements
 Python27
-##### Modules
-Prettytable<br />Request<br />Colorama
+* Prettytable<br />
+* Request<br />
+* Colorama<br/>
+##### How to install requierd modules.
+* pip install PrettyTable <br />
 #### Tested
-Windows/Kali linux
+* Windows
+* Kali linux
