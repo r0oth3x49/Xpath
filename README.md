@@ -6,7 +6,7 @@ Use it at your own risk!</p>
 #### Date 
 11-02-2016
 #### Requirements
-<p>Python27<br />
+###### Python27<br />
 Prettytable<br />
 Request<br />
 Colorama</p>
@@ -46,8 +46,8 @@ Usage: xpath.py -u <target> [options]
     -T TBL             DBMS database tables(s) to enumerate
     -C COL             DBMS database table column(s) to enumerate
   Example:
-    <p>xpath.py -u "http://www.test.com/index.php?id=1" --dbs<br />
-    xpath.py -u "http://www.test.com/" --data "index.php?id=1" --dbs</p>
+    xpath.py -u http://www.test.com/index.php?id=1 --dbs<br />
+    xpath.py -u http://www.test.com/ --data "index.php?id=1" --dbs
   </pre></code>
 ###Legal disclaimer:
     <p>Usage of xpath for attacking targets without prior mutual consent is illegal. It is the end user's responsibility to obey all applicable local, state and federal laws. Developer assume no liability and are not responsible for any misuse or damage caused by this program.</p>
