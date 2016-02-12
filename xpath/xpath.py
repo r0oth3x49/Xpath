@@ -4766,6 +4766,7 @@ def dumpTblRecords(url, data, db, tbl, col):
     ColumnList = ()
     recs = []
     infos = ""
+    dumps = ""
 #------------------------------------------
     f = open(logs,'a')
     fd = open(PathToDumpedTbl,'a')
@@ -4936,7 +4937,6 @@ def dumpTblRecords(url, data, db, tbl, col):
                                                                                         infos += "Table: %s\n" % tbl
                                                                                         infos += "["+str(nor)+" recs]\n"
                                                                                         tmp = ""
-                                                                                        dumps = ""
                                                                                         while temp < nor:
                                                                                             t = 0
                                                                                             for columns in ColumnList:
@@ -5153,7 +5153,6 @@ def dumpTblRecords(url, data, db, tbl, col):
                                                                 infos += "Table: %s\n" % tbl
                                                                 infos += "["+str(nor)+" recs]\n"
                                                                 tmp = ""
-                                                                dumps = ""
                                                                 while temp < nor:
                                                                     t = 0
                                                                     for columns in ColumnList:
@@ -5430,7 +5429,6 @@ def dumpTblRecords(url, data, db, tbl, col):
                                                                                         infos += "Table: %s\n" % tbl
                                                                                         infos += "["+str(nor)+" recs]\n"
                                                                                         tmp = ""
-                                                                                        dumps = ""
                                                                                         while temp < nor:
                                                                                             t = 0
                                                                                             for columns in ColumnList:
@@ -5650,7 +5648,6 @@ def dumpTblRecords(url, data, db, tbl, col):
                                                                 infos += "Table: %s\n" % tbl
                                                                 infos += "["+str(nor)+" recs]\n"
                                                                 tmp = ""
-                                                                dumps = ""
                                                                 while temp < nor:
                                                                     t = 0
                                                                     for columns in ColumnList:
@@ -6194,5 +6191,3 @@ def Main():
 
 if __name__ == "__main__":
 	Main()
-
-    
