@@ -17,7 +17,7 @@ Use it at your own risk!, keep all files in the same (folder/dir).</p>
 <li>Kali linux 2.0</p>
 #### Installation
 <p>You can download the latest version of Xpath by cloning the GitHub repository:</p>
-<pre><code>git clone https://github.com/Dionach/CMSmap.git</pre></code>
+<pre><code><p>git clone https://github.com/r0oth3x49/Xpath.git</p></pre></code>
 #### Usage
 <pre><code>
 xpath tool v1.0 - Automated Xpath Sql Injection
