@@ -3,9 +3,9 @@
 At the moment, DBMS supported by Xpath is mysql.
 Please note that this project is an early state. As such, you might find bugs, flaws or mulfunctions.
 Use it at your own risk!, keep all files in the same (folder/dir).</p>
-#### Date 
+##### Date 
 <li>11-02-2016
-#### Requirements
+##### Requirements
 ###### Python27<br /><p>
 <li> Prettytable<br />
 <li> Requests <br />
@@ -15,10 +15,10 @@ Use it at your own risk!, keep all files in the same (folder/dir).</p>
 ##### Tested on
 <p><li>Windows 7/8 <br />
 <li>Kali linux 2.0</p>
-#### Installation
+##### Installation
 <p>You can download the latest version of Xpath by cloning the GitHub repository:</p>
 <pre><code>git clone https://github.com/r0oth3x49/Xpath.git</pre></code>
-#### Usage
+##### Usage
 <pre><code>
 xpath tool v1.0 - Automated Xpath Sql Injection
 Author: Nasir khan (<a href="http://anonpakforce.blogspot.com/">r0ot h3x49</a>)
