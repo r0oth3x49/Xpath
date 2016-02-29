@@ -5123,6 +5123,7 @@ def dumpTblRecords(url, data, db, tbl, col):
                 fd.close()
                 f.close()
                 print fg + sn + "["+strftime("%H:%M:%S")+"] [INFO] fetched data logged to text files under '%s'" % PathToDumpedDb
+                infos = ""
             except Exception as e:
                 print fg + sn + "["+strftime("%H:%M:%S")+"] [INFO] fetched data logged to text files under '%s'" % PathToDumpedDb
                 pass
@@ -5340,6 +5341,7 @@ def dumpTblRecords(url, data, db, tbl, col):
                 fd.close()
                 f.close()
                 print fg + sn + "["+strftime("%H:%M:%S")+"] [INFO] fetched data logged to text files under '%s'" % PathToDumpedDb
+                infos = ""
             except Exception as e:
                 print fg + sn + "["+strftime("%H:%M:%S")+"] [INFO] fetched data logged to text files under '%s'" % PathToDumpedDb
                 pass
@@ -5625,6 +5627,7 @@ def dumpTblRecords(url, data, db, tbl, col):
                 fd.close()
                 f.close()
                 print fg + sn + "["+strftime("%H:%M:%S")+"] [INFO] fetched data logged to text files under '%s'" % PathToDumpedDb
+                infos = ""
             except Exception as e:
                 print fg + sn + "["+strftime("%H:%M:%S")+"] [INFO] fetched data logged to text files under '%s'" % PathToDumpedDb
                 pass
@@ -5840,6 +5843,7 @@ def dumpTblRecords(url, data, db, tbl, col):
                 fd.close()
                 f.close()
                 print fg + sn + "["+strftime("%H:%M:%S")+"] [INFO] fetched data logged to text files under '%s'" % PathToDumpedDb
+                infos = ""
             except Exception as e:
                 print fg + sn + "["+strftime("%H:%M:%S")+"] [INFO] fetched data logged to text files under '%s'" % PathToDumpedDb
                 pass
