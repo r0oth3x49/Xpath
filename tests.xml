@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<root>
+    <!-- Error-based tests - WHERE, HAVING, ORDER BY or GROUP BY clause -->
+	    <test>
+        <title>MySQL &gt;= 5.1 AND error-based - WHERE, HAVING, ORDER BY or GROUP BY clause (EXTRACTVALUE)</title>
+        </test>
+	
+</root>
