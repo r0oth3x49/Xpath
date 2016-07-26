@@ -7,14 +7,13 @@ Use it at your own risk!, keep all files in the same (folder/dir).</p>
 <li>11-02-2016
 ##### Requirements
 ###### Python27<br /><p>
-<li> Prettytable<br />
 <li> Requests <br />
 <li> Colorama</p>
 ##### How to install requierd modules.
 <p>pip install [required module] </p>
 ##### Tested on
 <p><li>Windows 7/8 <br />
-<li>Kali linux 2.0</p>
+<li>Kali linux 2.0 only</p>
 ##### Installation
 <p>You can download the latest version of Xpath by cloning the GitHub repository:</p>
 <pre><code>git clone https://github.com/r0oth3x49/Xpath.git</pre></code>
