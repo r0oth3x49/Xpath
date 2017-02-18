@@ -2,7 +2,7 @@
 <p>Xpath is a python open source Sql injector that automates the process of detecting error-based injection security flaws.
 At the moment, DBMS supported by Xpath is mysql.
 Please note that this project is an early state. As such, you might find bugs, flaws or mulfunctions.
-Use it at your own risk!, keep all files in the same (folder/dir).</p>
+Use it at your own risk!.</p>
 ##### Date 
 <li>11-02-2016
 ##### Requirements
@@ -20,42 +20,30 @@ Use it at your own risk!, keep all files in the same (folder/dir).</p>
 <pre><code>git clone https://github.com/r0oth3x49/Xpath.git</pre></code>
 ##### Usage
 <pre><code>
-xpath tool v1.0 - Automated Xpath Sql Injection
+xpath tool v2.0 - Automated Xpath Sql Injection
 Author: Nasir khan (<a href="http://r0oth3x49.herokuapp.com/">r0ot h3x49</a>)
 Usage: xpath.py [options]
-
 Options:
   -h, --help           Show basic help message and exit
   --version            Show program's version number and exit
-  
   Target:
-    At least one of these options has to be provided to define the
-    target(s)
-	
+    At least one of these options has to be provided to define the target(s)	
     -u URL, --url=URL  Target URL (e.g. "http://www.site.com/vuln.php?id=1")
-
   Request:
     These options can be used to specify how to connect to the target URL
-
     --data=DATA        Data string to be sent through POST
     --tor              Use Tor anonymity network
     --new-id           Request for new identity to Tor anonymity network
     --timeout=TIMEOUT  Seconds to wait before timeout connection (default 30)
-
   Techniques:
-    These options can be used to tweak testing of specific SQL injection
-    techniques
-
+    These options can be used to tweak testing of specific SQL injection techniques
     --technique=TECH   SQL injection techniques to use  (default 'X')
                        error-based (DOUBLE/BIGINT) Injection (--technique=D)
                        error-based   (Geometric)   Injection (--technique=G)
                        error-based     (FLOOR)     Injection (--technique=E)
-
   Enumeration:
     These options can be used to enumerate the back-end database
-    managment system information, structure and data contained in the
-    tables.
-
+    managment system information, structure and data contained in the tables.
     -b, --banner       Retrieve DBMS banner
     --current-user     Retrieve DBMS current user
     --current-db       Retrieve DBMS current database
