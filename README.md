@@ -3,11 +3,16 @@
 At the moment, DBMS supported by Xpath is mysql.
 Please note that this project is an early state. As such, you might find bugs, flaws or mulfunctions.
 Use it at your own risk!.</p>
+
+[![tortest.png](https://s24.postimg.org/71roj8cw5/tortest.png)](https://postimg.org/image/c0f6xrgox/)
+
 ##### Date 
-<li>11-02-2016
+<li>18-02-2017
 ##### Requirements
-###### Python27<br /><p>
+###### Python2
+7<br /><p>
 <li> requests <br />
+
 <li> colorama</p>
 ##### How to install requierd modules.
 <p>pip install [required module] </p>
