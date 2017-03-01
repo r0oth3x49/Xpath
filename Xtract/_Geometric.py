@@ -272,7 +272,7 @@ class GeometricSqli:
 
 			_clean  = ','.join(map(str, _dlist))
 			return _clean, _payload, _dlist, _dumped
-	def XpathDataDump(self, init, total, _payload, Table=None, Coltodump=None, flag=True):
+	def XpathDataDump(self, init, total, _payload, Table=None, Dbname=None, Coltodump=None, flag=True):
 
 		# list for saving dumps
 		_info = ""
@@ -284,8 +284,7 @@ class GeometricSqli:
 		cols = " TEXT,".join(map(str, Coltodump))
 		ColsToCreate = "%s TEXT" % (cols)
 		ok = re.compile(r'[^\\/:*?"<>|("")$#!%]')
-		_temp = (_payload.rsplit(".",1))[0]
-		_db   = (_temp.rsplit("(", 1))[-1]
+		_db   = Dbname
 
 
 		if compat_exist(self._tgt):
@@ -509,7 +508,7 @@ class GeometricSqli:
 							_payload = FinalCountQuery_replaced
 							if ColsList:
 								_pl 	= _payload.replace(ColsList[0], "0x72306f74")
-								__dlist, __ = self.XpathDataDump(_init, _total, _pl, Table=TblName,Coltodump=ColsList)
+								__dlist, __ = self.XpathDataDump(_init, _total, _pl, Table=TblName, Dbname=Dbname,Coltodump=ColsList)
 								_dlist = "%s" % (__dlist)
 								_datapayload = '"%s"' % (_pl)
 								sqlite.SessionUpdate(self._PathSession, _tablePayload, Col=(_colUpdate).replace(" TEXT",""), Data=_datapayload)
@@ -591,7 +590,7 @@ class GeometricSqli:
 							_payload = FinalCountQuery_replaced
 							if ColsList:
 								_pl 	= _payload.replace(ColsList[0], "0x72306f74")
-								__dlist, __ = self.XpathDataDump(_init, _total, _pl, Table=TblName,Coltodump=ColsList)
+								__dlist, __ = self.XpathDataDump(_init, _total, _pl, Table=TblName, Dbname=Dbname,Coltodump=ColsList)
 								_dlist = "%s" % (__dlist)
 								_datapayload = '"%s"' % (_pl)
 								sqlite.SessionUpdate(self._PathSession, _tablePayload, Col=(_colUpdate).replace(" TEXT",""), Data=_datapayload)
@@ -1844,7 +1843,7 @@ class GeometricSqli:
 									for _d in _col:
 										print compat_color.fg + compat_color.sd + "["+compat_strftime("%H:%M:%S")+"] [INFO] resumed: %s" % (_d)
 
-								_,_ = self.XpathDataDump(_init, _total, _retVal, Table=_tblName, Coltodump=_colsDumpList, flag=False)
+								_,_ = self.XpathDataDump(_init, _total, _retVal, Table=_tblName, Dbname=_dbName, Coltodump=_colsDumpList, flag=False)
 								print compat_color.fg + compat_color.sb + "Database: %s" % (_dbName)
 								self._logs += "Database: %s\n" % (_dbName)
 								print compat_color.fg + compat_color.sb + "Table: %s" % (TblName)
