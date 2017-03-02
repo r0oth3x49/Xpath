@@ -137,7 +137,7 @@ def main():
 
         if "*" in options.url:
             cust = raw_input(compat_color.fw + compat_color.sb + "custom injection marking character ('*') found in option '-u'. Do you want to process it? [Y/n]  ")
-            if cust == "Y" or cust == "y":
+            if cust == "Y" or cust == "y" or cust == "":
                 pass
             else:
                 print compat_color.fw + compat_color.sn + "\n[*] shutting down at "+compat_strftime("%H:%M:%S")+"\n"
@@ -238,7 +238,7 @@ def main():
 
         if "*" in options.data:
             cust = raw_input(compat_color.fw + compat_color.sb + "custom injection marking character ('*') found in option '--data'. Do you want to process it? [Y/n]  ")
-            if cust == "Y" or cust == "y":
+            if cust == "Y" or cust == "y" or cust == "":
                 pass
             else:
                 print compat_color.fw + compat_color.sn + "\n[*] shutting down at "+compat_strftime("%H:%M:%S")+"\n"
