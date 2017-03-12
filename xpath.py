@@ -1,11 +1,11 @@
 #!usr/bin/python
 
 #######################################################
-#   SQLi tool v2.0 - Automated SQLi Sql Injection   #
+#   Xpath tool v2.0 - Automated Xpath Sql Injection   #
 #       Author: Nasir khan (r0ot h3x49)               #
 #######################################################
 
-import proxy
+from proxy import Tor as TorNetwork
 from banner import Xp_banner,ld
 from Xtract import (
                     #  Injections type
@@ -16,69 +16,15 @@ from Xtract import (
                     # Libs
                     compat_option,
                     compat_color,
-                    compat_get,
                     compat_strftime,
                     compat_sleep
                     )
-class Toranonymity:
-
-    @property
-    def compat_proxy_connect(self):
-        Proxy = proxy.Proxy()
-        Proxy.SetDefaultProxy
-        r = compat_get('http://my-ip.herokuapp.com/')
-        resp = r.text
-        sp = resp.replace('\n','')
-        default_ip = (((sp.split(':')[-1]).replace('}','')).replace('"','')).replace(' ','')
-        print compat_color.fg + compat_color.sn + "["+compat_strftime("%H:%M:%S")+"] [INFO] TOR: configuring tor proxy "
-        Proxy.ConfigureProxy
-        try:
-            r = compat_get('http://my-ip.herokuapp.com/')
-        except:
-            print compat_color.fr + compat_color.sn + "["+compat_strftime("%H:%M:%S")+"] [INFO] TOR: proxy connection error, make sure tor services are running..."
-            Proxy.SetDefaultProxy
-        resp = r.text
-        sp = resp.replace('\n','')
-        proxy_ip = (((sp.split(':')[-1]).replace('}','')).replace('"','')).replace(' ','')
-        if default_ip != proxy_ip:
-            print compat_color.fg + compat_color.sd + "["+compat_strftime("%H:%M:%S")+"] [INFO] TOR: proxy configured successfully."
-            print compat_color.fg + compat_color.sd + "["+compat_strftime("%H:%M:%S")+"] [INFO] TOR: network traffic will go through : (%s)" % (proxy_ip)
-        else:
-            print compat_color.fr + compat_color.sb + "["+compat_strftime("%H:%M:%S")+"] [INFO] TOR: proxy configuration is failed"
-    @property
-    def compat_proxy_newid(self):
-        Proxy = proxy.Proxy()
-        Proxy.SetDefaultProxy
-        r = compat_get('http://my-ip.herokuapp.com/')
-        resp = r.text
-        sp = resp.replace('\n','')
-        default_ip = (((sp.split(':')[-1]).replace('}','')).replace('"','')).replace(' ','')
-        print compat_color.fg + compat_color.sn + "["+compat_strftime("%H:%M:%S")+"] [INFO] TOR: configuring tor proxy..."
-        compat_sleep(1)
-        print compat_color.fg + compat_color.sn + "["+compat_strftime("%H:%M:%S")+"] [INFO] TOR: requesting new identity..."
-        compat_sleep(1)
-        _resp = Proxy.NewIdentity
-        compat_sleep(1)
-        if '250 OK' in _resp:
-            print compat_color.fg + compat_color.sn + "["+compat_strftime("%H:%M:%S")+"] [INFO] TOR: request was successfull."
-            Proxy.ConfigureProxy
-        else:
-             print compat_color.fg + compat_color.sn + "["+compat_strftime("%H:%M:%S")+"] [INFO] TOR: request was unsuccessfull."
-        r = compat_get('http://my-ip.herokuapp.com/')
-        resp = r.text
-        sp = resp.replace('\n','')
-        proxy_ip = (((sp.split(':')[-1]).replace('}','')).replace('"','')).replace(' ','')
-        if default_ip != proxy_ip:
-             print compat_color.fg + compat_color.sn + "["+compat_strftime("%H:%M:%S")+"] [INFO] TOR: proxy configured successfully."
-             print compat_color.fg + compat_color.sn + "["+compat_strftime("%H:%M:%S")+"] [INFO] TOR: network traffic will go through : (%s)" % (proxy_ip)
-        else:
-             print compat_color.fg + compat_color.sn + "["+compat_strftime("%H:%M:%S")+"] [INFO] TOR: proxy configuration is failed"
 
 def main():
     print compat_color.fy + compat_color.sb + Xp_banner % (compat_color.fw,compat_color.sd, compat_color.fy,compat_color.sb,compat_color.fw,compat_color.sb, compat_color.fy,compat_color.sb) + compat_color.fg + compat_color.sb + ld 
     usage       =   "%prog [options]"
     version     =   "2.0#stable"
-    Tor         =  Toranonymity()
+    Tor         =  TorNetwork()
     parser      =   compat_option.OptionParser(usage=usage, conflict_handler="resolve", version=version)
     parser.add_option("-h", "--help", action="help", help="Show basic help message and exit")
     parser.add_option("--version", action="version", help="Show program's version number and exit")

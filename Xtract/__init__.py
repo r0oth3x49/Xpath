@@ -7,6 +7,4 @@ from _compat import compat_color
 from _compat import compat_get
 from _compat import compat_strftime
 from _compat import compat_sleep
-##from _Multipoint import *
 
-##from _Exponent import *
