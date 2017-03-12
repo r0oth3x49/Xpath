@@ -549,9 +549,13 @@ class GeometricSqli:
 							if "Injected~" in respdata:
 								Query_Test = True
 								Count = respdata.split("Injected~")[1].split("~END")[0]
-								if not self._session:
+								if not self._session and int(Count) != 0:
 									sqlite.SessionAlter(self._PathSession, _tableSession, Col=_colAlterCount)
-								print compat_color.fg + compat_color.sd + "[" + compat_strftime("%H:%M:%S")+"] [INFO] the SQL query used returns %s entries" % (Count)
+									print compat_color.fg + compat_color.sd + "[" + compat_strftime("%H:%M:%S")+"] [INFO] the SQL query used returns %s entries" % (Count)
+								else:
+									print compat_color.fr + compat_color.sb + "[" + compat_strftime("%H:%M:%S")+"] [INFO] the SQL query used returns %s entries" % (Count)
+									print compat_color.fw + compat_color.sn + "\n[*] shutting down at "+compat_strftime("%H:%M:%S")+"\n"
+									exit(0)
 								
 								_data = "'%s'" % (Count)
 								sqlite.SessionUpdate(self._PathSession, _tableSession, Col=(_colAlterCount).replace(" TEXT",""), Data=_data)
@@ -828,7 +832,7 @@ class GeometricSqli:
 							elif Dbname and TblName and not ColList:
 								__dlist, __dumped = self.XpathAdvance(_flag, tgt, _colAlter, Payloads=Payloads, Dbname=Dbname, TblName=TblName)
 							elif Dbname and TblName and ColList:
-								__dlist, __dumped = self.XpathAdvance(_flag, tgt, _colAlter, Payloads=Payloads, Dbname=Dbname, TblName=TblName, ColList=ColList)
+								__dlist, __dumped = self.XpathAdvance(_flag, tgt, _colAlter, Payloads=Payloads, Dbname=Dbname, TblName=TblName, ColsList=ColList)
 								print str(__dlist)
 							else:
 								__dlist, __dumped = self.XpathAdvance(_flag, tgt, _colAlter, Payloads=Payloads)

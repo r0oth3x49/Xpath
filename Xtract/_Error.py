@@ -547,9 +547,13 @@ class ErrorBasedSQLi:
 							if "Duplicate entry '~" in respdata:
 								Query_Test = True
 								Count = respdata.split("Duplicate entry '~")[1].split("1' for key 'group_key'")[0]
-								if not self._session:
+								if not self._session and int(Count) != 0:
 									sqlite.SessionAlter(self._PathSession, _tableSession, Col=_colAlterCount)
-								print compat_color.fg + compat_color.sd + "[" + compat_strftime("%H:%M:%S")+"] [INFO] the SQL query used returns %s entries" % (Count)
+									print compat_color.fg + compat_color.sd + "[" + compat_strftime("%H:%M:%S")+"] [INFO] the SQL query used returns %s entries" % (Count)
+								else:
+									print compat_color.fr + compat_color.sb + "[" + compat_strftime("%H:%M:%S")+"] [INFO] the SQL query used returns %s entries" % (Count)
+									print compat_color.fw + compat_color.sn + "\n[*] shutting down at "+compat_strftime("%H:%M:%S")+"\n"
+									exit(0)
 								
 								_data = "'%s'" % (Count)
 								sqlite.SessionUpdate(self._PathSession, _tableSession, Col=(_colAlterCount).replace(" TEXT",""), Data=_data)
@@ -824,7 +828,7 @@ class ErrorBasedSQLi:
 							elif Dbname and TblName and not ColList:
 								__dlist, __dumped = self.XpathAdvance(_flag, tgt, _colAlter, Payloads=Payloads, Dbname=Dbname, TblName=TblName)
 							elif Dbname and TblName and ColList:
-								__dlist, __dumped = self.XpathAdvance(_flag, tgt, _colAlter, Payloads=Payloads, Dbname=Dbname, TblName=TblName, ColList=ColList)
+								__dlist, __dumped = self.XpathAdvance(_flag, tgt, _colAlter, Payloads=Payloads, Dbname=Dbname, TblName=TblName, ColsList=ColList)
 								print str(__dlist)
 							else:
 								__dlist, __dumped = self.XpathAdvance(_flag, tgt, _colAlter, Payloads=Payloads)
@@ -1839,7 +1843,6 @@ class ErrorBasedSQLi:
 								for _col in data_dumped:
 									for _d in _col:
 										print compat_color.fg + compat_color.sd + "["+compat_strftime("%H:%M:%S")+"] [INFO] resumed: %s" % (_d)
-
 								_,_ = self.XpathDataDump(_init, _total, _retVal, Table=_tblName, Dbname=_dbName, Coltodump=_colsDumpList, flag=False)
 								print compat_color.fg + compat_color.sb + "Database: %s" % (_dbName)
 								self._logs += "Database: %s\n" % (_dbName)
