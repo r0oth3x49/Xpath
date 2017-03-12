@@ -1,8 +1,10 @@
 #!/usr/bin/python
 #######################################################
-#   xpath tool v2.0 - Automated Xpath Sql Injection   #
+#   Xpath tool v2.0 - Automated Xpath Sql Injection   #
 #       Author: Nasir khan (r0ot h3x49)               #
 #######################################################
+
+
 import os, re
 from Payload.BigintDoublePayloads import *
 from _compat import (
