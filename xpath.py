@@ -8,7 +8,7 @@
 from proxy import Tor as TorNetwork
 from banner import Xp_banner,ld
 from Xtract import (
-                    #  Injections type
+                    #  Methods used for injecting targets
                     XpathSqli,
                     ErrorBasedSQLi,
                     GeometricSqli,
