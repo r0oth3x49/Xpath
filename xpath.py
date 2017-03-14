@@ -188,6 +188,7 @@ def main():
                 pass
             else:
                 print compat_color.fw + compat_color.sn + "\n[*] shutting down at "+compat_strftime("%H:%M:%S")+"\n"
+                exit(0)
 
         if options.timeout:
             timeout = options.timeout
