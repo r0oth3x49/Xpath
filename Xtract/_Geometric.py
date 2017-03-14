@@ -753,7 +753,6 @@ class GeometricSqli:
 						else:
 							tgt = self._data + temp
 
-						print tgt
 						try:
 							print compat_color.fg + compat_color.sn + "["+compat_strftime("%H:%M:%S")+"] [INFO] testing '" + compat_color.fg + compat_color.sn + TITLE + compat_color.fg + compat_color.sn + "'"
 							req = compat_request(self._url, data=tgt, headers={'User-agent': user_agent_win if os.name is "win32" else user_agent_unix})
