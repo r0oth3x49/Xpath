@@ -1,22 +1,31 @@
 ## Xpath Automated SQL Injection
+
 <p>Xpath is a python open source Sql injector that automates the process of detecting and exploiting error-based injection security flaws. At the moment, DBMS supported by Xpath is mysql. Please note that this project is an early state. As such, you might find bugs, flaws or mulfunctions. Use it at your own risk!.</p>
+
 ![tortest.png](https://s24.postimg.org/71roj8cw5/tortest.png)
-### Date 
+
+### Date
+
 - 18-02-2017
 ### Requirements
+
 **Python27**
 - requests
 - colorama
 ### How to install requierd modules.
+
 <p>pip install [required module]</p>
 ### Tested on
+
 - Windows 7/8
 - Kali linux 2.0
 - Mac 10.9.5
 ### Installation
+
 <p>You can download the latest version of Xpath by cloning the GitHub repository:</p>
 <pre><code>git clone https://github.com/r0oth3x49/Xpath.git</code></pre>
 ### Usage
+
 <pre><code>
 xpath tool v2.0 - Automated Xpath Sql Injection
 Author: Nasir khan (<a href="http://r0oth3x49.herokuapp.com/">r0ot h3x49</a>)
@@ -58,6 +67,7 @@ Options:
     xpath.py -u http://www.test.com/ --data "index.php?id=1" --dbs
   </code></pre>
 ### Legal disclaimer
+
     Usage of xpath for attacking targets without prior mutual consent is illegal.
     It is the end user's responsibility to obey all applicable local,state and federal laws. 
     Developer assume no liability and is not responsible for any misuse or damage caused by this program.
