@@ -13,8 +13,8 @@
 - requests
 - colorama
 ### How to install requierd modules.
+    pip install [required module]
 
-<p>pip install [required module]</p>
 ### Tested on
 
 - Windows 7/8
@@ -24,6 +24,7 @@
 
 <p>You can download the latest version of Xpath by cloning the GitHub repository:</p>
 <pre><code>git clone https://github.com/r0oth3x49/Xpath.git</code></pre>
+
 ### Usage
 
 <pre><code>
