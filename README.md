@@ -80,8 +80,13 @@ Example:
 </code></pre>
 
 
-### Legal disclaimer
+## **Legal disclaimer**
 
     Usage of xpath for attacking targets without prior mutual consent is illegal.
     It is the end user's responsibility to obey all applicable local,state and federal laws. 
     Developer assume no liability and is not responsible for any misuse or damage caused by this program.
+
+
+## **Legal disclaimer**
+ - Add support for all other DBMS injection
+ - Add Support for multipart/headers based injections
