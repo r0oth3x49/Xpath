@@ -1,293 +1,192 @@
-#!usr/bin/python
+#!/usr/bin/python3
+# -*- coding: utf-8 -*-
+# pylint: disable=R,W,E,C
 
-#######################################################
-#   Xpath tool v2.0 - Automated Xpath Sql Injection   #
-#       Author: Nasir khan (r0ot h3x49)               #
-#######################################################
+"""
 
-from proxy import Tor as TorNetwork
-from banner import Xp_banner,ld
-from Xtract import (
-                    #  Methods used for injecting targets
-                    XpathSqli,
-                    ErrorBasedSQLi,
-                    GeometricSqli,
-                    BigintDoubleSQLi,
-                    # Libs
-                    compat_option,
-                    compat_color,
-                    compat_strftime,
-                    compat_sleep
-                    )
+Author  : Nasir Khan (r0ot h3x49)
+Github  : https://github.com/r0oth3x49
+License : MIT
+
+
+Copyright (c) 2016-2025 Nasir Khan (r0ot h3x49)
+
+Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the
+Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software,
+and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR
+ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH 
+THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+"""
+import xpath
+import argparse
+from xpath.logger.colored_logger import logger
+
 
 def main():
-    print compat_color.fy + compat_color.sb + Xp_banner % (compat_color.fw,compat_color.sd, compat_color.fy,compat_color.sb,compat_color.fw,compat_color.sb, compat_color.fy,compat_color.sb) + compat_color.fg + compat_color.sb + ld 
-    usage       =   "%prog [options]"
-    version     =   "2.0#stable"
-    Tor         =  TorNetwork()
-    parser      =   compat_option.OptionParser(usage=usage, conflict_handler="resolve", version=version)
-    parser.add_option("-h", "--help", action="help", help="Show basic help message and exit")
-    parser.add_option("--version", action="version", help="Show program's version number and exit")
+    examples = "python %(prog)s http://www.site.com/vuln.php?id=1 --dbs\n\n"
+    version = "Xpath {version}".format(version=f"{xpath.__version__}")
+    description = "A cross-platform python based automated tool to detect and exploit error-based sql injections."
+    parser = argparse.ArgumentParser(
+        usage="python %(prog)s -u URL [OPTIONS]",
+        description=description,
+        conflict_handler="resolve",
+        formatter_class=argparse.RawTextHelpFormatter,
+    )
+    general = parser.add_argument_group("General")
+    general.add_argument("-h", "--help", action="help", help="Shows the help.")
+    general.add_argument(
+        "-v", "--version", action="version", version=version, help="Shows the version."
+    )
 
-    target      =   compat_option.OptionGroup(parser, "Target",
-                                    "At least one of these options has to be provided to define the "
-                                    " target(s)")
-    target.add_option('-u', '--url', dest="url", type=str, help='Target URL (e.g. "http://www.site.com/vuln.php?id=1")')
+    target = parser.add_argument_group(
+        "Target",
+        description="At least one of these options has to be provided to define the\ntarget(s)",
+    )
+    target.add_argument(
+        "-u",
+        "--url",
+        dest="url",
+        type=str,
+        help="Target URL (e.g. 'http://www.site.com/vuln.php?id=1).",
+        required=True,
+    )
+    request = parser.add_argument_group(
+        "Request",
+        description="These options can be used to specify how to connect to the target URL",
+    )
+    request.add_argument(
+        "--data",
+        dest="data",
+        type=str,
+        help='Data string to be sent through POST (e.g. "id=1")',
+        default=None,
+    )
+    request.add_argument(
+        "--cookie",
+        dest="cookie",
+        type=str,
+        help='HTTP Cookie header value (e.g. "PHPSESSID=a8d127e..")',
+        default=None,
+    )
+    enumeration = parser.add_argument_group(
+        "Enumeration",
+        description=(
+            "These options can be used to enumerate the back-end database"
+            "\nmanagment system information, structure and data contained in the\ntables."
+        ),
+    )
+    enumeration.add_argument(
+        "-b",
+        "--banner",
+        dest="banner",
+        action="store_true",
+        help="Retrieve DBMS banner",
+    )
+    enumeration.add_argument(
+        "--current-user",
+        dest="current_user",
+        action="store_true",
+        help="Retrieve DBMS current user",
+    )
+    enumeration.add_argument(
+        "--current-db",
+        dest="current_db",
+        action="store_true",
+        help="Retrieve DBMS current database",
+    )
+    enumeration.add_argument(
+        "--hostname",
+        dest="hostname",
+        action="store_true",
+        help="Retrieve DBMS server hostname",
+    )
+    enumeration.add_argument(
+        "--dbs", dest="dbs", action="store_true", help="Enumerate DBMS databases",
+    )
+    enumeration.add_argument(
+        "--tables",
+        dest="tables",
+        action="store_true",
+        help="Enumerate DBMS database tables",
+    )
+    enumeration.add_argument(
+        "--columns",
+        dest="columns",
+        action="store_true",
+        help="Enumerate DBMS database table columns",
+    )
+    enumeration.add_argument(
+        "--dump",
+        dest="dump",
+        action="store_true",
+        help="Dump DBMS database table entries",
+    )
+    enumeration.add_argument(
+        "-D", dest="db", type=str, help="DBMS database to enumerate", default=None,
+    )
+    enumeration.add_argument(
+        "-T",
+        dest="tbl",
+        type=str,
+        help="DBMS database tables(s) to enumerate",
+        default=None,
+    )
+    enumeration.add_argument(
+        "-C",
+        dest="col",
+        type=str,
+        help="DBMS database table column(s) to enumerate",
+        default=None,
+    )
+    examples = parser.add_argument_group("Example", description=examples)
 
-    request     =   compat_option.OptionGroup(parser, "Request",
-                                    "These options can be used to specify how to connect to the target URL")
-    request.add_option("--data",   dest="data", type=str, help="Data string to be sent through POST")
-    request.add_option("--tor",    action='store_true',dest="tor", help="Use Tor anonymity network")
-    request.add_option("--new-id", action='store_true',dest='nid', help="Request for new identity to Tor anonymity network")
-    request.add_option("--timeout",   dest="timeout", type=int, help="Seconds to wait before timeout connection (default 30)", default=30)
+    args = parser.parse_args()
 
-    techniques = compat_option.OptionGroup(parser, "Techniques",
-                        "These options can be used to tweak testing of specific SQL injection "
-                        " techniques")
-
-    techniques.add_option("--technique",  dest='tech', type=str,    help="SQL injection techniques to use  (default 'X')    "
-                                                                         "error-based (DOUBLE/BIGINT) Injection (--technique=D) "
-                                                                         "error-based   (Geometric)   Injection (--technique=G) "
-                                                                         "error-based     (FLOOR)     Injection (--technique=E) ", 
-                                                                    default="X")
-
-    enumeration = compat_option.OptionGroup(parser, "Enumeration",
-                        "These options can be used to enumerate the back-end database "
-                        " managment system information, structure and data contained in the "
-                        " tables.")
-
-    enumeration.add_option("-b", "--banner", action='store_true',   dest='banner',      help="Retrieve DBMS banner")
-    enumeration.add_option("--current-user", action='store_true',   dest='current_user',help="Retrieve DBMS current user")
-    enumeration.add_option("--current-db",   action='store_true',   dest='current_db',  help="Retrieve DBMS current database")
-    enumeration.add_option("--hostname",     action='store_true',   dest='hostname',    help="Retrieve DBMS server hostname")
-    enumeration.add_option("--dbs",          action='store_true',   dest='dbs',         help="Enumerate DBMS databases")
-    enumeration.add_option("--tables",       action='store_true',   dest='tables',      help="Enumerate DBMS database tables")
-    enumeration.add_option("--columns",      action='store_true',   dest='columns',     help="Enumerate DBMS database table columns")
-    enumeration.add_option("--dump",         action='store_true',   dest='dump',        help="Dump DBMS database table entries")
-    enumeration.add_option("-D",             dest='db',   type=str,   help="DBMS database to enumerate")
-    enumeration.add_option("-T",             dest='tbl',  type=str,  help="DBMS database tables(s) to enumerate")
-    enumeration.add_option("-C",             dest='col',  type=str,  help="DBMS database table column(s) to enumerate")
-
-
-    parser.add_option_group(target)
-    parser.add_option_group(request)
-    parser.add_option_group(techniques)
-    parser.add_option_group(enumeration)
-
-    (options, args) = parser.parse_args()
-
-    if not options.url:
+    if not args.url:
         parser.print_help()
+        exit(0)
 
-    elif options.url and not options.data:
-
-        if "*" in options.url:
-            cust = raw_input(compat_color.fw + compat_color.sb + "custom injection marking character ('*') found in option '-u'. Do you want to process it? [Y/n]  ")
-            if cust == "Y" or cust == "y" or cust == "":
-                pass
-            else:
-                print compat_color.fw + compat_color.sn + "\n[*] shutting down at "+compat_strftime("%H:%M:%S")+"\n"
-                exit(0)
-
-        if options.timeout:
-            timeout = options.timeout
-
-        if options.tech == "G":
-            SQLi   = GeometricSqli(options.url, timeout=timeout)
-        elif options.tech == "E":
-            SQLi   = ErrorBasedSQLi(options.url, timeout=timeout)
-        elif options.tech == "D":
-            SQLi   = BigintDoubleSQLi(options.url, timeout=timeout)
-        else:
-            SQLi   = XpathSqli(options.url, timeout=timeout)
-
-        SQLi.PathToSave()
-
-        print compat_color.fg + compat_color.sb + "\n[*] starting at "+compat_strftime("%H:%M:%S")+"\n"
-
-        if options.banner:
-            if options.tor and not options.nid:
-                Tor.compat_proxy_connect
-                SQLi.Banner()
-            elif options.tor and options.nid:
-                Tor.compat_proxy_newid
-                SQLi.Banner()
-            else:
-                SQLi.Banner()
-        elif options.current_db:
-            if options.tor and not options.nid:
-                Tor.compat_proxy_connect
-                SQLi.Database()
-            elif options.tor and options.nid:
-                Tor.compat_proxy_newid
-                SQLi.Database()
-            else:
-                SQLi.Database()
-        elif options.current_user:
-            if options.tor and not options.nid:
-                Tor.compat_proxy_connect
-                SQLi.User()
-            elif options.tor and options.nid:
-                Tor.compat_proxy_newid
-                SQLi.User()
-            else:
-                SQLi.User()
-        elif options.hostname:
-            if options.tor and not options.nid:
-                Tor.compat_proxy_connect
-                SQLi.Host()
-            elif options.tor and options.nid:
-                Tor.compat_proxy_newid
-                SQLi.Host()
-            else:
-                SQLi.Host()
-        elif options.dbs:
-            if options.tor and not options.nid:
-                Tor.compat_proxy_connect
-                SQLi.Databases()
-            elif options.tor and options.nid:
-                Tor.compat_proxy_newid
-                SQLi.Databases()
-            else:
-                SQLi.Databases()
-        elif options.db and options.tables:
-            if options.tor and not options.nid:
-                Tor.compat_proxy_connect
-                SQLi.Tables(options.db)
-            elif options.tor and options.nid:
-                Tor.compat_proxy_newid
-                SQLi.Tables(options.db)
-            else:
-                SQLi.Tables(options.db)
-        elif options.db and options.tbl and options.columns:
-            if options.tor and not options.nid:
-                Tor.compat_proxy_connect
-                SQLi.Columns(options.db, options.tbl)
-            elif options.tor and options.nid:
-                Tor.compat_proxy_newid
-                SQLi.Columns(options.db, options.tbl)
-            else:
-                SQLi.Columns(options.db, options.tbl)
-        elif options.db and options.tbl and options.col and options.dump:
-            if options.tor and not options.nid:
-                Tor.compat_proxy_connect
-                SQLi.Dumps(options.db, options.tbl, options.col)
-            elif options.tor and options.nid:
-                Tor.compat_proxy_newid
-                SQLi.Dumps(options.db, options.tbl, options.col)
-            else:
-                SQLi.Dumps(options.db, options.tbl, options.col)
-        print compat_color.fw + compat_color.sn + "\n[*] shutting down at "+compat_strftime("%H:%M:%S")+"\n"
+    resp = xpath.perform_injection(url=args.url, data=args.data, cookies=args.cookie)
+    if resp.is_vulnerable:
+        injected_param = resp.injected_param
+        session_filepath = resp.session_filepath
+        recommended_payload = resp.recommended_payload
+        recommended_payload_type = resp.recommended_payload_type
+        target = xpath.XPATHInjector(
+            url=args.url,
+            data=args.data,
+            cookies=args.cookie,
+            payload=recommended_payload,
+            regex=recommended_payload_type,
+            injected_param=injected_param,
+            session_filepath=session_filepath,
+        )
+        if not args.dbs and (
+            args.hostname or args.current_user or args.current_db or args.banner
+        ):
+            if args.banner:
+                target.extract_banner()
+            if args.current_user:
+                target.extract_current_user()
+            if args.current_db:
+                target.extract_current_db()
+            if args.hostname:
+                target.extract_hostname()
+        if args.dbs:
+            target.extract_dbs()
+        if args.db and args.tables:
+            target.extract_tables(database=args.db)
+        if args.db and args.tbl and args.columns:
+            target.extract_columns(database=args.db, table=args.tbl)
+        if args.db and args.tbl and args.col:
+            target.extract_records(database=args.db, table=args.tbl, columns=args.col)
 
 
-    elif options.url and options.data:
-
-        if "*" in options.data:
-            cust = raw_input(compat_color.fw + compat_color.sb + "custom injection marking character ('*') found in option '--data'. Do you want to process it? [Y/n]  ")
-            if cust == "Y" or cust == "y" or cust == "":
-                pass
-            else:
-                print compat_color.fw + compat_color.sn + "\n[*] shutting down at "+compat_strftime("%H:%M:%S")+"\n"
-                exit(0)
-
-        if options.timeout:
-            timeout = options.timeout
-
-        if options.tech == "G":
-            SQLi   = GeometricSqli(options.url, data=options.data, timeout=timeout)
-        elif options.tech == "E":
-            SQLi   = ErrorBasedSQLi(options.url, data=options.data, timeout=timeout)
-        elif options.tech == "D":
-            SQLi   = BigintDoubleSQLi(options.url, data=options.data, timeout=timeout)
-        else:
-            SQLi   = XpathSqli(options.url, data=options.data, timeout=timeout)
-
-        SQLi.PathToSave()
-        print compat_color.fg + compat_color.sb + "\n[*] starting at "+compat_strftime("%H:%M:%S")+"\n"
-        
-        if options.banner:
-            if options.tor and not options.nid:
-                Tor.compat_proxy_connect
-                SQLi.Banner()
-            elif options.tor and options.nid:
-                Tor.compat_proxy_newid
-                SQLi.Banner()
-            else:
-                SQLi.Banner()
-        elif options.current_db:
-            if options.tor and not options.nid:
-                Tor.compat_proxy_connect
-                SQLi.Database()
-            elif options.tor and options.nid:
-                Tor.compat_proxy_newid
-                SQLi.Database()
-            else:
-                SQLi.Database()
-        elif options.current_user:
-            if options.tor and not options.nid:
-                Tor.compat_proxy_connect
-                SQLi.User()
-            elif options.tor and options.nid:
-                Tor.compat_proxy_newid
-                SQLi.User()
-            else:
-                SQLi.User()
-        elif options.hostname:
-            if options.tor and not options.nid:
-                Tor.compat_proxy_connect
-                SQLi.Host()
-            elif options.tor and options.nid:
-                Tor.compat_proxy_newid
-                SQLi.Host()
-            else:
-                SQLi.Host()
-        elif options.dbs:
-            if options.tor and not options.nid:
-                Tor.compat_proxy_connect
-                SQLi.Databases()
-            elif options.tor and options.nid:
-                Tor.compat_proxy_newid
-                SQLi.Databases()
-            else:
-                SQLi.Databases()
-        elif options.db and options.tables:
-            if options.tor and not options.nid:
-                Tor.compat_proxy_connect
-                SQLi.Tables(options.db)
-            elif options.tor and options.nid:
-                Tor.compat_proxy_newid
-                SQLi.Tables(options.db)
-            else:
-                SQLi.Tables(options.db)
-        elif options.db and options.tbl and options.columns:
-            if options.tor and not options.nid:
-                Tor.compat_proxy_connect
-                SQLi.Columns(options.db, options.tbl)
-            elif options.tor and options.nid:
-                Tor.compat_proxy_newid
-                SQLi.Columns(options.db, options.tbl)
-            else:
-                SQLi.Columns(options.db, options.tbl)
-        elif options.db and options.tbl and options.col and options.dump:
-            if options.tor and not options.nid:
-                Tor.compat_proxy_connect
-                SQLi.Dumps(options.db, options.tbl, options.col)
-            elif options.tor and options.nid:
-                Tor.compat_proxy_newid
-                SQLi.Dumps(options.db, options.tbl, options.col)
-            else:
-                SQLi.Dumps(options.db, options.tbl, options.col)
-
-        print compat_color.fw + compat_color.sn + "\n[*] shutting down at "+compat_strftime("%H:%M:%S")+"\n"
-            
-
-if __name__ == '__main__':
-    try:
-        main()
-    except KeyboardInterrupt:
-        print '\n' + compat_color.fr + compat_color.sn + '['+compat_strftime("%H:%M:%S")+'] [ERROR] user aborted'
-        print compat_color.fw + compat_color.sn + "\n[*] shutting down at "+compat_strftime("%H:%M:%S")+"\n"
-    except TypeError:
-        print '\n' + compat_color.fr + compat_color.sb + '['+compat_strftime("%H:%M:%S")+'] [ERROR] failed to extract data using available paylaods.'
-        print compat_color.fw + compat_color.sn + "\n[*] shutting down at "+compat_strftime("%H:%M:%S")+"\n"
-    
+if __name__ == "__main__":
+    main()
