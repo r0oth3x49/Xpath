@@ -1,3 +1,9 @@
+[![GitHub release](https://img.shields.io/badge/release-v3.0-brightgreen?style=flat-square)](https://github.com/r0oth3x49/Xpath/releases/tag/v3.0)
+[![GitHub stars](https://img.shields.io/github/stars/r0oth3x49/Xpath.svg?style=flat-square)](https://github.com/r0oth3x49/Xpath/stargazers)
+[![GitHub forks](https://img.shields.io/github/forks/r0oth3x49/Xpath.svg?style=flat-square)](https://github.com/r0oth3x49/Xpath/network)
+[![GitHub issues](https://img.shields.io/github/issues/r0oth3x49/Xpath.svg?style=flat-square)](https://github.com/r0oth3x49/Xpath/issues)
+[![GitHub license](https://img.shields.io/github/license/r0oth3x49/Xpath.svg?style=flat-square)](https://github.com/r0oth3x49/Xpath/blob/master/LICENSE)
+
 # Xpath
 **A is a python based cross-platform tool that automates the process of detecting and exploiting error-based injection security flaws.**
 
