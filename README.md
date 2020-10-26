@@ -5,7 +5,7 @@
 [![GitHub license](https://img.shields.io/github/license/r0oth3x49/Xpath.svg?style=flat-square)](https://github.com/r0oth3x49/Xpath/blob/master/LICENSE)
 
 # Xpath
-**A is a python based cross-platform tool that automates the process of detecting and exploiting error-based injection security flaws.**
+**A python based cross-platform tool that automates the process of detecting and exploiting error-based injection security flaws.**
 
 [![Xpath3-0.png](https://i.postimg.cc/x1YTx1bc/Xpath3-0.png)](https://postimg.cc/F7W41mp4)
 
