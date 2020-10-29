@@ -24,6 +24,7 @@ THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 """
 from xpath.extractor import (
+    Search,
     TablesExtractor,
     ColumnsExtractor,
     RecordsExtractor,
@@ -52,6 +53,7 @@ def perform_injection(url="", data="", cookies=""):
 
 
 class XPATHInjector(
+    Search,
     DefaultsExtractor,
     DatabasesExtractor,
     TablesExtractor,
@@ -69,10 +71,12 @@ class XPATHInjector(
         cookies="",
         injected_param="",
         session_filepath="",
+        payloads="",
     ):
         self.url = url
         self.data = data
-        self.payload = payload.replace("0x72306f746833783439", "{banner}")
+        self.payload = payload
+        self.payloads = payloads
         self.cookies = cookies
         self.regex = regex
         self.session_filepath = session_filepath
@@ -160,4 +164,29 @@ class XPATHInjector(
             self.__end(database=database, table=table, fetched=fetched)
         else:
             self.__end(fetched=fetched)
+        return response
+
+    def search_for(self, database="", table="", column=""):
+        search_type = ""
+        if database and not table and not column:
+            search_type = "database"
+        elif database and table and not column:
+            search_type = "table"
+        elif not database and table and not column:
+            search_type = "table"
+        elif database and not table and column:
+            search_type = "column"
+        elif not database and table and column:
+            search_type = "column"
+        elif not database and not table and column:
+            search_type = "column"
+        elif database and table and column:
+            search_type = "column"
+        response = self.search(
+            db=database, tbl=table, col=column, search_type=search_type
+        )
+        fetched = response.fetched
+        if fetched:
+            log.info("")
+        self.__end(fetched=fetched)
         return response

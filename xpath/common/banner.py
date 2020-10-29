@@ -29,7 +29,7 @@ from xpath.common.colors import colorize
 from xpath.common.colors import BRIGHT, yellow
 
 
-VERSION = colorize(string=f"{__version__}", color="yellow", normal=True)
+VERSION = colorize(string=f"{__version__}", color="yellow", bold=True)
 START_BRACES = colorize(string="{", color="white", normal=True)
 END_BRACES = f'{colorize(string="}", color="white", normal=True)}'
 END_BRACES = f"{END_BRACES}{BRIGHT}{yellow}"

@@ -40,6 +40,7 @@ from xpath.common.lib import (
 from xpath.common.utils import (
     search_regex,
     unescape_html,
+    parse_http_error,
     cloudflare_decode,
     extract_encoded_data,
     detect_cloudflare_protection,
@@ -79,24 +80,16 @@ class HTTPRequestHandler:
                     resp = requests.get(url, headers=headers, timeout=timeout)
                     resp.raise_for_status()
             except (compat_httperr, requests.exceptions.HTTPError) as e:
-                text = ""
-                code = 0
-                if hasattr(e, "response"):
-                    text = e.response.text
-                    code = e.response.status_code
-                    reason = e.response.reason
-                    error = f"{code} ({reason})"
-                else:
-                    text = str(e)
-                    if hasattr(e, "code"):
-                        code = e.code
-                        reason = e.reason
-                        error = f"{code} ({reason})"
-                status_code = code
+                error_resp = parse_http_error(e)
+                text = error_resp.text
+                status_code = error_resp.status_code
+                error = error_resp.error
             except compat_urlerr as e:
                 raise str(e)
-            except Exception as e:
-                raise str(e)
+            except KeyboardInterrupt as e:
+                raise e
+            except:
+                raise Exception("Unkown error..")
             else:
                 text = unescape_html(resp)
                 status_code = (
@@ -118,25 +111,17 @@ class HTTPRequestHandler:
                         url, data=data, headers=headers, timeout=timeout
                     )
                     resp.raise_for_status()
-            except compat_httperr as e:
-                text = ""
-                code = 0
-                if hasattr(e, "response"):
-                    text = e.response.text
-                    code = e.response.status_code
-                    reason = e.response.reason
-                    error = f"{code} ({reason})"
-                else:
-                    text = str(e)
-                    if hasattr(e, "code"):
-                        code = e.code
-                        reason = e.reason
-                        error = f"{code} ({reason})"
-                status_code = code
+            except (compat_httperr, requests.exceptions.HTTPError) as e:
+                error_resp = parse_http_error(e)
+                text = error_resp.text
+                status_code = error_resp.status_code
+                error = error_resp.error
             except compat_urlerr as e:
                 raise str(e)
-            except Exception as e:
-                raise str(e)
+            except KeyboardInterrupt as e:
+                raise e
+            except:
+                raise Exception("Unkown error..")
             else:
                 text = unescape_html(resp)
                 status_code = (
@@ -175,14 +160,17 @@ class HTTPRequestHandler:
         use_requests=False,
         connection_test=False,
     ):
-        Response = collections.namedtuple("Response", ["ok", "text", "headers"])
+        Response = collections.namedtuple(
+            "Response", ["ok", "text", "headers", "error_msg"]
+        )
         ok = False
         text = None
         headers = {}
+        error_msg = ""
         if connection_test:
             parsed = urlparse.urlparse(url)
             url = f"{parsed.scheme}://{parsed.netloc}"
-        http_response = Response(ok=ok, text=text, headers=headers)
+        http_response = Response(ok=ok, text=text, headers=headers, error_msg=error_msg)
         if not data:
             try:
                 if not use_requests:
@@ -204,9 +192,22 @@ class HTTPRequestHandler:
                 headers = (
                     resp.headers if hasattr(resp, "headers") else dict(resp.info())
                 )
-                http_response = Response(ok=ok, text=text, headers=headers)
-            except Exception as error:
-                raise str(error)
+                http_response = Response(
+                    ok=ok, text=text, headers=headers, error_msg=error_msg
+                )
+            except (compat_httperr, requests.exceptions.HTTPError) as e:
+                error_resp = parse_http_error(e)
+                text = error_resp.text
+                status_code = error_resp.status_code
+                headers = error_resp.headers
+                error_msg = error_resp.error
+                http_response = Response(
+                    ok=True, text=text, headers=headers, error_msg=error_msg
+                )
+            except KeyboardInterrupt as e:
+                raise e
+            except:
+                raise Exception("Unkown error..")
         if data:
             try:
                 if not use_requests:
@@ -231,9 +232,22 @@ class HTTPRequestHandler:
                 headers = (
                     resp.headers if hasattr(resp, "headers") else dict(resp.info())
                 )
-                http_response = Response(ok=ok, text=text, headers=headers)
-            except Exception as error:
-                raise str(error)
+                http_response = Response(
+                    ok=ok, text=text, headers=headers, error_msg=error_msg
+                )
+            except (compat_httperr, requests.exceptions.HTTPError) as e:
+                error_resp = parse_http_error(e)
+                text = error_resp.text
+                status_code = error_resp.status_code
+                headers = error_resp.headers
+                error_msg = error_resp.error
+                http_response = Response(
+                    ok=True, text=text, headers=headers, error_msg=error_msg
+                )
+            except KeyboardInterrupt as e:
+                raise e
+            except:
+                raise Exception("Unkown error..")
         return http_response
 
 

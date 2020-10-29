@@ -32,6 +32,10 @@ from xpath.common.payloads import PAYLOADS_RECS_COUNT, PAYLOADS_RECS_DUMP
 
 
 class RecordsExtractor(object):
+    """
+    Extracts entries from tables...
+    """
+
     def __init__(
         self,
         url,
@@ -41,10 +45,12 @@ class RecordsExtractor(object):
         cookies="",
         injected_param="",
         session_filepath="",
+        payloads="",
     ):
         self.url = url
         self.data = data
-        self.payload = payload.replace("0x72306f746833783439", "{banner}")
+        self.payload = payload
+        self.payloads = payloads
         self.cookies = cookies
         self.regex = regex
         self.session_filepath = session_filepath
@@ -52,20 +58,6 @@ class RecordsExtractor(object):
 
     def _clean_up_cols(self, columns):
         return re.sub(" +", "", columns).split(",")
-
-    def _perpare_querystring(self, text, payload):
-        payload = compat_urlencode(payload)
-        payload = prepare_injection_payload(
-            text=text, payload=payload, param=self._injected_param
-        )
-        return payload
-
-    def _generat_payload(self, payloads_list):
-        payloads = []
-        for p in payloads_list:
-            payload = self.payload.format(banner=p)
-            payloads.append(payload)
-        return payloads
 
     def _generate_data_payloads(self, data_count, payload, cols=[], index=0):
         payload = "{index},".join(payload.rsplit("0,"))
@@ -233,7 +225,9 @@ class RecordsExtractor(object):
                 message = f"{error} - {count} times"
                 logger.http_error(message)
             else:
-                message = f"tested with '{count}' queries, unable to find working SQL query."
+                message = (
+                    f"tested with '{count}' queries, unable to find working SQL query."
+                )
                 logger.critical(message)
         return RecordsResponse(
             fetched=False,
@@ -330,7 +324,10 @@ class RecordsExtractor(object):
                 else:
                     if response.ok:
                         result = response.result
-                        logger.info("retrieved: '%s'" % (result))
+                        logger.info(
+                            "retrieved: '%s'"
+                            % (result if result != "<blank_value>" else "")
+                        )
                         _temp.append(
                             {
                                 "index": index + 1,

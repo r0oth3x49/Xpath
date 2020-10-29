@@ -26,7 +26,7 @@ THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 from xpath.common.session import session
 from xpath.injector.request import request
 from xpath.logger.colored_logger import logger
-from xpath.common.utils import prettifier, prepare_injection_payload
+from xpath.common.utils import to_hex, prettifier, prepare_injection_payload
 from xpath.common.payloads import PAYLOADS_TBLS_COUNT, PAYLOADS_TBLS_NAMES
 from xpath.common.lib import (
     binascii,
@@ -38,6 +38,10 @@ from xpath.common.lib import (
 
 
 class TablesExtractor(object):
+    """
+    Extracts table names for a database..
+    """
+
     def __init__(
         self,
         url,
@@ -47,41 +51,26 @@ class TablesExtractor(object):
         cookies="",
         injected_param="",
         session_filepath="",
+        payloads="",
     ):
         self.url = url
         self.data = data
-        self.payload = payload.replace("0x72306f746833783439", "{banner}")
+        self.payload = payload
+        self.payloads = payloads
         self.cookies = cookies
         self.regex = regex
         self.session_filepath = session_filepath
         self._injected_param = injected_param
-
-    def _perpare_querystring(self, text, payload):
-        payload = compat_urlencode(payload)
-        payload = prepare_injection_payload(
-            text=text, payload=payload, param=self._injected_param
-        )
-        return payload
-
-    def _generat_payload(self, payloads_list):
-        payloads = []
-        for p in payloads_list:
-            payload = self.payload.format(banner=p)
-            payloads.append(payload)
-        return payloads
 
     def _generate_tbl_payloads(self, tbl_count, payload, index=0):
         payload = "{index},".join(payload.rsplit("0,"))
         payloads = [payload.format(index=i) for i in range(index, tbl_count)]
         return payloads
 
-    def __encode(self, value):
-        return binascii.hexlify(value.encode()).decode()
-
     def _tbl_count(self, db=""):
         _temp = []
         if db:
-            encode_string = self.__encode(db)
+            encode_string = to_hex(db)
             for entry in PAYLOADS_TBLS_COUNT:
                 data = entry.format(db=encode_string)
                 _temp.append(data)
@@ -98,7 +87,7 @@ class TablesExtractor(object):
             "TablesResponse", ["fetched", "count", "database", "tables"]
         )
         if db:
-            encode_string = self.__encode(db)
+            encode_string = to_hex(db)
             for entry in PAYLOADS_TBLS_NAMES:
                 data = entry.format(db=encode_string)
                 _temp_payloads.append(data)
@@ -175,7 +164,9 @@ class TablesExtractor(object):
                 message = f"{error} - {count} times"
                 logger.http_error(message)
             else:
-                message = f"tested with '{count}' queries, unable to find working SQL query."
+                message = (
+                    f"tested with '{count}' queries, unable to find working SQL query."
+                )
                 logger.critical(message)
         return TablesResponse(fetched=False, count=0, database="", tables=_temp)
 

@@ -33,13 +33,13 @@ from xpath.common.lib import (
 from xpath.common.session import session
 from xpath.injector.request import request
 from xpath.logger.colored_logger import logger
-from xpath.common.utils import prettifier, prepare_injection_payload
+from xpath.common.utils import prettifier, to_hex, prepare_injection_payload
 from xpath.common.payloads import PAYLOADS_COLS_COUNT, PAYLOADS_COLS_NAMES
 
 
 class ColumnsExtractor:
     """
-    This class will try to extract columns..
+    Extracts columns for a table in database
     """
 
     def __init__(
@@ -51,42 +51,27 @@ class ColumnsExtractor:
         cookies="",
         injected_param="",
         session_filepath="",
+        payloads=""
     ):
         self.url = url
         self.data = data
-        self.payload = payload.replace("0x72306f746833783439", "{banner}")
+        self.payload = payload
+        self.payloads = payloads
         self.cookies = cookies
         self.regex = regex
         self.session_filepath = session_filepath
         self._injected_param = injected_param
-
-    def _perpare_querystring(self, text, payload):
-        payload = compat_urlencode(payload)
-        payload = prepare_injection_payload(
-            text=text, payload=payload, param=self._injected_param
-        )
-        return payload
-
-    def _generat_payload(self, payloads_list):
-        payloads = []
-        for p in payloads_list:
-            payload = self.payload.format(banner=p)
-            payloads.append(payload)
-        return payloads
 
     def _generate_col_payloads(self, col_count, payload, index=0):
         payload = "{index},".join(payload.rsplit("0,"))
         payloads = [payload.format(index=i) for i in range(index, col_count)]
         return payloads
 
-    def __encode(self, value):
-        return binascii.hexlify(value.encode()).decode()
-
     def _col_count(self, db="", tbl=""):
         _temp = []
         if db and tbl:
-            encode_db = self.__encode(db)
-            encode_tbl = self.__encode(tbl)
+            encode_db = to_hex(db)
+            encode_tbl = to_hex(tbl)
             for entry in PAYLOADS_COLS_COUNT:
                 data = entry.format(db=encode_db, tbl=encode_tbl)
                 _temp.append(data)
@@ -103,8 +88,8 @@ class ColumnsExtractor:
             "ColumnsResponse", ["fetched", "count", "database", "table", "columns"]
         )
         if db and tbl:
-            encode_db = self.__encode(db)
-            encode_tbl = self.__encode(tbl)
+            encode_db = to_hex(db)
+            encode_tbl = to_hex(tbl)
             for entry in PAYLOADS_COLS_NAMES:
                 data = entry.format(db=encode_db, tbl=encode_tbl)
                 _temp_payloads.append(data)
@@ -249,5 +234,5 @@ class ColumnsExtractor:
             _temp = list(set(_temp))
             resp = Response(is_fetched=True, result=_temp)
         else:
-            resp = Response(is_fetched=True, result=_temp)
+            resp = Response(is_fetched=False, result=_temp)
         return resp

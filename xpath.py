@@ -128,6 +128,12 @@ def main():
         help="Dump DBMS database table entries",
     )
     enumeration.add_argument(
+        "--search",
+        dest="search",
+        action="store_true",
+        help="Search column(s), table(s) and/or database name(s)",
+    )
+    enumeration.add_argument(
         "-D", dest="db", type=str, help="DBMS database to enumerate", default=None,
     )
     enumeration.add_argument(
@@ -167,25 +173,28 @@ def main():
             injected_param=injected_param,
             session_filepath=session_filepath,
         )
-        if not args.dbs and (
-            args.hostname or args.current_user or args.current_db or args.banner
-        ):
-            if args.banner:
-                target.extract_banner()
-            if args.current_user:
-                target.extract_current_user()
-            if args.current_db:
-                target.extract_current_db()
-            if args.hostname:
-                target.extract_hostname()
-        if args.dbs:
-            target.extract_dbs()
-        if args.db and args.tables:
-            target.extract_tables(database=args.db)
-        if args.db and args.tbl and args.columns:
-            target.extract_columns(database=args.db, table=args.tbl)
-        if args.db and args.tbl and args.col:
-            target.extract_records(database=args.db, table=args.tbl, columns=args.col)
+        if args.search:
+            target.search_for(database=args.db, table=args.tbl, column=args.col)
+        else:
+            if not args.dbs and (
+                args.hostname or args.current_user or args.current_db or args.banner
+            ):
+                if args.banner:
+                    target.extract_banner()
+                if args.current_user:
+                    target.extract_current_user()
+                if args.current_db:
+                    target.extract_current_db()
+                if args.hostname:
+                    target.extract_hostname()
+            if args.dbs:
+                target.extract_dbs()
+            if args.db and args.tables:
+                target.extract_tables(database=args.db)
+            if args.db and args.tbl and args.columns:
+                target.extract_columns(database=args.db, table=args.tbl)
+            if args.db and args.tbl and args.col:
+                target.extract_records(database=args.db, table=args.tbl, columns=args.col)
 
 
 if __name__ == "__main__":

@@ -28,3 +28,4 @@ from xpath.extractor.tables import TablesExtractor
 from xpath.extractor.columns import ColumnsExtractor
 from xpath.extractor.records import RecordsExtractor
 from xpath.extractor.common import DefaultsExtractor
+from xpath.extractor.search import Search

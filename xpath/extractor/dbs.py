@@ -28,10 +28,14 @@ from xpath.injector.request import request
 from xpath.logger.colored_logger import logger
 from xpath.common.payloads import PAYLOADS_DBS_COUNT, PAYLOADS_DBS_NAMES
 from xpath.common.lib import sqlite3, compat_urlencode, DBS_STATEMENT, collections
-from xpath.common.utils import prepare_injection_payload
+from xpath.common.utils import to_hex, prepare_injection_payload
 
 
 class DatabasesExtractor(object):
+    """
+    Extract all databases names ..
+    """
+
     def __init__(
         self,
         url,
@@ -41,28 +45,16 @@ class DatabasesExtractor(object):
         cookies="",
         injected_param="",
         session_filepath="",
+        payloads="",
     ):
         self.url = url
         self.data = data
-        self.payload = payload.replace("0x72306f746833783439", "{banner}")
+        self.payload = payload
+        self.payloads = payloads
         self.cookies = cookies
         self.regex = regex
         self.session_filepath = session_filepath
         self._injected_param = injected_param
-
-    def _perpare_querystring(self, text, payload):
-        payload = compat_urlencode(payload)
-        payload = prepare_injection_payload(
-            text=text, payload=payload, param=self._injected_param
-        )
-        return payload
-
-    def _generat_payload(self, payloads_list):
-        payloads = []
-        for p in payloads_list:
-            payload = self.payload.format(banner=p)
-            payloads.append(payload)
-        return payloads
 
     def _generate_dbs_payloads(self, dbs_count, payload, index=0):
         payload = "{index},".join(payload.rsplit("0,"))
@@ -147,7 +139,9 @@ class DatabasesExtractor(object):
                 message = f"{error} - {count} times"
                 logger.http_error(message)
             else:
-                message = f"tested with '{count}' queries, unable to find working SQL query."
+                message = (
+                    f"tested with '{count}' queries, unable to find working SQL query."
+                )
                 logger.critical(message)
         return DatabasesResponse(fetched=False, count=0, databases=_temp)
 

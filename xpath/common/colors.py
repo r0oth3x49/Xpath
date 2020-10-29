@@ -26,7 +26,7 @@ THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 from xpath.common.lib import init, Fore, Back, Style
 
-# init(autoreset=True, convert=True)
+init(autoreset=True, convert=True)
 # colors foreground text:
 cyan = Fore.CYAN
 green = Fore.GREEN

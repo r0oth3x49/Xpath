@@ -38,6 +38,7 @@ from xpath.common.utils import (
     prepare_payloads,
     prepare_injection_payload,
     search_dbms_errors,
+    clean_up_payload,
 )
 from xpath.common.session import session
 from xpath.injector.request import request
@@ -153,14 +154,14 @@ class SQLitest:
         try:
             resp = request.perform(url, data=data, cookies=cookies)
         except Exception as e:
-            pass
+            print(e)
         else:
             if resp.text:
                 out = search_dbms_errors(resp.text)
                 injectable = out.get("vulnerable")
                 param = f"{DIM}{white}'{param}'{BRIGHT}{black}"
                 if injectable:
-                    dbms = out.get('dbms')
+                    dbms = out.get("dbms")
                     dbms = f"{DIM}{white}'{dbms}'{BRIGHT}{black}"
                     logger.notice(
                         f"heuristic (basic) test shows that {injection_type} parameter {param} might be injectable (possible DBMS: {dbms})"
@@ -199,7 +200,7 @@ class SQLitest:
             )
         except Exception as error:
             logger.warning("Xpath was not able to establish connection.")
-            logger.error(error)
+            logger.error(str(error))
         payloads_list = prepare_payloads(
             prefixes=PREFIX, suffixes=SUFFIX, payloads=PAYLOADS
         )
@@ -400,6 +401,9 @@ class SQLitest:
             injection_type = vulns[0].get("injection_type")
             injected_param = vulns[0].get("injected_param")
             recommended_payload = vulns[0].get("payload")
+            recommended_payload = clean_up_payload(
+                payload=recommended_payload, replaceable_string="0x72306f746833783439"
+            )
             recommended_payload_type = vulns[0].get("regex")
             param = injected_param
             if not param and self.cookies:

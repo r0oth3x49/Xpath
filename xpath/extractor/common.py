@@ -36,6 +36,8 @@ from xpath.common.utils import prepare_injection_payload
 
 
 class DefaultsExtractor(object):
+    """This class will try to identify default like banner, current-db, hostname etc."""
+
     def __init__(
         self,
         url,
@@ -45,14 +47,16 @@ class DefaultsExtractor(object):
         cookies="",
         injected_param="",
         session_filepath="",
+        payloads="",
     ):
         self.url = url
         self.data = data
-        self.payload = payload.replace("0x72306f746833783439", "{banner}")
+        self.payload = payload
+        self.payloads = payloads
         self.cookies = cookies
         self.regex = regex
-        self._injected_param = injected_param
         self.session_filepath = session_filepath
+        self._injected_param = injected_param
 
     def _perpare_querystring(self, text, payload):
         payload = compat_urlencode(payload)
@@ -194,8 +198,12 @@ class DefaultsExtractor(object):
                 response = request.inject_payload(
                     url=url, regex=regex, data=data, cookies=cookies
                 )
-            except Exception as e:
-                logger.error(str(e))
+            except KeyboardInterrupt:
+                logger.error("user interrupted")
+                logger.end("ending")
+                exit(0)
+            except:
+                logger.error("Unknown error")
             else:
                 if response.ok:
                     result = response.result

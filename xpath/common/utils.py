@@ -28,6 +28,7 @@ from xpath.common.lib import (
     re,
     html,
     chardet,
+    binascii,
     urlparse,
     parse_qs,
     NO_DEFAULT,
@@ -38,6 +39,9 @@ from xpath.common.lib import (
 from xpath.logger.colored_logger import logger
 from xpath.common.prettytable import PrettyTable, from_db_cursor
 
+
+def to_hex(value):
+    return f"0x{binascii.hexlify(value.encode()).decode()}"
 
 def prettifier(cursor_or_list, field_names="", header=False):
     fields = []
@@ -56,6 +60,26 @@ def prettifier(cursor_or_list, field_names="", header=False):
     _temp = Prettified(data=table, entries=entries)
     return _temp
 
+def parse_http_error(error):
+    Response = collections.namedtuple("Response", ["text", "headers", "status_code", "error"])
+    text = ""
+    status_code = 0
+    headers = {}
+    error_msg = ""
+    if hasattr(error, "response"):
+        text = unescape_html(error.response)
+        status_code = error.response.status_code
+        reason = error.response.reason
+        headers = error.response.headers
+        error_msg = f"{status_code} ({reason})"
+    else:
+        text = unescape_html(error)
+        status_code = error.code
+        reason = error.reason
+        headers = dict(error.info())
+        error_msg = f"{status_code} ({reason})"
+    return Response(text=text, headers=headers, status_code=status_code, error=error_msg)
+
 def unescape_html(resp):
     response = ""
     if hasattr(resp, "read"):
@@ -67,6 +91,9 @@ def unescape_html(resp):
         response = response.decode(encoding, errors="ignore")
     data = html.unescape(response)
     return data
+
+def value_cleanup(value):
+    return re.sub(r"\s+", " ", re.sub(r"\(+", "", value))
 
 
 def search_regex(
@@ -86,14 +113,16 @@ def search_regex(
             if mobj:
                 break
 
-    # _name = name
-
     if mobj:
         if group is None:
             # return the first matching group
-            return next(g for g in mobj.groups() if g is not None)
+            value = next(g for g in mobj.groups() if g is not None)
         else:
-            return re.sub(r"\(+", "", mobj.group(group))
+            value = re.sub(r"\(+", "", mobj.group(group))
+        if not value:
+            value = "<blank_value>"
+        value = value_cleanup(value)
+        return value
     elif default is not NO_DEFAULT:
         return default
     elif fatal:
@@ -203,3 +232,7 @@ def prepare_injection_payload(text, payload, param=""):
         else:
             prepared_payload = "{data}".format(data=text + payload.replace(" ", "%20"))
     return prepared_payload
+
+
+def clean_up_payload(payload, replaceable_string="0x72306f746833783439"):
+    return payload.replace(replaceable_string, "{banner}")

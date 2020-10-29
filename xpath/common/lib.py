@@ -71,7 +71,7 @@ CREATE TABLE tbl_payload (
 );
 CREATE TABLE tbl_databases (
  dbs_id integer PRIMARY KEY AUTOINCREMENT,
- dbname text NOT NULL
+ dbname text
 );
 """
 
@@ -79,7 +79,7 @@ DB_TABLES = """
 DROP TABLE IF EXISTS `{name}`;
 CREATE TABLE `{tbl_name}` (
  tbl_id integer PRIMARY KEY AUTOINCREMENT,
- tblname text NOT NULL
+ tblname text
 );
 """
 
@@ -87,7 +87,7 @@ TBL_COLUMNS = """
 DROP TABLE IF EXISTS `{name}`;
 CREATE TABLE `{tbl_name}` (
  col_id integer PRIMARY KEY AUTOINCREMENT,
- colname text NOT NULL
+ colname text
 );
 """
 
@@ -101,11 +101,11 @@ CREATE TABLE `{tbl_name}` (
 """
 
 TBL_SEARCH = """
-DROP TABLE IF EXISTS `tbl_search`;
-CREATE TABLE `tbl_search` (
- pk integer PRIMARY KEY AUTOINCREMENT,
- value text NOT NULL,
- value_type text NOT NULL
+DROP TABLE IF EXISTS `{name}`;
+CREATE TABLE `{name}` (
+ `index` integer,
+ `value` text,
+ `search_type` text
 );
 """
 
@@ -130,10 +130,10 @@ INSERT
 VALUES  ("{colname}");
 """
 
-SEARCH_COL_STATEMENT = """
+SEARCH_STATEMENT = """
 INSERT 
-    INTO `tbl_search` (`value`, `value_type`)
-VALUES  ("{value}", "{value_type}");
+    INTO `{name}` (`index`, `value`, `search_type`)
+VALUES  (?, ?, ?);
 """
 
 SQL_ERRORS = {
@@ -160,6 +160,8 @@ SQL_ERRORS = {
         r"valid MySQL result",
         r"Pdo[./_\\]Mysql",
         r"Unknown column '[^ ]+' in 'field list'",
+        r"(?is)(?:A Database error Occurred)",
+        
     ),
     # "PostgreSQL": (
     #     r"PostgreSQL.*ERROR",
