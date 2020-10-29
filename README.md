@@ -71,6 +71,7 @@ Enumeration:
   --tables           Enumerate DBMS database tables
   --columns          Enumerate DBMS database table columns
   --dump             Dump DBMS database table entries
+  --search           Search column(s), table(s) and/or database name(s)
   -D DB              DBMS database to enumerate
   -T TBL             DBMS database tables(s) to enumerate
   -C COL             DBMS database table column(s) to enumerate
