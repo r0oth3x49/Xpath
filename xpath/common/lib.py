@@ -30,6 +30,7 @@ import sys
 import csv
 import time
 import html
+import shutil
 import chardet
 import sqlite3
 import logging
@@ -52,7 +53,7 @@ from urllib.request import urlopen as compat_urlopen
 
 NO_DEFAULT = object()
 
-useragent = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_13_4) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/11.1 Safari/605.1.15"
+useragent = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/86.0.4240.111 Safari/537.36"
 
 
 SESSION_STATEMENETS = """
@@ -163,59 +164,59 @@ SQL_ERRORS = {
         r"(?is)(?:A Database error Occurred)",
         
     ),
-    # "PostgreSQL": (
-    #     r"PostgreSQL.*ERROR",
-    #     r"Warning.*\Wpg_.*",
-    #     r"Warning.*PostgreSQL",
-    #     r"valid PostgreSQL result",
-    #     r"Npgsql\.",
-    #     r"PG::SyntaxError:",
-    #     r"org\.postgresql\.util\.PSQLException",
-    #     r"ERROR:\s\ssyntax error at or near ",
-    #     r"ERROR: parser: parse error at or near",
-    #     r"PostgreSQL query failed",
-    #     r"org\.postgresql\.jdbc",
-    #     r"Pdo[./_\\]Pgsql",
-    #     r"PSQLException",
-    # ),
-    # "Microsoft SQL Server": (
-    #     r"Driver.* SQL[\-\_\ ]*Server",
-    #     r"OLE DB.* SQL Server",
-    #     r"(\W|\A)SQL Server.*Driver",
-    #     r"Warning.*odbc_.*",
-    #     r"\bSQL Server[^&lt;&quot;]+Driver",
-    #     r"Warning.*mssql_",
-    #     r"Msg \d+, Level \d+, State \d+",
-    #     r"Unclosed quotation mark after the character string",
-    #     r"Microsoft OLE DB Provider for ODBC Drivers",
-    #     r"Warning.*(mssql|sqlsrv)_",
-    #     r"\bSQL Server[^&lt;&quot;]+[0-9a-fA-F]{8}",
-    #     r"System\.Data\.SqlClient\.SqlException",
-    #     r"(?s)Exception.*\WRoadhouse\.Cms\.",
-    #     r"Microsoft SQL Native Client error '[0-9a-fA-F]{8}",
-    #     r"com\.microsoft\.sqlserver\.jdbc\.SQLServerException",
-    #     r"ODBC SQL Server Driver",
-    #     r"SQLServer JDBC Driver",
-    #     r"macromedia\.jdbc\.sqlserver",
-    #     r"com\.jnetdirect\.jsql",
-    #     r".*icrosoft\s+VBScript\s+runtime\s+error\s+.*",
-    # ),
-    # "Microsoft Access": (
-    #     r"Microsoft Access Driver",
-    #     r"Access Database Engine",
-    #     r"Microsoft JET Database Engine",
-    #     r".*Syntax error.*query expression",
-    # ),
-    # "Oracle": (
-    #     r"\bORA-[0-9][0-9][0-9][0-9]",
-    #     r"Oracle error",
-    #     r"Warning.*oci_.*",
-    #     "Microsoft OLE DB Provider for Oracle",
-    # ),
-    # "IBM DB2": (r"CLI Driver.*DB2", r"DB2 SQL error"),
-    # "SQLite": (r"SQLite/JDBCDriver", r"System.Data.SQLite.SQLiteException"),
-    # "Informix": (r"Warning.*ibase_.*", r"com.informix.jdbc"),
-    # "Sybase": (r"Warning.*sybase.*", r"Sybase message"),
+    "PostgreSQL": (
+        r"PostgreSQL.*ERROR",
+        r"Warning.*\Wpg_.*",
+        r"Warning.*PostgreSQL",
+        r"valid PostgreSQL result",
+        r"Npgsql\.",
+        r"PG::SyntaxError:",
+        r"org\.postgresql\.util\.PSQLException",
+        r"ERROR:\s\ssyntax error at or near ",
+        r"ERROR: parser: parse error at or near",
+        r"PostgreSQL query failed",
+        r"org\.postgresql\.jdbc",
+        r"Pdo[./_\\]Pgsql",
+        r"PSQLException",
+    ),
+    "Microsoft SQL Server": (
+        r"Driver.* SQL[\-\_\ ]*Server",
+        r"OLE DB.* SQL Server",
+        r"(\W|\A)SQL Server.*Driver",
+        r"Warning.*odbc_.*",
+        r"\bSQL Server[^&lt;&quot;]+Driver",
+        r"Warning.*mssql_",
+        r"Msg \d+, Level \d+, State \d+",
+        r"Unclosed quotation mark after the character string",
+        r"Microsoft OLE DB Provider for ODBC Drivers",
+        r"Warning.*(mssql|sqlsrv)_",
+        r"\bSQL Server[^&lt;&quot;]+[0-9a-fA-F]{8}",
+        r"System\.Data\.SqlClient\.SqlException",
+        r"(?s)Exception.*\WRoadhouse\.Cms\.",
+        r"Microsoft SQL Native Client error '[0-9a-fA-F]{8}",
+        r"com\.microsoft\.sqlserver\.jdbc\.SQLServerException",
+        r"ODBC SQL Server Driver",
+        r"SQLServer JDBC Driver",
+        r"macromedia\.jdbc\.sqlserver",
+        r"com\.jnetdirect\.jsql",
+        r".*icrosoft\s+VBScript\s+runtime\s+error\s+.*",
+    ),
+    "Microsoft Access": (
+        r"Microsoft Access Driver",
+        r"Access Database Engine",
+        r"Microsoft JET Database Engine",
+        r".*Syntax error.*query expression",
+    ),
+    "Oracle": (
+        r"\bORA-[0-9][0-9][0-9][0-9]",
+        r"Oracle error",
+        r"Warning.*oci_.*",
+        "Microsoft OLE DB Provider for Oracle",
+    ),
+    "IBM DB2": (r"CLI Driver.*DB2", r"DB2 SQL error"),
+    "SQLite": (r"SQLite/JDBCDriver", r"System.Data.SQLite.SQLiteException"),
+    "Informix": (r"Warning.*ibase_.*", r"com.informix.jdbc"),
+    "Sybase": (r"Warning.*sybase.*", r"Sybase message"),
 }
 
 __ALL__ = [

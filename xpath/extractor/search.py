@@ -56,33 +56,21 @@ class Search:
         data="",
         payload="",
         regex="",
-        cookies="",
+        headers="",
         injected_param="",
         session_filepath="",
         payloads="",
+        injection_type="",
     ):
         self.url = url
         self.data = data
         self.payload = payload
         self.payloads = payloads
-        self.cookies = cookies
+        self.headers = headers
         self.regex = regex
         self.session_filepath = session_filepath
         self._injected_param = injected_param
-
-    def _perpare_querystring(self, text, payload):
-        payload = compat_urlencode(payload)
-        payload = prepare_injection_payload(
-            text=text, payload=payload, param=self._injected_param
-        )
-        return payload
-
-    def _generat_payload(self, payloads_list):
-        payloads = []
-        for p in payloads_list:
-            payload = self.payload.format(banner=p)
-            payloads.append(payload)
-        return payloads
+        self._injection_type = injection_type
 
     def _generate_search_dump_payloads(self, count, payload, index=0):
         payload = "{offset},".join(payload.rsplit("0,"))
@@ -233,7 +221,7 @@ class Search:
                     logger.warning(
                         f"no databases have tables containing any of the provided columns"
                     )
-                return SearchResponse(fetched=True, count=0, results=[])
+                return SearchResponse(fetched=False, count=0, results=[])
             if is_resumed:
                 for entry in fetched_data:
                     index = entry.get("index")
@@ -288,9 +276,34 @@ class Search:
                     return SearchResponse(
                         fetched=True, count=found_records, results=_temp
                     )
+                if not retval.is_injected:
+                    status_code = retval.status_code
+                    error = retval.error
+                    count = retval.payloads_count
+                    if status_code not in [200, 0]:
+                        message = f"{error} - {count} times"
+                        logger.warning(
+                            f"HTTP error codes detected during run:\n{message}"
+                        )
+                    else:
+                        message = f"tested with '{count}' queries, unable to find working SQL query."
+                        logger.critical(message)
             else:
                 self._pprint_search_results(search_type, _temp)
                 return SearchResponse(fetched=True, count=found_records, results=_temp)
+        if not retval.is_injected:
+            status_code = retval.status_code
+            error = retval.error
+            count = retval.payloads_count
+            if status_code not in [200, 0]:
+                message = f"{error} - {count} times"
+                logger.warning(f"HTTP error codes detected during run:\n{message}")
+            else:
+                message = (
+                    f"tested with '{count}' queries, unable to find working SQL query."
+                )
+                logger.critical(message)
+        return SearchResponse(fetched=False, count=0, results=[])
 
     def _pprint_search_results(self, search_type, _temp):
         if search_type == "column":
@@ -314,19 +327,31 @@ class Search:
         url = self.url
         data = self.data
         regex = self.regex
-        cookies = self.cookies
+        headers = self.headers
         # logger.info("fetching database names")
-        if self.url and not self.data and not self.cookies:
+        # if self.url and not self.data and not self.headers:
+        #     # GET
+        #     url = self._perpare_querystring(self.url, payload)
+        # if self.url and self.data and not self.headers:
+        #     # POST
+        #     data = self._perpare_querystring(self.data, payload)
+        # if self.url and not self.data and self.headers:
+        #     # headers
+        #     headers = self._perpare_querystring(self.headers, payload)
+        it = self._injection_type.upper()
+        if "GET" in it:  # self.url and not self.data and not self.headers:
             # GET
             url = self._perpare_querystring(self.url, payload)
-        if self.url and self.data and not self.cookies:
+        if "POST" in it:  # self.url and self.data and not self.headers:
             # POST
             data = self._perpare_querystring(self.data, payload)
-        if self.url and not self.data and self.cookies:
-            # COOKIES
-            cookies = self._perpare_querystring(self.cookies, payload)
+        if (
+            "HEADER" in it or "COOKIE" in it
+        ):  # self.url and not self.data and self.headers:
+            # headers
+            headers = self._perpare_querystring(self.headers, payload)
         database = self.perform_injection(
-            url, data, cookies, regex, index, search_type="database"
+            url, data, headers, regex, index, search_type="database"
         )
         return Response(database=database)
 
@@ -340,18 +365,30 @@ class Search:
         url = self.url
         data = self.data
         regex = self.regex
-        cookies = self.cookies
-        if self.url and not self.data and not self.cookies:
+        headers = self.headers
+        # if self.url and not self.data and not self.headers:
+        #     # GET
+        #     url = self._perpare_querystring(self.url, payload)
+        # if self.url and self.data and not self.headers:
+        #     # POST
+        #     data = self._perpare_querystring(self.data, payload)
+        # if self.url and not self.data and self.headers:
+        #     # headers
+        #     headers = self._perpare_querystring(self.headers, payload)
+        it = self._injection_type.upper()
+        if "GET" in it:  # self.url and not self.data and not self.headers:
             # GET
             url = self._perpare_querystring(self.url, payload)
-        if self.url and self.data and not self.cookies:
+        if "POST" in it:  # self.url and self.data and not self.headers:
             # POST
             data = self._perpare_querystring(self.data, payload)
-        if self.url and not self.data and self.cookies:
-            # COOKIES
-            cookies = self._perpare_querystring(self.cookies, payload)
+        if (
+            "HEADER" in it or "COOKIE" in it
+        ):  # self.url and not self.data and self.headers:
+            # headers
+            headers = self._perpare_querystring(self.headers, payload)
         table = self.perform_injection(
-            url, data, cookies, regex, index, search_type="table"
+            url, data, headers, regex, index, search_type="table"
         )
         return Response(database=database, table=table)
 
@@ -373,26 +410,38 @@ class Search:
         url = self.url
         data = self.data
         regex = self.regex
-        cookies = self.cookies
-        if self.url and not self.data and not self.cookies:
+        headers = self.headers
+        # if self.url and not self.data and not self.headers:
+        #     # GET
+        #     url = self._perpare_querystring(self.url, payload)
+        # if self.url and self.data and not self.headers:
+        #     # POST
+        #     data = self._perpare_querystring(self.data, payload)
+        # if self.url and not self.data and self.headers:
+        #     # headers
+        #     headers = self._perpare_querystring(self.headers, payload)
+        it = self._injection_type.upper()
+        if "GET" in it:  # self.url and not self.data and not self.headers:
             # GET
             url = self._perpare_querystring(self.url, payload)
-        if self.url and self.data and not self.cookies:
+        if "POST" in it:  # self.url and self.data and not self.headers:
             # POST
             data = self._perpare_querystring(self.data, payload)
-        if self.url and not self.data and self.cookies:
-            # COOKIES
-            cookies = self._perpare_querystring(self.cookies, payload)
+        if (
+            "HEADER" in it or "COOKIE" in it
+        ):  # self.url and not self.data and self.headers:
+            # headers
+            headers = self._perpare_querystring(self.headers, payload)
         column = self.perform_injection(
-            url, data, cookies, regex, index, search_type="column"
+            url, data, headers, regex, index, search_type="column"
         )
         return Response(database=database, table=table, column=column)
 
-    def perform_injection(self, url, data, cookies, regex, index, search_type=""):
+    def perform_injection(self, url, data, headers, regex, index, search_type=""):
         result = ""
         try:
             response = request.inject_payload(
-                url=url, regex=regex, data=data, cookies=cookies
+                url=url, regex=regex, data=data, headers=headers
             )
             if response.ok:
                 result = response.result

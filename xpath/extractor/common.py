@@ -32,7 +32,7 @@ from xpath.common.payloads import (
 from xpath.injector.request import request
 from xpath.logger.colored_logger import logger
 from xpath.common.lib import compat_urlencode, collections
-from xpath.common.utils import prepare_injection_payload
+from xpath.common.utils import prepare_injection_payload, prepare_payload_request
 
 
 class DefaultsExtractor(object):
@@ -44,24 +44,29 @@ class DefaultsExtractor(object):
         data="",
         payload="",
         regex="",
-        cookies="",
+        headers="",
         injected_param="",
         session_filepath="",
         payloads="",
+        injection_type="",
     ):
         self.url = url
         self.data = data
         self.payload = payload
         self.payloads = payloads
-        self.cookies = cookies
+        self.headers = headers
         self.regex = regex
         self.session_filepath = session_filepath
         self._injected_param = injected_param
+        self._injection_type = injection_type
 
-    def _perpare_querystring(self, text, payload):
-        payload = compat_urlencode(payload)
+    def _perpare_querystring(self, text, payload, unknown_error_counter=0):
+        # payload = compat_urlencode(payload)
         payload = prepare_injection_payload(
-            text=text, payload=payload, param=self._injected_param
+            text=text,
+            payload=payload,
+            param=self._injected_param,
+            unknown_error_counter=unknown_error_counter,
         )
         return payload
 
@@ -85,9 +90,8 @@ class DefaultsExtractor(object):
             error = retval.error
             count = retval.payloads_count
             if status_code not in [200, 0]:
-                logger.warning("HTTP error codes detected during run:")
                 message = f"{error} - {count} times"
-                logger.http_error(message)
+                logger.warning(f"HTTP error codes detected during run:\n{message}")
             else:
                 message = (
                     f"tested with '{count}' queries, unable to find working SQL query."
@@ -108,9 +112,8 @@ class DefaultsExtractor(object):
             error = retval.error
             count = retval.payloads_count
             if status_code not in [200, 0]:
-                logger.warning("HTTP error codes detected during run:")
                 message = f"{error} - {count} times"
-                logger.http_error(message)
+                logger.warning(f"HTTP error codes detected during run:\n{message}")
             else:
                 message = (
                     f"tested with '{count}' queries, unable to find working SQL query."
@@ -131,9 +134,8 @@ class DefaultsExtractor(object):
             error = retval.error
             count = retval.payloads_count
             if status_code not in [200, 0]:
-                logger.warning("HTTP error codes detected during run:")
                 message = f"{error} - {count} times"
-                logger.http_error(message)
+                logger.warning(f"HTTP error codes detected during run:\n{message}")
             else:
                 message = (
                     f"tested with '{count}' queries, unable to find working SQL query."
@@ -154,15 +156,69 @@ class DefaultsExtractor(object):
             error = retval.error
             count = retval.payloads_count
             if status_code not in [200, 0]:
-                logger.warning("HTTP error codes detected during run:")
                 message = f"{error} - {count} times"
-                logger.http_error(message)
+                logger.warning(f"HTTP error codes detected during run:\n{message}")
             else:
                 message = (
                     f"tested with '{count}' queries, unable to find working SQL query."
                 )
                 logger.critical(message)
         return retval
+
+    def _fallback_check(self, payload, count, unknown_error_counter=0):
+        PayloadResponse = collections.namedtuple(
+            "PayloadResponse",
+            [
+                "is_injected",
+                "status_code",
+                "result",
+                "payload",
+                "payloads_count",
+                "error",
+            ],
+        )
+        status_code = None
+        error = None
+        logger.payload(f"{payload}")
+        payload_request = prepare_payload_request(
+            self, payload, unknown_error_counter=unknown_error_counter
+        )
+        url = payload_request.url
+        data = payload_request.data
+        regex = payload_request.regex
+        headers = payload_request.headers
+        try:
+            response = request.inject_payload(
+                url=url, regex=regex, data=data, headers=headers
+            )
+            if response.ok:
+                result = response.result
+                status_code = response.status_code
+                error = response.error
+                return PayloadResponse(
+                    is_injected=True,
+                    status_code=status_code,
+                    result=result,
+                    payload=payload,
+                    payloads_count=count,
+                    error=error,
+                )
+            else:
+                status_code = response.status_code
+                error = response.error
+        except KeyboardInterrupt:
+            logger.error("user interrupted")
+            logger.end("ending")
+            exit(0)
+
+        return PayloadResponse(
+            is_injected=False,
+            status_code=status_code,
+            result="",
+            payload="",
+            payloads_count=count,
+            error=error,
+        )
 
     def _extact(self, payloads):
 
@@ -180,30 +236,30 @@ class DefaultsExtractor(object):
         payloads_count = len(payloads)
         status_code = None
         error = None
-        for p in payloads:
-            url = self.url
-            data = self.data
-            regex = self.regex
-            cookies = self.cookies
-            if self.url and not self.data and not self.cookies:
-                # GET
-                url = self._perpare_querystring(self.url, p)
-            if self.url and self.data and not self.cookies:
-                # POST
-                data = self._perpare_querystring(self.data, p)
-            if self.url and not self.data and self.cookies:
-                # COOKIES
-                cookies = self._perpare_querystring(self.cookies, p)
+        unknown_error_counter = 0
+        for payload in payloads:
+            logger.payload(f"{payload}")
+            payload_request = prepare_payload_request(self, payload)
+            url = payload_request.url
+            data = payload_request.data
+            regex = payload_request.regex
+            headers = payload_request.headers
             try:
                 response = request.inject_payload(
-                    url=url, regex=regex, data=data, cookies=cookies
+                    url=url, regex=regex, data=data, headers=headers
                 )
             except KeyboardInterrupt:
                 logger.error("user interrupted")
                 logger.end("ending")
                 exit(0)
             except:
-                logger.error("Unknown error")
+                unknown_error_counter += 1
+                logger.debug("trying again the same payload with url encoding..")
+                resp = self._fallback_check(
+                    payload, payloads_count, unknown_error_counter=unknown_error_counter
+                )
+                if resp.is_injected:
+                    return resp
             else:
                 if response.ok:
                     result = response.result
@@ -213,7 +269,7 @@ class DefaultsExtractor(object):
                         is_injected=True,
                         status_code=status_code,
                         result=result,
-                        payload=p,
+                        payload=payload,
                         payloads_count=payloads_count,
                         error=error,
                     )

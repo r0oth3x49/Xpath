@@ -36,15 +36,20 @@ from xpath.common.lib import (
     compat_request,
     compat_urlopen,
     compat_httperr,
+    compat_urlencode,
 )
 from xpath.common.utils import (
     search_regex,
     unescape_html,
+    prepare_request,
     parse_http_error,
+    prepare_response,
     cloudflare_decode,
+    parse_http_response,
     extract_encoded_data,
     detect_cloudflare_protection,
 )
+from xpath.logger.colored_logger import logger
 
 
 class HTTPRequestHandler:
@@ -53,80 +58,93 @@ class HTTPRequestHandler:
     """
 
     def inject_payload(
-        self, url, regex, data="", cookies="", use_requests=False, timeout=30
+        self, url, regex, data="", headers="", use_requests=False, timeout=30
     ):
+        req = prepare_request(
+            url=url, data=data, custom_headers=headers, use_requests=use_requests
+        )
+        raw = req.raw
+        custom_headers = req.headers
+        logger.traffic_out(f"HTTP request:\n{raw}")
         ok = False
         text = ""
         result = ""
         error = ""
         status_code = 0
+        reason = ""
+        headers = {}
         Response = collections.namedtuple(
-            "Response", ["ok", "status_code", "text", "result", "error"],
+            "Response",
+            ["ok", "status_code", "text", "result", "headers", "reason", "error"],
         )
         _temp = Response(
-            ok=ok, status_code=status_code, text=text, result=result, error=error,
+            ok=ok,
+            status_code=status_code,
+            text=text,
+            result=result,
+            headers=headers,
+            reason=reason,
+            error=error,
         )
         if not data:
             try:
                 if not use_requests:
                     opener = compat_opener()
-                    opener.addheaders = [
-                        ("Cookie", "%s" % cookies),
-                        ("User-Agent", "%s" % useragent),
-                    ]
+                    opener.addheaders = custom_headers
                     resp = opener.open(url, timeout=timeout)
                 else:
-                    headers = {"User-Agent": useragent, "Cookie": cookies}
-                    resp = requests.get(url, headers=headers, timeout=timeout)
+                    resp = requests.get(url, headers=custom_headers, timeout=timeout)
                     resp.raise_for_status()
             except (compat_httperr, requests.exceptions.HTTPError) as e:
                 error_resp = parse_http_error(e)
                 text = error_resp.text
+                headers = error_resp.headers
                 status_code = error_resp.status_code
                 error = error_resp.error
+                reason = error_resp.reason
             except compat_urlerr as e:
-                raise str(e)
+                logger.error(e)
             except KeyboardInterrupt as e:
                 raise e
-            except:
-                raise Exception("Unkown error..")
+            except Exception as e:
+                raise e
             else:
-                text = unescape_html(resp)
-                status_code = (
-                    resp.status if hasattr(resp, "status") else resp.status_code
-                )
+                http_response = parse_http_response(resp)
+                headers = http_response.headers
+                text = http_response.text
+                status_code = http_response.status_code
+                reason = http_response.reason
         if data:
             try:
                 if not use_requests:
                     data = data.encode("utf-8")
                     opener = compat_opener()
-                    opener.addheaders = [
-                        ("Cookie", "%s" % cookies),
-                        ("User-Agent", "%s" % useragent),
-                    ]
+                    opener.addheaders = custom_headers
                     resp = opener.open(url, data, timeout=timeout)
                 else:
-                    headers = {"User-Agent": useragent, "Cookie": cookies}
                     resp = requests.get(
-                        url, data=data, headers=headers, timeout=timeout
+                        url, data=data, headers=custom_headers, timeout=timeout
                     )
                     resp.raise_for_status()
             except (compat_httperr, requests.exceptions.HTTPError) as e:
                 error_resp = parse_http_error(e)
                 text = error_resp.text
+                headers = error_resp.headers
                 status_code = error_resp.status_code
                 error = error_resp.error
+                reason = error_resp.reason
             except compat_urlerr as e:
-                raise str(e)
+                logger.error(e)
             except KeyboardInterrupt as e:
                 raise e
-            except:
-                raise Exception("Unkown error..")
+            except Exception as e:
+                raise e
             else:
-                text = unescape_html(resp)
-                status_code = (
-                    resp.status if hasattr(resp, "status") else resp.status_code
-                )
+                http_response = parse_http_response(resp)
+                headers = http_response.headers
+                text = http_response.text
+                status_code = http_response.status_code
+                reason = http_response.reason
         is_protected = detect_cloudflare_protection(text)
         if is_protected:
             result = cloudflare_decode(extract_encoded_data(text))
@@ -136,6 +154,8 @@ class HTTPRequestHandler:
                 text="",  # text, we can add response html here
                 result=result,
                 error=error,
+                reason=reason,
+                headers=headers,
             )
         if not is_protected:
             result = search_regex(
@@ -147,7 +167,11 @@ class HTTPRequestHandler:
                 text="",  # text, we can add response html here
                 result=result,
                 error=error,
+                reason=reason,
+                headers=headers,
             )
+        raw_response = prepare_response(_temp)
+        logger.traffic_in(f"HTTP Response {raw_response}")
         return _temp
 
     def perform(
@@ -155,45 +179,59 @@ class HTTPRequestHandler:
         url,
         data="",
         headers="",
-        cookies="",
-        timeout=20,
+        timeout=30,
         use_requests=False,
         connection_test=False,
     ):
         Response = collections.namedtuple(
-            "Response", ["ok", "text", "headers", "error_msg"]
+            "Response", ["ok", "status_code", "text", "headers", "reason", "error_msg"]
         )
         ok = False
         text = None
-        headers = {}
+        reason = ""
         error_msg = ""
+        show_charset = False
         if connection_test:
             parsed = urlparse.urlparse(url)
             url = f"{parsed.scheme}://{parsed.netloc}"
-        http_response = Response(ok=ok, text=text, headers=headers, error_msg=error_msg)
+            show_charset = True
+        http_response = Response(
+            ok=ok,
+            text=text,
+            status_code="",
+            headers=headers,
+            reason="",
+            error_msg=error_msg,
+        )
+        req = prepare_request(
+            url=url, data=data, custom_headers=headers, use_requests=use_requests
+        )
+        raw = req.raw
+        custom_headers = req.headers
+        logger.traffic_out(f"HTTP request:\n{raw}")
+        headers = {}
         if not data:
             try:
                 if not use_requests:
                     opener = compat_opener()
-                    opener.addheaders = [
-                        ("Cookie", "%s" % cookies),
-                        ("User-Agent", "%s" % useragent),
-                    ]
+                    opener.addheaders = custom_headers
                     resp = opener.open(url, timeout=timeout)
                 else:
-                    headers = {"User-Agent": useragent, "Cookie": cookies}
-                    resp = requests.get(url, headers=headers, timeout=timeout)
+                    resp = requests.get(url, headers=custom_headers, timeout=timeout)
                     resp.raise_for_status()
-                text = unescape_html(resp)
-                status_code = (
-                    resp.status_code if hasattr(resp, "status_code") else resp.status
-                )
-                ok = bool(200 == status_code)
-                headers = (
-                    resp.headers if hasattr(resp, "headers") else dict(resp.info())
-                )
+                http_response = parse_http_response(resp)
+                ok = http_response.ok
+                headers = http_response.headers
+                text = http_response.text
+                status_code = http_response.status_code
+                reason = http_response.reason
                 http_response = Response(
-                    ok=ok, text=text, headers=headers, error_msg=error_msg
+                    ok=ok,
+                    text=text,
+                    status_code=status_code,
+                    headers=headers,
+                    reason=reason,
+                    error_msg=error_msg,
                 )
             except (compat_httperr, requests.exceptions.HTTPError) as e:
                 error_resp = parse_http_error(e)
@@ -201,39 +239,44 @@ class HTTPRequestHandler:
                 status_code = error_resp.status_code
                 headers = error_resp.headers
                 error_msg = error_resp.error
+                reason = error_resp.reason
                 http_response = Response(
-                    ok=True, text=text, headers=headers, error_msg=error_msg
+                    ok=True,
+                    text=text,
+                    status_code=status_code,
+                    headers=headers,
+                    reason=reason,
+                    error_msg=error_msg,
                 )
             except KeyboardInterrupt as e:
                 raise e
-            except:
-                raise Exception("Unkown error..")
+            except Exception as e:
+                raise e
         if data:
             try:
                 if not use_requests:
                     data = data.encode("utf-8")
                     opener = compat_opener()
-                    opener.addheaders = [
-                        ("Cookie", "%s" % cookies),
-                        ("User-Agent", "%s" % useragent),
-                    ]
+                    opener.addheaders = custom_headers
                     resp = opener.open(url, data, timeout=timeout)
                 else:
-                    headers = {"User-Agent": useragent, "Cookie": cookies}
                     resp = requests.get(
-                        url, data=data, headers=headers, timeout=timeout
+                        url, data=data, headers=custom_headers, timeout=timeout
                     )
                     resp.raise_for_status()
-                text = unescape_html(resp)
-                status_code = (
-                    resp.status_code if hasattr(resp, "status_code") else resp.status
-                )
-                ok = bool(200 == status_code)
-                headers = (
-                    resp.headers if hasattr(resp, "headers") else dict(resp.info())
-                )
+                http_response = parse_http_response(resp)
+                ok = http_response.ok
+                headers = http_response.headers
+                text = http_response.text
+                status_code = http_response.status_code
+                reason = http_response.reason
                 http_response = Response(
-                    ok=ok, text=text, headers=headers, error_msg=error_msg
+                    ok=ok,
+                    text=text,
+                    status_code=status_code,
+                    headers=headers,
+                    reason=reason,
+                    error_msg=error_msg,
                 )
             except (compat_httperr, requests.exceptions.HTTPError) as e:
                 error_resp = parse_http_error(e)
@@ -241,13 +284,21 @@ class HTTPRequestHandler:
                 status_code = error_resp.status_code
                 headers = error_resp.headers
                 error_msg = error_resp.error
+                reason = error_resp.reason
                 http_response = Response(
-                    ok=True, text=text, headers=headers, error_msg=error_msg
+                    ok=True,
+                    text=text,
+                    status_code=status_code,
+                    headers=headers,
+                    reason=reason,
+                    error_msg=error_msg,
                 )
             except KeyboardInterrupt as e:
                 raise e
-            except:
-                raise Exception("Unkown error..")
+            except Exception as e:
+                raise e
+        raw_response = prepare_response(http_response)
+        logger.traffic_in(f"HTTP Response {raw_response}")
         return http_response
 
 

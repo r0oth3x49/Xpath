@@ -27,6 +27,7 @@ from xpath.common.lib import (
     os,
     re,
     csv,
+    shutil,
     sqlite3,
     urlparse,
     expanduser,
@@ -78,15 +79,20 @@ class SessionFactory:
         conn.commit()
         conn.close()
 
-    def generate_filepath(self, target):
+    def generate_filepath(self, target, flush_session=False):
         filepath = ""
         user = expanduser("~")
         target = urlparse.urlparse(target).netloc
         filepath = os.path.join(user, ".Xpath")
         filepath = os.path.join(filepath, target)
+        if flush_session:
+            try:
+                shutil.rmtree(filepath)
+            except Exception as e:
+                pass
         try:
             os.makedirs(filepath)
-        except:
+        except Exception as e:
             pass
         return filepath
 

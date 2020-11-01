@@ -41,7 +41,26 @@ def main():
     general = parser.add_argument_group("General")
     general.add_argument("-h", "--help", action="help", help="Shows the help.")
     general.add_argument(
-        "-v", "--version", action="version", version=version, help="Shows the version."
+        "--version", action="version", version=version, help="Shows the version."
+    )
+    general.add_argument(
+        "-v",
+        dest="verbose",
+        type=int,
+        default=1,
+        help="Verbosity level: 1-5 (default 1).",
+    )
+    general.add_argument(
+        "--batch",
+        dest="batch",
+        action="store_true",
+        help="Never ask for user input, use the default behavior",
+    )
+    general.add_argument(
+        "--flush-session",
+        dest="flush_session",
+        action="store_true",
+        help="Flush session files for current target",
     )
 
     target = parser.add_argument_group(
@@ -61,18 +80,93 @@ def main():
         description="These options can be used to specify how to connect to the target URL",
     )
     request.add_argument(
+        "-A",
+        "--user-agent",
+        dest="user_agent",
+        type=str,
+        help="HTTP User-Agent header value",
+        default="",
+        metavar="",
+    )
+    request.add_argument(
+        "-H",
+        "--header",
+        dest="header",
+        type=str,
+        help='Extra header (e.g. "X-Forwarded-For: 127.0.0.1")',
+        default="",
+        metavar="",
+    )
+    request.add_argument(
+        "--host",
+        dest="host",
+        type=str,
+        help="HTTP Host header value",
+        default="",
+        metavar="",
+    )
+    request.add_argument(
         "--data",
         dest="data",
         type=str,
         help='Data string to be sent through POST (e.g. "id=1")',
-        default=None,
+        default="",
+        metavar="",
     )
     request.add_argument(
         "--cookie",
         dest="cookie",
         type=str,
         help='HTTP Cookie header value (e.g. "PHPSESSID=a8d127e..")',
-        default=None,
+        default="",
+        metavar="",
+    )
+    request.add_argument(
+        "--referer",
+        dest="referer",
+        type=str,
+        help="HTTP Referer header value",
+        default="",
+        metavar="",
+    )
+    request.add_argument(
+        "--headers",
+        dest="headers",
+        type=str,
+        help='Extra headers (e.g. "Accept-Language: fr\\nETag: 123")',
+        default="",
+        metavar="",
+    )
+    detection = parser.add_argument_group(
+        "Detection",
+        description="These options can be used to customize the detection phase",
+    )
+    detection.add_argument(
+        "--level",
+        dest="level",
+        type=int,
+        help="Level of tests to perform (1-3, default 1)",
+        default=1,
+        metavar="",
+    )
+    # detection.add_argument(
+    #     "--code",
+    #     dest="code",
+    #     type=str,
+    #     help="HTTP code to match when query is evaluated to True",
+    #     default=200,
+    #     metavar="",
+    # )
+    techniques = parser.add_argument_group(
+        "Techniques",
+        description="These options can be used to tweak testing of specific SQL injection\ntechniques",
+    )
+    techniques.add_argument(
+        "--technique",
+        dest="tech",
+        type=str,
+        help='SQL injection techniques to use (default "XEFDBGJ")',
+        default="XEFDBGJ",
     )
     enumeration = parser.add_argument_group(
         "Enumeration",
@@ -158,19 +252,36 @@ def main():
         parser.print_help()
         exit(0)
 
-    resp = xpath.perform_injection(url=args.url, data=args.data, cookies=args.cookie)
-    if resp.is_vulnerable:
+    resp = xpath.perform_injection(
+        url=args.url,
+        data=args.data,
+        host=args.host,
+        header=args.header,
+        cookies=args.cookie,
+        headers=args.headers,
+        referer=args.referer,
+        user_agent=args.user_agent,
+        level=args.level,
+        verbosity=args.verbose,
+        techniques=args.tech,
+        batch=args.batch,
+        flush_session=args.flush_session,
+    )
+    if resp.is_injected:
+        injection_type = resp.injection_type
         injected_param = resp.injected_param
         session_filepath = resp.session_filepath
         recommended_payload = resp.recommended_payload
         recommended_payload_type = resp.recommended_payload_type
+        headers = resp.headers
         target = xpath.XPATHInjector(
             url=args.url,
             data=args.data,
-            cookies=args.cookie,
+            headers=headers,
             payload=recommended_payload,
             regex=recommended_payload_type,
             injected_param=injected_param,
+            injection_type=injection_type,
             session_filepath=session_filepath,
         )
         if args.search:
@@ -194,7 +305,9 @@ def main():
             if args.db and args.tbl and args.columns:
                 target.extract_columns(database=args.db, table=args.tbl)
             if args.db and args.tbl and args.col:
-                target.extract_records(database=args.db, table=args.tbl, columns=args.col)
+                target.extract_records(
+                    database=args.db, table=args.tbl, columns=args.col
+                )
 
 
 if __name__ == "__main__":

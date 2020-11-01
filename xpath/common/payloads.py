@@ -26,7 +26,7 @@ THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 
 PREFIX = [" ", "' ", '" ', ") ", "') ", '") ']
-SUFFIX = ["", "AND'", "AND 1", "AND '1", "AND('", "%23", "--", "--%20-", "--+", "--+-"]
+SUFFIX = ["", "-- wXyW", "AND'", "AND 1", "AND '1", "AND('", "%23", "--", "--%20-", "--+", "--+-"]
 REGEX_TESTS = r"(?isx)(?P<xpath_data>r0oth3x49)"
 REGEX_XPATH = r"(?isx)(XPATH.*error\s*:\s*\'~(?:\()?(?P<xpath_data>.*?))\'"
 REGEX_ERROR_BASED = (

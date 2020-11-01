@@ -28,7 +28,7 @@ from xpath.injector.request import request
 from xpath.logger.colored_logger import logger
 from xpath.common.payloads import PAYLOADS_DBS_COUNT, PAYLOADS_DBS_NAMES
 from xpath.common.lib import sqlite3, compat_urlencode, DBS_STATEMENT, collections
-from xpath.common.utils import to_hex, prepare_injection_payload
+from xpath.common.utils import to_hex, prepare_payload_request
 
 
 class DatabasesExtractor(object):
@@ -42,19 +42,21 @@ class DatabasesExtractor(object):
         data="",
         payload="",
         regex="",
-        cookies="",
+        headers="",
         injected_param="",
         session_filepath="",
         payloads="",
+        injection_type="",
     ):
         self.url = url
         self.data = data
         self.payload = payload
         self.payloads = payloads
-        self.cookies = cookies
+        self.headers = headers
         self.regex = regex
         self.session_filepath = session_filepath
         self._injected_param = injected_param
+        self._injection_type = injection_type
 
     def _generate_dbs_payloads(self, dbs_count, payload, index=0):
         payload = "{index},".join(payload.rsplit("0,"))
@@ -121,9 +123,10 @@ class DatabasesExtractor(object):
                     error = retval.error
                     count = retval.payloads_count
                     if status_code not in [200, 0]:
-                        logger.warning("HTTP error codes detected during run:")
                         message = f"{error} - {count} times"
-                        logger.http_error(message)
+                        logger.warning(
+                            f"HTTP error codes detected during run:\n{message}"
+                        )
                     else:
                         message = f"tested with '{count}' queries, unable to find working SQL query."
                         logger.critical(message)
@@ -135,9 +138,8 @@ class DatabasesExtractor(object):
             error = retval.error
             count = retval.payloads_count
             if status_code not in [200, 0]:
-                logger.warning("HTTP error codes detected during run:")
                 message = f"{error} - {count} times"
-                logger.http_error(message)
+                logger.warning(f"HTTP error codes detected during run:\n{message}")
             else:
                 message = (
                     f"tested with '{count}' queries, unable to find working SQL query."
@@ -155,23 +157,15 @@ class DatabasesExtractor(object):
         Response = collections.namedtuple("Response", ["is_fetched", "result"])
 
         while index < len(payloads):
-            p = payloads[index]
-            url = self.url
-            data = self.data
-            regex = self.regex
-            cookies = self.cookies
-            if self.url and not self.data and not self.cookies:
-                # GET
-                url = self._perpare_querystring(self.url, p)
-            if self.url and self.data and not self.cookies:
-                # POST
-                data = self._perpare_querystring(self.data, p)
-            if self.url and not self.data and self.cookies:
-                # COOKIES
-                cookies = self._perpare_querystring(self.cookies, p)
+            payload = payloads[index]
+            payload_request = prepare_payload_request(self, payload)
+            url = payload_request.url
+            data = payload_request.data
+            regex = payload_request.regex
+            headers = payload_request.headers
             try:
                 response = request.inject_payload(
-                    url=url, regex=regex, data=data, cookies=cookies
+                    url=url, regex=regex, data=data, headers=headers
                 )
             except KeyboardInterrupt:
                 logger.warning(

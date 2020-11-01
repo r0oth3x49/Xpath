@@ -98,15 +98,36 @@ level_map = {
         "normal": False,
         "background": "",
     },
-    "TRAFFIC_IN": {
+    "PAYLOAD":{
+        "color": "cyan",
+        "faint": False,
+        "bold": False,
+        "normal": True,
+        "background": "",
+    },
+    "START": {
         "color": "white",
         "faint": True,
         "bold": False,
         "normal": False,
         "background": "",
     },
-    "TRAFFIC_OUT": {
+    "END": {
         "color": "white",
+        "faint": True,
+        "bold": False,
+        "normal": False,
+        "background": "",
+    },
+    "TRAFFIC_IN": {
+        "color": "black",
+        "faint": True,
+        "bold": False,
+        "normal": False,
+        "background": "magenta",
+    },
+    "TRAFFIC_OUT": {
+        "color": "magenta",
         "faint": True,
         "bold": False,
         "normal": False,
