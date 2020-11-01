@@ -43,38 +43,57 @@ usage: python xpath.py -u URL [OPTIONS]
 A cross-platform python based automated tool to detect and exploit error-based sql injections.
 
 General:
-  -h, --help         Shows the help.
-  -v, --version      Shows the version.
+  -h, --help          Shows the help.
+  --version           Shows the version.
+  -v VERBOSE          Verbosity level: 1-5 (default 1).
+  --batch             Never ask for user input, use the default behavior
+  --flush-session     Flush session files for current target
 
 Target:
   At least one of these options has to be provided to define the
   target(s)
 
-  -u URL, --url URL  Target URL (e.g. 'http://www.site.com/vuln.php?id=1).
+  -u URL, --url URL   Target URL (e.g. 'http://www.site.com/vuln.php?id=1).
 
 Request:
   These options can be used to specify how to connect to the target URL
 
-  --data DATA        Data string to be sent through POST (e.g. "id=1")
-  --cookie COOKIE    HTTP Cookie header value (e.g. "PHPSESSID=a8d127e..")
+  -A , --user-agent   HTTP User-Agent header value
+  -H , --header       Extra header (e.g. "X-Forwarded-For: 127.0.0.1")
+  --host              HTTP Host header value
+  --data              Data string to be sent through POST (e.g. "id=1")
+  --cookie            HTTP Cookie header value (e.g. "PHPSESSID=a8d127e..")
+  --referer           HTTP Referer header value
+  --headers           Extra headers (e.g. "Accept-Language: fr\nETag: 123")
+
+Detection:
+  These options can be used to customize the detection phase
+
+  --level             Level of tests to perform (1-3, default 1)
+
+Techniques:
+  These options can be used to tweak testing of specific SQL injection
+  techniques
+
+  --technique TECH    SQL injection techniques to use (default "XEFDBGJ")
 
 Enumeration:
   These options can be used to enumerate the back-end database
   managment system information, structure and data contained in the
   tables.
 
-  -b, --banner       Retrieve DBMS banner
-  --current-user     Retrieve DBMS current user
-  --current-db       Retrieve DBMS current database
-  --hostname         Retrieve DBMS server hostname
-  --dbs              Enumerate DBMS databases
-  --tables           Enumerate DBMS database tables
-  --columns          Enumerate DBMS database table columns
-  --dump             Dump DBMS database table entries
-  --search           Search column(s), table(s) and/or database name(s)
-  -D DB              DBMS database to enumerate
-  -T TBL             DBMS database tables(s) to enumerate
-  -C COL             DBMS database table column(s) to enumerate
+  -b, --banner        Retrieve DBMS banner
+  --current-user      Retrieve DBMS current user
+  --current-db        Retrieve DBMS current database
+  --hostname          Retrieve DBMS server hostname
+  --dbs               Enumerate DBMS databases
+  --tables            Enumerate DBMS database tables
+  --columns           Enumerate DBMS database table columns
+  --dump              Dump DBMS database table entries
+  --search            Search column(s), table(s) and/or database name(s)
+  -D DB               DBMS database to enumerate
+  -T TBL              DBMS database tables(s) to enumerate
+  -C COL              DBMS database table column(s) to enumerate
 
 Example:
   python xpath.py http://www.site.com/vuln.php?id=1 --dbs
