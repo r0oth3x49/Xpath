@@ -29,6 +29,11 @@ from xpath.logger.colored_logger import logger
 
 
 def main():
+    """
+    Main function.
+
+    Args:
+    """
     examples = "python %(prog)s http://www.site.com/vuln.php?id=1 --dbs\n\n"
     version = "Xpath {version}".format(version=f"{xpath.__version__}")
     description = "A cross-platform python based automated tool to detect and exploit error-based sql injections."

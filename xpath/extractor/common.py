@@ -50,6 +50,21 @@ class DefaultsExtractor(object):
         payloads="",
         injection_type="",
     ):
+        """
+        Initialize http request.
+
+        Args:
+            self: (todo): write your description
+            url: (str): write your description
+            data: (todo): write your description
+            payload: (todo): write your description
+            regex: (bool): write your description
+            headers: (list): write your description
+            injected_param: (str): write your description
+            session_filepath: (str): write your description
+            payloads: (todo): write your description
+            injection_type: (todo): write your description
+        """
         self.url = url
         self.data = data
         self.payload = payload
@@ -61,6 +76,15 @@ class DefaultsExtractor(object):
         self._injection_type = injection_type
 
     def _perpare_querystring(self, text, payload, unknown_error_counter=0):
+        """
+        Parse a querystring.
+
+        Args:
+            self: (todo): write your description
+            text: (str): write your description
+            payload: (dict): write your description
+            unknown_error_counter: (todo): write your description
+        """
         # payload = compat_urlencode(payload)
         payload = prepare_injection_payload(
             text=text,
@@ -71,6 +95,13 @@ class DefaultsExtractor(object):
         return payload
 
     def _generat_payload(self, payloads_list):
+        """
+        Generate payload.
+
+        Args:
+            self: (todo): write your description
+            payloads_list: (list): write your description
+        """
         payloads = []
         for p in payloads_list:
             payload = self.payload.format(banner=p)
@@ -79,6 +110,12 @@ class DefaultsExtractor(object):
 
     @property
     def banner(self):
+        """
+        Banana payload
+
+        Args:
+            self: (todo): write your description
+        """
         payloads = self._generat_payload(payloads_list=PAYLOADS_BANNER)
         logger.info("fetching banner")
         retval = self._extact(payloads=payloads)
@@ -101,6 +138,12 @@ class DefaultsExtractor(object):
 
     @property
     def user(self):
+        """
+        Returns a list
+
+        Args:
+            self: (todo): write your description
+        """
         payloads = self._generat_payload(payloads_list=PAYLOADS_CURRENT_USER)
         logger.info("fetching current user")
         retval = self._extact(payloads=payloads)
@@ -123,6 +166,12 @@ class DefaultsExtractor(object):
 
     @property
     def database(self):
+        """
+        Returns a dictionary containing the database.
+
+        Args:
+            self: (todo): write your description
+        """
         payloads = self._generat_payload(payloads_list=PAYLOADS_CURRENT_DATABASE)
         logger.info("fetching current database")
         retval = self._extact(payloads=payloads)
@@ -145,6 +194,12 @@ class DefaultsExtractor(object):
 
     @property
     def hostname(self):
+        """
+        Return the hostname.
+
+        Args:
+            self: (todo): write your description
+        """
         payloads = self._generat_payload(payloads_list=PAYLOADS_HOSTNAME)
         logger.info("fetching hostname")
         retval = self._extact(payloads=payloads)
@@ -166,6 +221,15 @@ class DefaultsExtractor(object):
         return retval
 
     def _fallback_check(self, payload, count, unknown_error_counter=0):
+        """
+        Check if a fallback
+
+        Args:
+            self: (todo): write your description
+            payload: (todo): write your description
+            count: (int): write your description
+            unknown_error_counter: (todo): write your description
+        """
         PayloadResponse = collections.namedtuple(
             "PayloadResponse",
             [
@@ -221,6 +285,13 @@ class DefaultsExtractor(object):
         )
 
     def _extact(self, payloads):
+        """
+        Extract the json response.
+
+        Args:
+            self: (todo): write your description
+            payloads: (todo): write your description
+        """
 
         PayloadResponse = collections.namedtuple(
             "PayloadResponse",

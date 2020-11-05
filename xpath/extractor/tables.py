@@ -54,6 +54,21 @@ class TablesExtractor(object):
         payloads="",
         injection_type="",
     ):
+        """
+        Initialize http request.
+
+        Args:
+            self: (todo): write your description
+            url: (str): write your description
+            data: (todo): write your description
+            payload: (todo): write your description
+            regex: (bool): write your description
+            headers: (list): write your description
+            injected_param: (str): write your description
+            session_filepath: (str): write your description
+            payloads: (todo): write your description
+            injection_type: (todo): write your description
+        """
         self.url = url
         self.data = data
         self.payload = payload
@@ -65,11 +80,27 @@ class TablesExtractor(object):
         self._injection_type = injection_type
 
     def _generate_tbl_payloads(self, tbl_count, payload, index=0):
+        """
+        Generate payload for payload
+
+        Args:
+            self: (todo): write your description
+            tbl_count: (todo): write your description
+            payload: (str): write your description
+            index: (int): write your description
+        """
         payload = "{index},".join(payload.rsplit("0,"))
         payloads = [payload.format(index=i) for i in range(index, tbl_count)]
         return payloads
 
     def _tbl_count(self, db=""):
+        """
+        Return the number of the tbl database.
+
+        Args:
+            self: (todo): write your description
+            db: (todo): write your description
+        """
         _temp = []
         if db:
             encode_string = to_hex(db)
@@ -80,6 +111,13 @@ class TablesExtractor(object):
         return self._extact(payloads=payloads)
 
     def tbl_names(self, db=""):
+        """
+        Get a list of all tables in the database
+
+        Args:
+            self: (todo): write your description
+            db: (todo): write your description
+        """
         index = 0
         _temp = []
         is_resumed = False
@@ -173,6 +211,15 @@ class TablesExtractor(object):
         return TablesResponse(fetched=False, count=0, database="", tables=_temp)
 
     def _pprint_tables(self, cursor_or_list, field_names, database=""):
+        """
+        Prints a list of the database.
+
+        Args:
+            self: (todo): write your description
+            cursor_or_list: (list): write your description
+            field_names: (str): write your description
+            database: (str): write your description
+        """
         obj = prettifier(cursor_or_list, field_names)
         data = obj.data
         entries = obj.entries
@@ -181,6 +228,14 @@ class TablesExtractor(object):
         logger.success(f"{data}")
 
     def _extract_tbls(self, payloads, database=""):
+        """
+        Extract tbls from the database.
+
+        Args:
+            self: (todo): write your description
+            payloads: (todo): write your description
+            database: (str): write your description
+        """
         _temp, index = [], 0
         Response = collections.namedtuple("Response", ["is_fetched", "result"])
 

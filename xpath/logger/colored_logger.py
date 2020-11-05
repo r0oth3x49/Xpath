@@ -46,6 +46,13 @@ class ColoredFormatter(logging.Formatter):
     """
 
     def format(self, record):
+        """
+        Format log messages.
+
+        Args:
+            self: (todo): write your description
+            record: (todo): write your description
+        """
         message = record.getMessage()
         spaces = ""
         leading_spaces_count = len(message) - len(message.lstrip())
@@ -116,6 +123,13 @@ class ColoredLogger:
     """Custom colored logger"""
 
     def __init__(self, logger):
+        """
+        Initialize the logger.
+
+        Args:
+            self: (todo): write your description
+            logger: (todo): write your description
+        """
 
         # set success level
         logging.TRAFFIC_IN = 1
@@ -181,6 +195,14 @@ class ColoredLogger:
         self.stream_handler = stream_handler
 
     def set_level(self, level, filepath):
+        """
+        Set the logging level.
+
+        Args:
+            self: (todo): write your description
+            level: (str): write your description
+            filepath: (str): write your description
+        """
         self.stream_handler.setLevel(level)
         handler = logging.FileHandler(filepath)
         ff = logging.Formatter("%(message)s")

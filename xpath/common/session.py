@@ -40,24 +40,56 @@ class SessionFactory:
     """Session generation class for XPath"""
 
     def _dict_factory(self, cursor, row):
+        """
+        Generate a dictionary of the keys
+
+        Args:
+            self: (todo): write your description
+            cursor: (todo): write your description
+            row: (str): write your description
+        """
         _temp = {}
         for idx, col in enumerate(cursor.description):
             _temp[col[0]] = row[idx]
         return _temp
 
     def fetchall(self, session_filepath="", query=""):
+        """
+        Fetch all rows from the database.
+
+        Args:
+            self: (todo): write your description
+            session_filepath: (str): write your description
+            query: (str): write your description
+        """
         conn = sqlite3.connect(session_filepath)
         conn.row_factory = self._dict_factory
         cursor = conn.execute(query)
         return cursor.fetchall()
 
     def fetch_cursor(self, session_filepath="", query=""):
+        """
+        Return a cursor from the database.
+
+        Args:
+            self: (todo): write your description
+            session_filepath: (str): write your description
+            query: (str): write your description
+        """
         conn = sqlite3.connect(session_filepath)
         cursor = conn.cursor()
         cursor.execute(query)
         return cursor
 
     def fetch_count(self, session_filepath, table_name=""):
+        """
+        Return the number of rows in the database.
+
+        Args:
+            self: (todo): write your description
+            session_filepath: (str): write your description
+            table_name: (str): write your description
+        """
         QUERY = "SELECT COUNT(*) AS `count` FROM `{}`;".format(table_name)
         try:
             response = self.fetchall(session_filepath=session_filepath, query=QUERY)
@@ -68,18 +100,42 @@ class SessionFactory:
         return response
 
     def generate_table(self, session_filepath="", query=""):
+        """
+        Generate a sqlite database file.
+
+        Args:
+            self: (todo): write your description
+            session_filepath: (str): write your description
+            query: (str): write your description
+        """
         conn = sqlite3.connect(session_filepath)
         conn.executescript(query)
         conn.commit()
         conn.close()
 
     def execute_query(self, session_filepath="", query=""):
+        """
+        Execute a sql query.
+
+        Args:
+            self: (todo): write your description
+            session_filepath: (str): write your description
+            query: (str): write your description
+        """
         conn = sqlite3.connect(session_filepath)
         conn.executescript(query)
         conn.commit()
         conn.close()
 
     def generate_filepath(self, target, flush_session=False):
+        """
+        Generate a filepath for a target.
+
+        Args:
+            self: (todo): write your description
+            target: (str): write your description
+            flush_session: (str): write your description
+        """
         filepath = ""
         user = expanduser("~")
         target = urlparse.urlparse(target).netloc
@@ -97,6 +153,16 @@ class SessionFactory:
         return filepath
 
     def dump_to_csv(self, cursor, filepath="", database="", table=""):
+        """
+        Dump csv filepath
+
+        Args:
+            self: (todo): write your description
+            cursor: (todo): write your description
+            filepath: (str): write your description
+            database: (str): write your description
+            table: (str): write your description
+        """
         ok = False
         filepath = os.path.dirname(filepath)
         dump = os.path.join(filepath, "dump")
@@ -115,6 +181,13 @@ class SessionFactory:
         return ok
 
     def generate(self, session_filepath=""):
+        """
+        Generate sqlite3 connection.
+
+        Args:
+            self: (todo): write your description
+            session_filepath: (str): write your description
+        """
         if session_filepath and not os.path.isfile(session_filepath):
             conn = sqlite3.connect(session_filepath)
             conn.executescript(SESSION_STATEMENETS)
@@ -132,6 +205,15 @@ class SessionFactory:
         return session_filepath
 
     def dump(self, session_filepath="", query="", values=None):
+        """
+        Dump sqlite3 database.
+
+        Args:
+            self: (todo): write your description
+            session_filepath: (str): write your description
+            query: (str): write your description
+            values: (str): write your description
+        """
         try:
             conn = sqlite3.connect(session_filepath)
             cursor = conn.cursor()
@@ -153,6 +235,18 @@ class SessionFactory:
         auto_create=False,
         exec_query=False,
     ):
+        """
+        Drop a table from a database.
+
+        Args:
+            self: (todo): write your description
+            session_filepath: (str): write your description
+            table_name: (str): write your description
+            columns: (list): write your description
+            query: (str): write your description
+            auto_create: (bool): write your description
+            exec_query: (str): write your description
+        """
         DROP_QUERY = f"DROP TABLE IF EXISTS `{table_name}`;"
         is_successful = True
         try:
@@ -178,6 +272,17 @@ class SessionFactory:
         where_condition="",
         cursor=True,
     ):
+        """
+        Fetch all rows from a table_filepath.
+
+        Args:
+            self: (todo): write your description
+            session_filepath: (str): write your description
+            table_name: (str): write your description
+            group_by_columns: (str): write your description
+            where_condition: (bool): write your description
+            cursor: (todo): write your description
+        """
         QUERY = f"SELECT * FROM `{table_name}`"
         if where_condition:
             QUERY += f" WHERE {where_condition}"
@@ -198,6 +303,17 @@ class SessionFactory:
         records=None,
         clean_insert=False,
     ):
+        """
+        Saves the table to file.
+
+        Args:
+            self: (todo): write your description
+            session_filepath: (str): write your description
+            table_name: (str): write your description
+            columns: (list): write your description
+            records: (todo): write your description
+            clean_insert: (int): write your description
+        """
 
         steps = len(columns)
         total_records = len(records)

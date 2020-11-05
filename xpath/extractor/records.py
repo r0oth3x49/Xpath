@@ -48,6 +48,21 @@ class RecordsExtractor(object):
         payloads="",
         injection_type="",
     ):
+        """
+        Initialize http request.
+
+        Args:
+            self: (todo): write your description
+            url: (str): write your description
+            data: (todo): write your description
+            payload: (todo): write your description
+            regex: (bool): write your description
+            headers: (list): write your description
+            injected_param: (str): write your description
+            session_filepath: (str): write your description
+            payloads: (todo): write your description
+            injection_type: (todo): write your description
+        """
         self.url = url
         self.data = data
         self.payload = payload
@@ -59,9 +74,26 @@ class RecordsExtractor(object):
         self._injection_type = injection_type
 
     def _clean_up_cols(self, columns):
+        """
+        Clean up the column names.
+
+        Args:
+            self: (todo): write your description
+            columns: (list): write your description
+        """
         return re.sub(" +", "", columns).split(",")
 
     def _generate_data_payloads(self, data_count, payload, cols=[], index=0):
+        """
+        Generate payload payload
+
+        Args:
+            self: (todo): write your description
+            data_count: (todo): write your description
+            payload: (str): write your description
+            cols: (str): write your description
+            index: (int): write your description
+        """
         payload = "{index},".join(payload.rsplit("0,"))
         payloads = {}
         for i in range(index, data_count):
@@ -73,6 +105,14 @@ class RecordsExtractor(object):
         return payloads
 
     def _data_count(self, db="", tbl=""):
+        """
+        Return the number of bytes in the database.
+
+        Args:
+            self: (todo): write your description
+            db: (todo): write your description
+            tbl: (todo): write your description
+        """
         _temp = []
         if db and tbl:
             for i in PAYLOADS_RECS_COUNT:
@@ -82,6 +122,15 @@ class RecordsExtractor(object):
         return self._extact(payloads=payloads)
 
     def __generate_records_tables(self, tbl, cols, count):
+        """
+        Generate a list.
+
+        Args:
+            self: (todo): write your description
+            tbl: (todo): write your description
+            cols: (todo): write your description
+            count: (int): write your description
+        """
         table_name = f"{count}_{tbl}_data"
         tmp_table_name = f"{count}_{tbl}_tmp"
         query = TBL_RECS.format(name=f"{tmp_table_name}", tbl_name=f"{tmp_table_name}")
@@ -96,6 +145,15 @@ class RecordsExtractor(object):
         return ok
 
     def data_dump(self, db="", tbl="", cols=""):
+        """
+        Dump table data in a database
+
+        Args:
+            self: (todo): write your description
+            db: (todo): write your description
+            tbl: (str): write your description
+            cols: (int): write your description
+        """
         index = 0
         _temp = []
         is_resumed = False
@@ -243,6 +301,17 @@ class RecordsExtractor(object):
     def _pprint_records(
         self, field_names, database="", table_name="", table="", columns=None
     ):
+        """
+        Dump a list of dictionaries.
+
+        Args:
+            self: (todo): write your description
+            field_names: (str): write your description
+            database: (str): write your description
+            table_name: (str): write your description
+            table: (str): write your description
+            columns: (list): write your description
+        """
         group_by_columns = ""
         if columns:
             group_by_columns = ",".join([f"`{i.strip()}`" for i in columns])
@@ -279,6 +348,17 @@ class RecordsExtractor(object):
         count=None,
         clean_insert=False,
     ):
+        """
+        Save a list of the records.
+
+        Args:
+            self: (todo): write your description
+            table: (todo): write your description
+            column_names: (str): write your description
+            records: (todo): write your description
+            count: (int): write your description
+            clean_insert: (int): write your description
+        """
         table_name = f"{count}_{table}_data"
         if table_name and column_names and records:
             session.save(
@@ -293,6 +373,17 @@ class RecordsExtractor(object):
     def _extract_data(
         self, payloads, table=None, columns=None, fetched_records=None, count=None
     ):
+        """
+        Extracts the table from table.
+
+        Args:
+            self: (todo): write your description
+            payloads: (dict): write your description
+            table: (str): write your description
+            columns: (list): write your description
+            fetched_records: (todo): write your description
+            count: (int): write your description
+        """
         _temp, is_interrupted = [], False
         Response = collections.namedtuple("Response", ["is_fetched", "result"])
 

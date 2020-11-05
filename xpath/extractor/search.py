@@ -62,6 +62,21 @@ class Search:
         payloads="",
         injection_type="",
     ):
+        """
+        Initialize http request.
+
+        Args:
+            self: (todo): write your description
+            url: (str): write your description
+            data: (todo): write your description
+            payload: (todo): write your description
+            regex: (bool): write your description
+            headers: (list): write your description
+            injected_param: (str): write your description
+            session_filepath: (str): write your description
+            payloads: (todo): write your description
+            injection_type: (todo): write your description
+        """
         self.url = url
         self.data = data
         self.payload = payload
@@ -73,11 +88,30 @@ class Search:
         self._injection_type = injection_type
 
     def _generate_search_dump_payloads(self, count, payload, index=0):
+        """
+        Generate payload for the payload
+
+        Args:
+            self: (todo): write your description
+            count: (int): write your description
+            payload: (str): write your description
+            index: (int): write your description
+        """
         payload = "{offset},".join(payload.rsplit("0,"))
         payloads = [payload.format(offset=i) for i in range(index, count)]
         return payloads
 
     def _search_payloads(self, db="", tbl="", col="", search_type=""):
+        """
+        Search for database * db *
+
+        Args:
+            self: (todo): write your description
+            db: (todo): write your description
+            tbl: (str): write your description
+            col: (todo): write your description
+            search_type: (str): write your description
+        """
         Payloads = collections.namedtuple(
             "Payloads", ["for_count", "for_dump", "table_to_generate"]
         )
@@ -149,6 +183,14 @@ class Search:
         )
 
     def _format_results(self, results, steps):
+        """
+        Format the results.
+
+        Args:
+            self: (todo): write your description
+            results: (dict): write your description
+            steps: (float): write your description
+        """
         chunks = [results[x : x + steps] for x in range(0, len(results), steps)]
         _temp = []
         Results = collections.namedtuple("Results", ["database", "table", "column"])
@@ -166,6 +208,16 @@ class Search:
         return _temp
 
     def search(self, db="", tbl="", col="", search_type=""):
+        """
+        Searches the database.
+
+        Args:
+            self: (todo): write your description
+            db: (str): write your description
+            tbl: (str): write your description
+            col: (str): write your description
+            search_type: (str): write your description
+        """
         index = 0
         _temp = []
         is_resumed = False
@@ -306,6 +358,14 @@ class Search:
         return SearchResponse(fetched=False, count=0, results=[])
 
     def _pprint_search_results(self, search_type, _temp):
+        """
+        Search for a table search_search in the table.
+
+        Args:
+            self: (todo): write your description
+            search_type: (str): write your description
+            _temp: (todo): write your description
+        """
         if search_type == "column":
             self._pprint_column_search(_temp)
         if search_type == "table":
@@ -314,6 +374,14 @@ class Search:
             self._pprint_database_search(_temp)
 
     def _payload_for(self, payload, value_type):
+        """
+        Convert payload to payload.
+
+        Args:
+            self: (todo): write your description
+            payload: (str): write your description
+            value_type: (str): write your description
+        """
         return re.sub(
             r"(?is)(?:\(schema_name\)|\(table_name\)|\(column_name\))",
             f"({value_type})",
@@ -321,6 +389,15 @@ class Search:
         )
 
     def _search_db(self, payload, index, get_db=False):
+        """
+        Executes a database.
+
+        Args:
+            self: (todo): write your description
+            payload: (todo): write your description
+            index: (int): write your description
+            get_db: (int): write your description
+        """
         Response = collections.namedtuple("Response", ["database"])
         if get_db:
             payload = self._payload_for(payload=payload, value_type="TABLE_SCHEMA")
@@ -356,6 +433,16 @@ class Search:
         return Response(database=database)
 
     def _search_table(self, payload, index, database="", get_tbl=False):
+        """
+        Search for a table search query against the database.
+
+        Args:
+            self: (todo): write your description
+            payload: (todo): write your description
+            index: (int): write your description
+            database: (todo): write your description
+            get_tbl: (todo): write your description
+        """
         Response = collections.namedtuple("Response", ["database", "table"])
         if not database:
             response = self._search_db(payload, index, get_db=True)
@@ -393,6 +480,16 @@ class Search:
         return Response(database=database, table=table)
 
     def _search_column(self, payload, index, database="", table=""):
+        """
+        Executes a table search.
+
+        Args:
+            self: (todo): write your description
+            payload: (todo): write your description
+            index: (int): write your description
+            database: (todo): write your description
+            table: (todo): write your description
+        """
         Response = collections.namedtuple("Response", ["database", "table", "column"])
         if not database and not table:
             response = self._search_table(payload, index, get_tbl=True)
@@ -438,6 +535,18 @@ class Search:
         return Response(database=database, table=table, column=column)
 
     def perform_injection(self, url, data, headers, regex, index, search_type=""):
+        """
+        Perform an arbitrary http request.
+
+        Args:
+            self: (todo): write your description
+            url: (str): write your description
+            data: (array): write your description
+            headers: (dict): write your description
+            regex: (str): write your description
+            index: (int): write your description
+            search_type: (str): write your description
+        """
         result = ""
         try:
             response = request.inject_payload(
@@ -456,11 +565,25 @@ class Search:
         return result
 
     def _pprint_database_search(self, entries):
+        """
+        Searches for a database search.
+
+        Args:
+            self: (todo): write your description
+            entries: (list): write your description
+        """
         logger.success(f"available databases [{len(entries)}]:")
         for entry in entries:
             logger.success(f"[*] : {entry.database}")
 
     def _pprint_table_search(self, entries):
+        """
+        Searches for database entries.
+
+        Args:
+            self: (todo): write your description
+            entries: (list): write your description
+        """
         _temp = {}
         for entry in entries:
             db = entry.database
@@ -477,6 +600,13 @@ class Search:
             logger.success(f"{data}\n")
 
     def _pprint_column_search(self, entries):
+        """
+        Search for columns in database table.
+
+        Args:
+            self: (todo): write your description
+            entries: (list): write your description
+        """
         _temp = {}
         for entry in entries:
             db = entry.database
@@ -500,6 +630,18 @@ class Search:
     def _extract_search_results(
         self, payloads, database="", table="", search_type="", records=None, position=0
     ):
+        """
+        Returns a list of search * database.
+
+        Args:
+            self: (todo): write your description
+            payloads: (todo): write your description
+            database: (todo): write your description
+            table: (str): write your description
+            search_type: (str): write your description
+            records: (todo): write your description
+            position: (int): write your description
+        """
         _temp, index = [], 0
         pos = position + 1
         resumed = bool(records)

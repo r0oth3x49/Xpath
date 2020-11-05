@@ -48,6 +48,21 @@ class DatabasesExtractor(object):
         payloads="",
         injection_type="",
     ):
+        """
+        Initialize http request.
+
+        Args:
+            self: (todo): write your description
+            url: (str): write your description
+            data: (todo): write your description
+            payload: (todo): write your description
+            regex: (bool): write your description
+            headers: (list): write your description
+            injected_param: (str): write your description
+            session_filepath: (str): write your description
+            payloads: (todo): write your description
+            injection_type: (todo): write your description
+        """
         self.url = url
         self.data = data
         self.payload = payload
@@ -59,17 +74,38 @@ class DatabasesExtractor(object):
         self._injection_type = injection_type
 
     def _generate_dbs_payloads(self, dbs_count, payload, index=0):
+        """
+        Generate payload.
+
+        Args:
+            self: (todo): write your description
+            dbs_count: (todo): write your description
+            payload: (str): write your description
+            index: (int): write your description
+        """
         payload = "{index},".join(payload.rsplit("0,"))
         payloads = [payload.format(index=i) for i in range(index, dbs_count)]
         return payloads
 
     @property
     def _dbs_count(self):
+        """
+        The number of dbs.
+
+        Args:
+            self: (todo): write your description
+        """
         payloads = self._generat_payload(payloads_list=PAYLOADS_DBS_COUNT)
         return self._extact(payloads=payloads)
 
     @property
     def dbs_names(self):
+        """
+        List all dbs names
+
+        Args:
+            self: (todo): write your description
+        """
         is_resumed = False
         index = 0
         fetched_data = {}
@@ -148,11 +184,26 @@ class DatabasesExtractor(object):
         return DatabasesResponse(fetched=False, count=0, databases=_temp)
 
     def _available_dbs(self, count, databases):
+        """
+        Available dbs is available
+
+        Args:
+            self: (todo): write your description
+            count: (int): write your description
+            databases: (todo): write your description
+        """
         logger.success(f"available databases [{count}]:")
         for db in databases:
             logger.success(f"[*] : {db}")
 
     def _extract_dbs(self, payloads):
+        """
+        Extract dbs from the database.
+
+        Args:
+            self: (todo): write your description
+            payloads: (todo): write your description
+        """
         _temp, index = [], 0
         Response = collections.namedtuple("Response", ["is_fetched", "result"])
 

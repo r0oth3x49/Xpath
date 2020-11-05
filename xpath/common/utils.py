@@ -44,10 +44,24 @@ INVALID_URL = False
 
 
 def to_hex(value):
+    """
+    Convert a hexadecimal value.
+
+    Args:
+        value: (todo): write your description
+    """
     return f"0x{binascii.hexlify(value.encode()).decode()}"
 
 
 def prettifier(cursor_or_list, field_names="", header=False):
+    """
+    Prettifier.
+
+    Args:
+        cursor_or_list: (list): write your description
+        field_names: (str): write your description
+        header: (str): write your description
+    """
     fields = []
     Prettified = collections.namedtuple("Prettified", ["data", "entries"])
     if field_names:
@@ -66,6 +80,12 @@ def prettifier(cursor_or_list, field_names="", header=False):
 
 
 def parse_http_error(error):
+    """
+    Parse an http response.
+
+    Args:
+        error: (todo): write your description
+    """
     Response = collections.namedtuple(
         "Response", ["text", "headers", "status_code", "reason", "error"]
     )
@@ -96,6 +116,12 @@ def parse_http_error(error):
 
 
 def parse_http_response(resp):
+    """
+    Parse a json response.
+
+    Args:
+        resp: (todo): write your description
+    """
     Response = collections.namedtuple(
         "Response", ["ok", "text", "headers", "status_code", "reason", "error"]
     )
@@ -129,6 +155,13 @@ def parse_http_response(resp):
 
 
 def unescape_html(resp, show=False):
+    """
+    Escape html.
+
+    Args:
+        resp: (todo): write your description
+        show: (bool): write your description
+    """
     response = ""
     if hasattr(resp, "read"):
         response = resp.read()
@@ -149,6 +182,17 @@ def unescape_html(resp, show=False):
 def prepare_custom_headers(
     host="", header="", cookies="", headers="", referer="", user_agent=""
 ):
+    """
+    Prepares the http headers.
+
+    Args:
+        host: (str): write your description
+        header: (str): write your description
+        cookies: (todo): write your description
+        headers: (str): write your description
+        referer: (todo): write your description
+        user_agent: (str): write your description
+    """
     custom_headers = ""
     if host:
         custom_headers += f"Host: {host}\n"
@@ -169,6 +213,12 @@ def prepare_custom_headers(
 
 
 def value_cleanup(value):
+    """
+    Strips and cleanups.
+
+    Args:
+        value: (todo): write your description
+    """
     return re.sub(r"\s+", " ", re.sub(r"\(+", "", value))
 
 
@@ -208,6 +258,12 @@ def search_regex(
 
 
 def cloudflare_decode(encoded_string):
+    """
+    Decode the decoded string.
+
+    Args:
+        encoded_string: (str): write your description
+    """
     decoded = ""
     r = int(encoded_string[:2], 16)
     decoded = "".join(
@@ -222,6 +278,12 @@ def cloudflare_decode(encoded_string):
 
 
 def detect_cloudflare_protection(response):
+    """
+    Check if cloudflare is enabled
+
+    Args:
+        response: (todo): write your description
+    """
     # This is a check some websites tends to protect data using cloudflare
     # such as email address so that automated bots cannot detect
     is_protected = False
@@ -240,6 +302,12 @@ def detect_cloudflare_protection(response):
 
 
 def extract_encoded_data(response):
+    """
+    Extract the response and return the response.
+
+    Args:
+        response: (todo): write your description
+    """
     return search_regex(
         pattern=r'(?is)(?:data-cfemail="(?P<xpath_data>(.+?))")',
         string=response,
@@ -258,6 +326,15 @@ def search_dbms_errors(html):
 
 
 def prepare_payloads(prefixes, suffixes, payloads, techniques=""):
+    """
+    Prepare payloads_to_payloads.
+
+    Args:
+        prefixes: (str): write your description
+        suffixes: (str): write your description
+        payloads: (todo): write your description
+        techniques: (str): write your description
+    """
     Payload = collections.namedtuple("Payload", ["prefix", "suffix", "string"])
     urle = compat_urlencode
     techniques_dict = {
@@ -290,6 +367,15 @@ def prepare_payloads(prefixes, suffixes, payloads, techniques=""):
 
 
 def prepare_request(url, data, custom_headers, use_requests=False):
+    """
+    Prepare a request.
+
+    Args:
+        url: (str): write your description
+        data: (dict): write your description
+        custom_headers: (dict): write your description
+        use_requests: (bool): write your description
+    """
     Response = collections.namedtuple("Response", ["raw", "headers"])
     request_type = "GET"
     if url and data:
@@ -326,6 +412,12 @@ def prepare_request(url, data, custom_headers, use_requests=False):
 
 
 def prepare_response(resp):
+    """
+    Prepares the http response.
+
+    Args:
+        resp: (todo): write your description
+    """
     raw_response = f"({resp.status_code} {resp.reason}):\n"
     raw_headers = "\n".join([f"{k}: {v}" for k, v in resp.headers.items()])
     raw_response += f"{raw_headers}"
@@ -333,6 +425,14 @@ def prepare_response(resp):
 
 
 def extract_params(value, delimeter="", injection_type=""):
+    """
+    Extracts params.
+
+    Args:
+        value: (str): write your description
+        delimeter: (str): write your description
+        injection_type: (str): write your description
+    """
     params = []
     injection_type = injection_type.upper()
     if injection_type == "HEADER":
@@ -368,6 +468,15 @@ def extract_params(value, delimeter="", injection_type=""):
 
 
 def prepare_injection_payload(text, payload, param="", unknown_error_counter=0):
+    """
+    Prepares the payload of payload.
+
+    Args:
+        text: (str): write your description
+        payload: (todo): write your description
+        param: (str): write your description
+        unknown_error_counter: (todo): write your description
+    """
     global INVALID_URL
     prepared_payload = ""
     if "*" in text:
@@ -388,10 +497,25 @@ def prepare_injection_payload(text, payload, param="", unknown_error_counter=0):
 
 
 def clean_up_payload(payload, replaceable_string="0x72306f746833783439"):
+    """
+    Clean up the payload and replace the payload.
+
+    Args:
+        payload: (str): write your description
+        replaceable_string: (str): write your description
+    """
     return payload.replace(replaceable_string, "{banner}")
 
 
 def prepare_payload_request(self, payload, unknown_error_counter=0):
+    """
+    Prepares the request.
+
+    Args:
+        self: (todo): write your description
+        payload: (str): write your description
+        unknown_error_counter: (todo): write your description
+    """
     Response = collections.namedtuple("Response", ["url", "data", "regex", "headers"])
     url = self.url
     data = self.data

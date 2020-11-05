@@ -64,6 +64,20 @@ class SQLitest:
         techniques=None,
         batch=False,
     ):
+        """
+        Initialize a file.
+
+        Args:
+            self: (todo): write your description
+            url: (str): write your description
+            data: (todo): write your description
+            headers: (list): write your description
+            use_requests: (bool): write your description
+            filepath: (str): write your description
+            injection_type: (todo): write your description
+            techniques: (todo): write your description
+            batch: (int): write your description
+        """
         self.url = url
         self.data = data
         self.headers = headers
@@ -76,6 +90,12 @@ class SQLitest:
         self._batch = batch
 
     def _parse_target(self):
+        """
+        Parses a command.
+
+        Args:
+            self: (todo): write your description
+        """
         ParamResponse = collections.namedtuple(
             "ParamResponse", ["params", "injection_type", "is_custom_injection"]
         )
@@ -160,12 +180,34 @@ class SQLitest:
         injectable_param="",
         injection_type="",
     ):
+        """
+        Is_injectable.
+
+        Args:
+            self: (todo): write your description
+            url: (str): write your description
+            data: (todo): write your description
+            headers: (dict): write your description
+            param: (todo): write your description
+            injectable_param: (bool): write your description
+            injection_type: (str): write your description
+        """
         payload = ".,))').\".."
         injectable = False
         _type = injection_type.upper()
         _param = injectable_param
 
         def fallback_request(url, data, headers, payload, param):
+            """
+            Perform a fallback function.
+
+            Args:
+                url: (str): write your description
+                data: (str): write your description
+                headers: (dict): write your description
+                payload: (todo): write your description
+                param: (todo): write your description
+            """
             resp = ""
             if url and not data and "GET" in _type or "URI" in _type:
                 url = prepare_injection_payload(
@@ -219,6 +261,12 @@ class SQLitest:
         return injectable
 
     def perform(self):
+        """
+        Perform a http request.
+
+        Args:
+            self: (todo): write your description
+        """
         vulns = []
         Response = collections.namedtuple(
             "Response",

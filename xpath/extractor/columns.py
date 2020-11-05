@@ -54,6 +54,21 @@ class ColumnsExtractor:
         payloads="",
         injection_type="",
     ):
+        """
+        Initialize http request.
+
+        Args:
+            self: (todo): write your description
+            url: (str): write your description
+            data: (todo): write your description
+            payload: (todo): write your description
+            regex: (bool): write your description
+            headers: (list): write your description
+            injected_param: (str): write your description
+            session_filepath: (str): write your description
+            payloads: (todo): write your description
+            injection_type: (todo): write your description
+        """
         self.url = url
         self.data = data
         self.payload = payload
@@ -65,11 +80,28 @@ class ColumnsExtractor:
         self._injection_type = injection_type
 
     def _generate_col_payloads(self, col_count, payload, index=0):
+        """
+        Generate a column payload.
+
+        Args:
+            self: (todo): write your description
+            col_count: (todo): write your description
+            payload: (str): write your description
+            index: (int): write your description
+        """
         payload = "{index},".join(payload.rsplit("0,"))
         payloads = [payload.format(index=i) for i in range(index, col_count)]
         return payloads
 
     def _col_count(self, db="", tbl=""):
+        """
+        Return the number of tables.
+
+        Args:
+            self: (todo): write your description
+            db: (array): write your description
+            tbl: (array): write your description
+        """
         _temp = []
         if db and tbl:
             encode_db = to_hex(db)
@@ -81,6 +113,14 @@ class ColumnsExtractor:
         return self._extact(payloads=payloads)
 
     def col_names(self, db="", tbl=""):
+        """
+        Get a list of database names
+
+        Args:
+            self: (todo): write your description
+            db: (str): write your description
+            tbl: (todo): write your description
+        """
         index = 0
         _temp = []
         is_resumed = False
@@ -187,6 +227,16 @@ class ColumnsExtractor:
         )
 
     def _pprint_columns(self, cursor_or_list, field_names, database="", table=""):
+        """
+        Print the column names of table.
+
+        Args:
+            self: (todo): write your description
+            cursor_or_list: (list): write your description
+            field_names: (str): write your description
+            database: (str): write your description
+            table: (str): write your description
+        """
         obj = prettifier(cursor_or_list, field_names)
         data = obj.data
         entries = obj.entries
@@ -196,6 +246,15 @@ class ColumnsExtractor:
         logger.success(f"{data}")
 
     def _extract_cols(self, payloads, database="", table=""):
+        """
+        Extract a list of column * database *.
+
+        Args:
+            self: (todo): write your description
+            payloads: (todo): write your description
+            database: (str): write your description
+            table: (str): write your description
+        """
         _temp, index = [], 0
         Response = collections.namedtuple("Response", ["is_fetched", "result"])
 

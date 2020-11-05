@@ -53,6 +53,24 @@ def perform_injection(
     batch=False,
     flush_session=False,
 ):
+    """
+    Perform a requests request.
+
+    Args:
+        url: (str): write your description
+        data: (array): write your description
+        host: (str): write your description
+        header: (str): write your description
+        cookies: (list): write your description
+        headers: (dict): write your description
+        referer: (todo): write your description
+        user_agent: (str): write your description
+        level: (int): write your description
+        verbosity: (int): write your description
+        techniques: (str): write your description
+        batch: (todo): write your description
+        flush_session: (str): write your description
+    """
     verbose_levels = {
         1: logging.INFO,
         2: logging.DEBUG,
@@ -160,6 +178,21 @@ class XPATHInjector(
         session_filepath="",
         payloads="",
     ):
+        """
+        Initialize a session.
+
+        Args:
+            self: (todo): write your description
+            url: (str): write your description
+            data: (todo): write your description
+            payload: (todo): write your description
+            regex: (bool): write your description
+            headers: (list): write your description
+            injected_param: (str): write your description
+            injection_type: (todo): write your description
+            session_filepath: (str): write your description
+            payloads: (todo): write your description
+        """
         self.url = url
         self.data = data
         self.payload = payload
@@ -172,6 +205,15 @@ class XPATHInjector(
         self._filepath = os.path.dirname(session_filepath)
 
     def __end(self, database="", table="", fetched=True):
+        """
+        Write a new database.
+
+        Args:
+            self: (todo): write your description
+            database: (todo): write your description
+            table: (str): write your description
+            fetched: (bool): write your description
+        """
         new_line = ""
         if database and table:
             filepath = os.path.join(self._filepath, "dump")
@@ -189,6 +231,12 @@ class XPATHInjector(
         logger.end("ending")
 
     def extract_banner(self):
+        """
+        Extract banner information.
+
+        Args:
+            self: (todo): write your description
+        """
         response = self.banner
         fetched = response.is_injected
         if fetched:
@@ -197,6 +245,12 @@ class XPATHInjector(
         return response
 
     def extract_hostname(self):
+        """
+        Extract the hostname from the request.
+
+        Args:
+            self: (todo): write your description
+        """
         response = self.hostname
         fetched = response.is_injected
         if fetched:
@@ -205,6 +259,12 @@ class XPATHInjector(
         return response
 
     def extract_current_db(self):
+        """
+        Extract current database.
+
+        Args:
+            self: (todo): write your description
+        """
         response = self.database
         fetched = response.is_injected
         if fetched:
@@ -213,6 +273,12 @@ class XPATHInjector(
         return response
 
     def extract_current_user(self):
+        """
+        Extract the current user
+
+        Args:
+            self: (todo): write your description
+        """
         response = self.user
         fetched = response.is_injected
         if fetched:
@@ -221,6 +287,12 @@ class XPATHInjector(
         return response
 
     def extract_dbs(self):
+        """
+        Extracts the dbs * dbs
+
+        Args:
+            self: (todo): write your description
+        """
         response = self.dbs_names
         fetched = response.fetched
         if fetched:
@@ -229,6 +301,13 @@ class XPATHInjector(
         return response
 
     def extract_tables(self, database=""):
+        """
+        Extract tables from the database.
+
+        Args:
+            self: (todo): write your description
+            database: (str): write your description
+        """
         response = self.tbl_names(db=database)
         fetched = response.fetched
         if fetched:
@@ -237,6 +316,14 @@ class XPATHInjector(
         return response
 
     def extract_columns(self, database="", table=""):
+        """
+        Extract columns from the database.
+
+        Args:
+            self: (todo): write your description
+            database: (str): write your description
+            table: (str): write your description
+        """
         response = self.col_names(db=database, tbl=table)
         fetched = response.fetched
         if fetched:
@@ -245,6 +332,15 @@ class XPATHInjector(
         return response
 
     def extract_records(self, database="", table="", columns=""):
+        """
+        Extract all the records from the database.
+
+        Args:
+            self: (todo): write your description
+            database: (str): write your description
+            table: (str): write your description
+            columns: (list): write your description
+        """
         response = self.data_dump(db=database, tbl=table, cols=columns)
         fetched = response.fetched
         if fetched:
@@ -255,6 +351,15 @@ class XPATHInjector(
         return response
 
     def search_for(self, database="", table="", column=""):
+        """
+        Search for a given database.
+
+        Args:
+            self: (todo): write your description
+            database: (str): write your description
+            table: (str): write your description
+            column: (str): write your description
+        """
         search_type = ""
         if database and not table and not column:
             search_type = "database"

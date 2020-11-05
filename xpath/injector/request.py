@@ -60,6 +60,18 @@ class HTTPRequestHandler:
     def inject_payload(
         self, url, regex, data="", headers="", use_requests=False, timeout=30
     ):
+        """
+        Injects a request.
+
+        Args:
+            self: (todo): write your description
+            url: (str): write your description
+            regex: (str): write your description
+            data: (todo): write your description
+            headers: (dict): write your description
+            use_requests: (bool): write your description
+            timeout: (float): write your description
+        """
         req = prepare_request(
             url=url, data=data, custom_headers=headers, use_requests=use_requests
         )
@@ -183,6 +195,18 @@ class HTTPRequestHandler:
         use_requests=False,
         connection_test=False,
     ):
+        """
+        Perform a http request.
+
+        Args:
+            self: (todo): write your description
+            url: (str): write your description
+            data: (array): write your description
+            headers: (dict): write your description
+            timeout: (float): write your description
+            use_requests: (bool): write your description
+            connection_test: (todo): write your description
+        """
         Response = collections.namedtuple(
             "Response", ["ok", "status_code", "text", "headers", "reason", "error_msg"]
         )

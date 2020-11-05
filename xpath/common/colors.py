@@ -171,6 +171,18 @@ def colorize(
     normal=False,
     reset=True,
 ):
+    """
+    Colorize string using the given color.
+
+    Args:
+        string: (str): write your description
+        color: (str): write your description
+        background: (int): write your description
+        bold: (str): write your description
+        faint: (todo): write your description
+        normal: (todo): write your description
+        reset: (bool): write your description
+    """
     if bold:
         style = BRIGHT
     if faint:

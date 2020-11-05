@@ -74,6 +74,12 @@ RANDOM = 20
 _re = re.compile("\033\[[0-9;]*m")
 
 def _get_size(text):
+    """
+    Returns the size of the text.
+
+    Args:
+        text: (str): write your description
+    """
     lines = text.split("\n")
     height = len(lines)
     width = max([_str_block_width(line) for line in lines])
@@ -175,6 +181,13 @@ class PrettyTable(object):
         self._attributes = kwargs["attributes"] or {}
    
     def _unicode(self, value):
+        """
+        Convert a unicode to unicode.
+
+        Args:
+            self: (todo): write your description
+            value: (str): write your description
+        """
         if not isinstance(value, basestring):
             value = str(value)
         if not isinstance(value, unicode):
@@ -182,6 +195,15 @@ class PrettyTable(object):
         return value
 
     def _justify(self, text, width, align):
+        """
+        R printable text.
+
+        Args:
+            self: (todo): write your description
+            text: (str): write your description
+            width: (int): write your description
+            align: (str): write your description
+        """
         excess = width - _str_block_width(text)
         if align == "l":
             return text + excess * " "
@@ -203,6 +225,13 @@ class PrettyTable(object):
                 return (excess//2)*" " + text + (excess//2)*" "
 
     def __getattr__(self, name):
+        """
+        Returns the attribute of the given field.
+
+        Args:
+            self: (todo): write your description
+            name: (str): write your description
+        """
 
         if name == "rowcount":
             return len(self._rows)
@@ -217,6 +246,13 @@ class PrettyTable(object):
             raise AttributeError(name)
  
     def __getitem__(self, index):
+        """
+        Get the item from the table
+
+        Args:
+            self: (todo): write your description
+            index: (int): write your description
+        """
 
         new = PrettyTable()
         new.field_names = self.field_names
@@ -234,12 +270,30 @@ class PrettyTable(object):
 
     if py3k:
         def __str__(self):
+            """
+            Returns the string representation of the string.
+
+            Args:
+                self: (todo): write your description
+            """
            return self.__unicode__()
     else:
         def __str__(self):
+            """
+            Returns the unicode string.
+
+            Args:
+                self: (todo): write your description
+            """
            return self.__unicode__().encode(self.encoding)
 
     def __unicode__(self):
+        """
+        The unicode string.
+
+        Args:
+            self: (todo): write your description
+        """
         return self.get_string()
 
     ##############################
@@ -254,6 +308,14 @@ class PrettyTable(object):
     # Secondly, in the _get_options method, where keyword arguments are mixed with persistent settings
 
     def _validate_option(self, option, val):
+        """
+        Validate that the option.
+
+        Args:
+            self: (todo): write your description
+            option: (str): write your description
+            val: (str): write your description
+        """
         if option in ("field_names"):
             self._validate_field_names(val)
         elif option in ("start", "end", "max_width", "padding_width", "left_padding_width", "right_padding_width", "format"):
@@ -284,6 +346,13 @@ class PrettyTable(object):
             raise Exception("Unrecognised option: %s!" % option)
 
     def _validate_field_names(self, val):
+        """
+        Ensure that val is valid field.
+
+        Args:
+            self: (todo): write your description
+            val: (str): write your description
+        """
         # Check for appropriate length
         if self._field_names:
             try:
@@ -302,36 +371,81 @@ class PrettyTable(object):
             raise Exception("Field names must be unique!")
 
     def _validate_header_style(self, val):
+        """
+        Validate style style.
+
+        Args:
+            self: (todo): write your description
+            val: (str): write your description
+        """
         try:
             assert val in ("cap", "title", "upper", "lower", None)
         except AssertionError:
             raise Exception("Invalid header style, use cap, title, upper, lower or None!")
 
     def _validate_align(self, val):
+        """
+        Validate that the aligner is valid.
+
+        Args:
+            self: (todo): write your description
+            val: (str): write your description
+        """
         try:
             assert val in ["l","c","r"]
         except AssertionError:
             raise Exception("Alignment %s is invalid, use l, c or r!" % val)
 
     def _validate_valign(self, val):
+        """
+        Check that val is a valignion.
+
+        Args:
+            self: (todo): write your description
+            val: (str): write your description
+        """
         try:
             assert val in ["t","m","b",None]
         except AssertionError:
             raise Exception("Alignment %s is invalid, use t, m, b or None!" % val)
 
     def _validate_nonnegative_int(self, name, val):
+        """
+        Validate that the nonnegative integer is valid.
+
+        Args:
+            self: (todo): write your description
+            name: (str): write your description
+            val: (str): write your description
+        """
         try:
             assert int(val) >= 0
         except AssertionError:
             raise Exception("Invalid value for %s: %s!" % (name, self._unicode(val)))
 
     def _validate_true_or_false(self, name, val):
+        """
+        Validate that value is true.
+
+        Args:
+            self: (todo): write your description
+            name: (str): write your description
+            val: (str): write your description
+        """
         try:
             assert val in (True, False)
         except AssertionError:
             raise Exception("Invalid value for %s!  Must be True or False." % name)
 
     def _validate_int_format(self, name, val):
+        """
+        Validate that the integer format.
+
+        Args:
+            self: (todo): write your description
+            name: (str): write your description
+            val: (str): write your description
+        """
         if val == "":
             return
         try:
@@ -341,6 +455,14 @@ class PrettyTable(object):
             raise Exception("Invalid value for %s!  Must be an integer format string." % name)
 
     def _validate_float_format(self, name, val):
+        """
+        Validate a float format.
+
+        Args:
+            self: (todo): write your description
+            name: (str): write your description
+            val: (str): write your description
+        """
         if val == "":
             return
         try:
@@ -354,30 +476,70 @@ class PrettyTable(object):
             raise Exception("Invalid value for %s!  Must be a float format string." % name)
 
     def _validate_function(self, name, val):
+        """
+        Validate the given value.
+
+        Args:
+            self: (todo): write your description
+            name: (str): write your description
+            val: (todo): write your description
+        """
         try:
             assert hasattr(val, "__call__")
         except AssertionError:
             raise Exception("Invalid value for %s!  Must be a function." % name)
 
     def _validate_hrules(self, name, val):
+        """
+        Checks that the total number of the specified value.
+
+        Args:
+            self: (todo): write your description
+            name: (str): write your description
+            val: (todo): write your description
+        """
         try:
             assert val in (ALL, FRAME, HEADER, NONE)
         except AssertionError:
             raise Exception("Invalid value for %s!  Must be ALL, FRAME, HEADER or NONE." % name)
 
     def _validate_vrules(self, name, val):
+        """
+        Validate a vrules exists.
+
+        Args:
+            self: (todo): write your description
+            name: (str): write your description
+            val: (str): write your description
+        """
         try:
             assert val in (ALL, FRAME, NONE)
         except AssertionError:
             raise Exception("Invalid value for %s!  Must be ALL, FRAME, or NONE." % name)
 
     def _validate_field_name(self, name, val):
+        """
+        Validate field name.
+
+        Args:
+            self: (todo): write your description
+            name: (str): write your description
+            val: (str): write your description
+        """
         try:
             assert (val in self._field_names) or (val is None)
         except AssertionError:
             raise Exception("Invalid field name: %s!" % val)
 
     def _validate_all_field_names(self, name, val):
+        """
+        { type : list }
+
+        Args:
+            self: (todo): write your description
+            name: (str): write your description
+            val: (str): write your description
+        """
         try:
             for x in val:
                 self._validate_field_name(name, x)
@@ -385,12 +547,28 @@ class PrettyTable(object):
             raise Exception("fields must be a sequence of field names!")
 
     def _validate_single_char(self, name, val):
+        """
+        Validate a single single character is valid.
+
+        Args:
+            self: (todo): write your description
+            name: (str): write your description
+            val: (str): write your description
+        """
         try:
             assert _str_block_width(val) == 1
         except AssertionError:
             raise Exception("Invalid value for %s!  Must be a string of length 1." % name)
 
     def _validate_attributes(self, name, val):
+        """
+        Validate that the given attribute is a dict.
+
+        Args:
+            self: (todo): write your description
+            name: (str): write your description
+            val: (str): write your description
+        """
         try:
             assert isinstance(val, dict)
         except AssertionError:
@@ -408,6 +586,13 @@ class PrettyTable(object):
 
         fields - list or tuple of field names"""
     def _set_field_names(self, val):
+        """
+        Set the field names to new value.
+
+        Args:
+            self: (todo): write your description
+            val: (str): write your description
+        """
         val = [self._unicode(x) for x in val]
         self._validate_option("field_names", val)
         if self._field_names:
@@ -434,24 +619,63 @@ class PrettyTable(object):
     field_names = property(_get_field_names, _set_field_names)
 
     def _get_align(self):
+        """
+        : return : class : return :
+
+        Args:
+            self: (todo): write your description
+        """
         return self._align
     def _set_align(self, val):
+        """
+        Sets alignments
+
+        Args:
+            self: (todo): write your description
+            val: (int): write your description
+        """
         self._validate_align(val)
         for field in self._field_names:
             self._align[field] = val
     align = property(_get_align, _set_align)
 
     def _get_valign(self):
+        """
+        Get the valign value for the valign.
+
+        Args:
+            self: (todo): write your description
+        """
         return self._valign
     def _set_valign(self, val):
+        """
+        Set valign the val to the value
+
+        Args:
+            self: (todo): write your description
+            val: (todo): write your description
+        """
         self._validate_valign(val)
         for field in self._field_names:
             self._valign[field] = val
     valign = property(_get_valign, _set_valign)
 
     def _get_max_width(self):
+        """
+        Returns the maximum width of the table.
+
+        Args:
+            self: (todo): write your description
+        """
         return self._max_width
     def _set_max_width(self, val):
+        """
+        Set the max width.
+
+        Args:
+            self: (todo): write your description
+            val: (int): write your description
+        """
         self._validate_option("max_width", val)
         for field in self._field_names:
             self._max_width[field] = val
@@ -465,6 +689,13 @@ class PrettyTable(object):
         fields - list or tuple of field names to include in displays"""
         return self._fields
     def _set_fields(self, val):
+        """
+        Set the value of the field.
+
+        Args:
+            self: (todo): write your description
+            val: (int): write your description
+        """
         self._validate_option("fields", val)
         self._fields = val
     fields = property(_get_fields, _set_fields)
@@ -478,6 +709,13 @@ class PrettyTable(object):
         return self._start
 
     def _set_start(self, val):
+        """
+        Set the start time.
+
+        Args:
+            self: (todo): write your description
+            val: (todo): write your description
+        """
         self._validate_option("start", val)
         self._start = val
     start = property(_get_start, _set_start)
@@ -490,6 +728,13 @@ class PrettyTable(object):
         end - index of last data row to include in output PLUS ONE (list slice style)"""
         return self._end
     def _set_end(self, val):
+        """
+        Set the end of the option.
+
+        Args:
+            self: (todo): write your description
+            val: (int): write your description
+        """
         self._validate_option("end", val)
         self._end = val
     end = property(_get_end, _set_end)
@@ -502,6 +747,13 @@ class PrettyTable(object):
         sortby - field name to sort by"""
         return self._sortby
     def _set_sortby(self, val):
+        """
+        Set the sortby option.
+
+        Args:
+            self: (todo): write your description
+            val: (int): write your description
+        """
         self._validate_option("sortby", val)
         self._sortby = val
     sortby = property(_get_sortby, _set_sortby)
@@ -514,6 +766,13 @@ class PrettyTable(object):
         reveresort - set to True to sort by descending order, or False to sort by ascending order"""
         return self._reversesort
     def _set_reversesort(self, val):
+        """
+        Sets the value of the option.
+
+        Args:
+            self: (todo): write your description
+            val: (int): write your description
+        """
         self._validate_option("reversesort", val)
         self._reversesort = val
     reversesort = property(_get_reversesort, _set_reversesort)
@@ -526,6 +785,13 @@ class PrettyTable(object):
         sort_key - a function which takes one argument and returns something to be sorted"""
         return self._sort_key
     def _set_sort_key(self, val):
+        """
+        Set the sort key.
+
+        Args:
+            self: (todo): write your description
+            val: (int): write your description
+        """
         self._validate_option("sort_key", val)
         self._sort_key = val
     sort_key = property(_get_sort_key, _set_sort_key)
@@ -538,6 +804,13 @@ class PrettyTable(object):
         header - print a header showing field names (True or False)"""
         return self._header
     def _set_header(self, val):
+        """
+        Sets the response header.
+
+        Args:
+            self: (todo): write your description
+            val: (int): write your description
+        """
         self._validate_option("header", val)
         self._header = val
     header = property(_get_header, _set_header)
@@ -550,6 +823,13 @@ class PrettyTable(object):
         header_style - stylisation to apply to field names in header ("cap", "title", "upper", "lower" or None)"""
         return self._header_style
     def _set_header_style(self, val):
+        """
+        Sets the header.
+
+        Args:
+            self: (todo): write your description
+            val: (todo): write your description
+        """
         self._validate_header_style(val)
         self._header_style = val
     header_style = property(_get_header_style, _set_header_style)
@@ -562,6 +842,13 @@ class PrettyTable(object):
         border - print a border around the table (True or False)"""
         return self._border
     def _set_border(self, val):
+        """
+        Set the border border.
+
+        Args:
+            self: (todo): write your description
+            val: (int): write your description
+        """
         self._validate_option("border", val)
         self._border = val
     border = property(_get_border, _set_border)
@@ -574,6 +861,13 @@ class PrettyTable(object):
         hrules - horizontal rules style.  Allowed values: FRAME, ALL, HEADER, NONE"""
         return self._hrules
     def _set_hrules(self, val):
+        """
+        Sets the actual value.
+
+        Args:
+            self: (todo): write your description
+            val: (int): write your description
+        """
         self._validate_option("hrules", val)
         self._hrules = val
     hrules = property(_get_hrules, _set_hrules)
@@ -586,6 +880,13 @@ class PrettyTable(object):
         vrules - vertical rules style.  Allowed values: FRAME, ALL, NONE"""
         return self._vrules
     def _set_vrules(self, val):
+        """
+        Set a vrules.
+
+        Args:
+            self: (todo): write your description
+            val: (int): write your description
+        """
         self._validate_option("vrules", val)
         self._vrules = val
     vrules = property(_get_vrules, _set_vrules)
@@ -597,6 +898,13 @@ class PrettyTable(object):
         int_format - integer format string"""
         return self._int_format
     def _set_int_format(self, val):
+        """
+        Set the integer format.
+
+        Args:
+            self: (todo): write your description
+            val: (int): write your description
+        """
 #        self._validate_option("int_format", val)
         for field in self._field_names:
             self._int_format[field] = val
@@ -609,6 +917,13 @@ class PrettyTable(object):
         float_format - floating point format string"""
         return self._float_format
     def _set_float_format(self, val):
+        """
+        Set float format.
+
+        Args:
+            self: (todo): write your description
+            val: (int): write your description
+        """
 #        self._validate_option("float_format", val)
         for field in self._field_names:
             self._float_format[field] = val
@@ -622,6 +937,13 @@ class PrettyTable(object):
         padding_width - number of spaces, must be a positive integer"""
         return self._padding_width
     def _set_padding_width(self, val):
+        """
+        Set the padding width.
+
+        Args:
+            self: (todo): write your description
+            val: (todo): write your description
+        """
         self._validate_option("padding_width", val)
         self._padding_width = val
     padding_width = property(_get_padding_width, _set_padding_width)
@@ -634,6 +956,13 @@ class PrettyTable(object):
         left_padding - number of spaces, must be a positive integer"""
         return self._left_padding_width
     def _set_left_padding_width(self, val):
+        """
+        Set the left padding.
+
+        Args:
+            self: (todo): write your description
+            val: (int): write your description
+        """
         self._validate_option("left_padding_width", val)
         self._left_padding_width = val
     left_padding_width = property(_get_left_padding_width, _set_left_padding_width)
@@ -646,6 +975,13 @@ class PrettyTable(object):
         right_padding - number of spaces, must be a positive integer"""
         return self._right_padding_width
     def _set_right_padding_width(self, val):
+        """
+        Sets the right padding width.
+
+        Args:
+            self: (todo): write your description
+            val: (int): write your description
+        """
         self._validate_option("right_padding_width", val)
         self._right_padding_width = val
     right_padding_width = property(_get_right_padding_width, _set_right_padding_width)
@@ -658,6 +994,13 @@ class PrettyTable(object):
         vertical_char - single character string used to draw vertical lines"""
         return self._vertical_char
     def _set_vertical_char(self, val):
+        """
+        Set the vertical character.
+
+        Args:
+            self: (todo): write your description
+            val: (todo): write your description
+        """
         val = self._unicode(val)
         self._validate_option("vertical_char", val)
         self._vertical_char = val
@@ -671,6 +1014,13 @@ class PrettyTable(object):
         horizontal_char - single character string used to draw horizontal lines"""
         return self._horizontal_char
     def _set_horizontal_char(self, val):
+        """
+        Set horizontal character.
+
+        Args:
+            self: (todo): write your description
+            val: (int): write your description
+        """
         val = self._unicode(val)
         self._validate_option("horizontal_char", val)
         self._horizontal_char = val
@@ -684,6 +1034,13 @@ class PrettyTable(object):
         junction_char - single character string used to draw line junctions"""
         return self._junction_char
     def _set_junction_char(self, val):
+        """
+        Set the character character.
+
+        Args:
+            self: (todo): write your description
+            val: (todo): write your description
+        """
         val = self._unicode(val)
         self._validate_option("vertical_char", val)
         self._junction_char = val
@@ -697,6 +1054,13 @@ class PrettyTable(object):
         format - True or False"""
         return self._format
     def _set_format(self, val):
+        """
+        Sets the value.
+
+        Args:
+            self: (todo): write your description
+            val: (int): write your description
+        """
         self._validate_option("format", val)
         self._format = val
     format = property(_get_format, _set_format)
@@ -709,6 +1073,13 @@ class PrettyTable(object):
         print_empty - True or False"""
         return self._print_empty
     def _set_print_empty(self, val):
+        """
+        Set the value of the empty string.
+
+        Args:
+            self: (todo): write your description
+            val: (int): write your description
+        """
         self._validate_option("print_empty", val)
         self._print_empty = val
     print_empty = property(_get_print_empty, _set_print_empty)
@@ -721,6 +1092,13 @@ class PrettyTable(object):
         attributes - dictionary of attributes"""
         return self._attributes
     def _set_attributes(self, val):
+        """
+        Set the given value of the given attribute.
+
+        Args:
+            self: (todo): write your description
+            val: (todo): write your description
+        """
         self._validate_option("attributes", val)
         self._attributes = val
     attributes = property(_get_attributes, _set_attributes)
@@ -730,6 +1108,12 @@ class PrettyTable(object):
     ##############################
 
     def _get_options(self, kwargs):
+        """
+        Get keyword arguments.
+
+        Args:
+            self: (todo): write your description
+        """
 
         options = {}
         for option in self._options:
@@ -745,6 +1129,13 @@ class PrettyTable(object):
     ##############################
 
     def set_style(self, style):
+        """
+        Sets the style style.
+
+        Args:
+            self: (todo): write your description
+            style: (str): write your description
+        """
 
         if style == DEFAULT:
             self._set_default_style()
@@ -758,6 +1149,12 @@ class PrettyTable(object):
             raise Exception("Invalid pre-set style!")
 
     def _set_default_style(self):
+        """
+        Sets the default style.
+
+        Args:
+            self: (todo): write your description
+        """
 
         self.header = True
         self.border = True
@@ -771,6 +1168,12 @@ class PrettyTable(object):
         self.junction_char = "+"
 
     def _set_msword_style(self):
+        """
+        Sets the character style.
+
+        Args:
+            self: (todo): write your description
+        """
 
         self.header = True
         self.border = True
@@ -781,6 +1184,12 @@ class PrettyTable(object):
         self.vertical_char = "|"
 
     def _set_columns_style(self):
+        """
+        Sets the column width.
+
+        Args:
+            self: (todo): write your description
+        """
 
         self.header = True
         self.border = False
@@ -789,6 +1198,12 @@ class PrettyTable(object):
         self.right_padding_width = 8
 
     def _set_random_style(self):
+        """
+        Sets random style.
+
+        Args:
+            self: (todo): write your description
+        """
 
         # Just for fun!
         self.header = random.choice((True, False))
@@ -876,6 +1291,12 @@ class PrettyTable(object):
     ##############################
 
     def copy(self):
+        """
+        Returns a copy of this object.
+
+        Args:
+            self: (todo): write your description
+        """
         return copy.deepcopy(self)
 
     ##############################
@@ -883,6 +1304,14 @@ class PrettyTable(object):
     ##############################
 
     def _format_value(self, field, value):
+        """
+        Format the value for a field.
+
+        Args:
+            self: (todo): write your description
+            field: (str): write your description
+            value: (float): write your description
+        """
         if isinstance(value, int) and field in self._int_format:
             value = self._unicode(("%%%sd" % self._int_format[field]) % value)
         elif isinstance(value, float) and field in self._float_format:
@@ -890,6 +1319,14 @@ class PrettyTable(object):
         return self._unicode(value)
 
     def _compute_widths(self, rows, options):
+        """
+        Compute widths.
+
+        Args:
+            self: (todo): write your description
+            rows: (array): write your description
+            options: (dict): write your description
+        """
         if options["header"]:
             widths = [_get_size(field)[0] for field in self._field_names]
         else:
@@ -904,6 +1341,13 @@ class PrettyTable(object):
         self._widths = widths
 
     def _get_padding_widths(self, options):
+        """
+        Get padding padding for padding.
+
+        Args:
+            self: (todo): write your description
+            options: (todo): write your description
+        """
 
         if options["left_padding_width"] is not None:
             lpad = options["left_padding_width"]
@@ -936,9 +1380,25 @@ class PrettyTable(object):
         return rows
         
     def _format_row(self, row, options):
+        """
+        Format row. row.
+
+        Args:
+            self: (todo): write your description
+            row: (dict): write your description
+            options: (dict): write your description
+        """
         return [self._format_value(field, value) for (field, value) in zip(self._field_names, row)]
 
     def _format_rows(self, rows, options):
+        """
+        Return a list of the rows.
+
+        Args:
+            self: (todo): write your description
+            rows: (int): write your description
+            options: (dict): write your description
+        """
         return [self._format_row(row, options) for row in rows]
  
     ##############################
@@ -1007,6 +1467,13 @@ class PrettyTable(object):
         return self._unicode("\n").join(lines)
 
     def _stringify_hrule(self, options):
+        """
+        Generate a hrule string.
+
+        Args:
+            self: (todo): write your description
+            options: (dict): write your description
+        """
 
         if not options["border"]:
             return ""
@@ -1033,6 +1500,13 @@ class PrettyTable(object):
         return "".join(bits)
 
     def _stringify_header(self, options):
+        """
+        Generate a header string.
+
+        Args:
+            self: (todo): write your description
+            options: (dict): write your description
+        """
 
         bits = []
         lpad, rpad = self._get_padding_widths(options)
@@ -1080,6 +1554,14 @@ class PrettyTable(object):
         return "".join(bits)
 
     def _stringify_row(self, row, options):
+        """
+        Stringifies a row.
+
+        Args:
+            self: (todo): write your description
+            row: (int): write your description
+            options: (dict): write your description
+        """
        
         for index, field, value, width, in zip(range(0,len(row)), self._field_names, row, self._widths):
             # Enforce max widths
@@ -1188,6 +1670,13 @@ class PrettyTable(object):
         return string
 
     def _get_simple_html_string(self, options):
+        """
+        Returns a string representation of the html.
+
+        Args:
+            self: (todo): write your description
+            options: (todo): write your description
+        """
 
         lines = []
         if options["xhtml"]:
@@ -1228,6 +1717,13 @@ class PrettyTable(object):
         return self._unicode("\n").join(lines)
 
     def _get_formatted_html_string(self, options):
+        """
+        Return string formatted string formatted string.
+
+        Args:
+            self: (todo): write your description
+            options: (todo): write your description
+        """
 
         lines = []
         lpad, rpad = self._get_padding_widths(options)
@@ -1292,6 +1788,12 @@ class PrettyTable(object):
 ##############################
 
 def _char_block_width(char):
+    """
+    Return the character width of a character.
+
+    Args:
+        char: (todo): write your description
+    """
     # Basic Latin, which is probably the most common case
     #if char in xrange(0x0021, 0x007e):
     #if char >= 0x0021 and char <= 0x007e:
@@ -1325,6 +1827,12 @@ def _char_block_width(char):
     return 1
 
 def _str_block_width(val):
+    """
+    Return the width of a string.
+
+    Args:
+        val: (str): write your description
+    """
 
     return sum(itermap(_char_block_width, itermap(ord, _re.sub("", val))))
 
@@ -1333,6 +1841,13 @@ def _str_block_width(val):
 ##############################
 
 def from_csv(fp, field_names = None, **kwargs):
+    """
+    Read rows from_csv table. csv file object.
+
+    Args:
+        fp: (todo): write your description
+        field_names: (str): write your description
+    """
 
     dialect = csv.Sniffer().sniff(fp.read(1024))
     fp.seek(0)
@@ -1353,6 +1868,12 @@ def from_csv(fp, field_names = None, **kwargs):
     return table
 
 def from_db_cursor(cursor, **kwargs):
+    """
+    Return a table from_cursor.
+
+    Args:
+        cursor: (todo): write your description
+    """
 
     if cursor.description:
         table = PrettyTable(**kwargs)
@@ -1364,6 +1885,12 @@ def from_db_cursor(cursor, **kwargs):
 class TableHandler(HTMLParser):
 
     def __init__(self, **kwargs):
+        """
+        Initialize the table.
+
+        Args:
+            self: (todo): write your description
+        """
         HTMLParser.__init__(self)
         self.kwargs = kwargs
         self.tables = []
@@ -1375,11 +1902,26 @@ class TableHandler(HTMLParser):
         self.is_last_row_header = False
 
     def handle_starttag(self,tag, attrs):
+        """
+        Handle start tag.
+
+        Args:
+            self: (todo): write your description
+            tag: (str): write your description
+            attrs: (dict): write your description
+        """
         self.active = tag
         if tag == "th":
             self.is_last_row_header = True
 
     def handle_endtag(self,tag):
+        """
+        Process the end tag.
+
+        Args:
+            self: (todo): write your description
+            tag: (str): write your description
+        """
         if tag in ["th", "td"]:
             stripped_content = self.last_content.strip()
             self.last_row.append(stripped_content)
@@ -1398,6 +1940,13 @@ class TableHandler(HTMLParser):
 
 
     def handle_data(self, data):
+        """
+        Handle data.
+
+        Args:
+            self: (todo): write your description
+            data: (todo): write your description
+        """
         self.last_content += data
 
     def generate_table(self, rows):
@@ -1455,6 +2004,11 @@ def from_html_one(html_code, **kwargs):
 ##############################
 
 def main():
+    """
+    Main function.
+
+    Args:
+    """
 
     x = PrettyTable(["City name", "Area", "Population", "Annual Rainfall"])
     x.sortby = "Population"
