@@ -38,28 +38,6 @@ from xpath.common.utils import prepare_injection_payload, prepare_payload_reques
 class DefaultsExtractor(object):
     """This class will try to identify default like banner, current-db, hostname etc."""
 
-    def __init__(
-        self,
-        url,
-        data="",
-        payload="",
-        regex="",
-        headers="",
-        injected_param="",
-        session_filepath="",
-        payloads="",
-        injection_type="",
-    ):
-        self.url = url
-        self.data = data
-        self.payload = payload
-        self.payloads = payloads
-        self.headers = headers
-        self.regex = regex
-        self.session_filepath = session_filepath
-        self._injected_param = injected_param
-        self._injection_type = injection_type
-
     def _perpare_querystring(self, text, payload, unknown_error_counter=0):
         # payload = compat_urlencode(payload)
         payload = prepare_injection_payload(
@@ -72,6 +50,14 @@ class DefaultsExtractor(object):
 
     def _generat_payload(self, payloads_list):
         payloads = []
+        if self._dbms and payloads_list and isinstance(payloads_list, dict):
+            payloads_list = payloads_list.get(self._dbms)
+        else:
+            _temp = []
+            if payloads_list and isinstance(payloads_list, dict):
+                [_temp.extend(v) for _, v in payloads_list.items()]
+                if _temp:
+                    payloads_list = _temp
         for p in payloads_list:
             payload = self.payload.format(banner=p)
             payloads.append(payload)
@@ -189,7 +175,7 @@ class DefaultsExtractor(object):
         headers = payload_request.headers
         try:
             response = request.inject_payload(
-                url=url, regex=regex, data=data, headers=headers
+                url=url, regex=regex, data=data, headers=headers, proxy=self._proxy
             )
             if response.ok:
                 result = response.result
@@ -246,7 +232,7 @@ class DefaultsExtractor(object):
             headers = payload_request.headers
             try:
                 response = request.inject_payload(
-                    url=url, regex=regex, data=data, headers=headers
+                    url=url, regex=regex, data=data, headers=headers, proxy=self._proxy
                 )
             except KeyboardInterrupt:
                 logger.error("user interrupted")

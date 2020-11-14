@@ -33,8 +33,8 @@ from xpath.common.lib import (
 from xpath.common.session import session
 from xpath.injector.request import request
 from xpath.logger.colored_logger import logger
-from xpath.common.utils import prettifier, to_hex, prepare_payload_request
 from xpath.common.payloads import PAYLOADS_COLS_COUNT, PAYLOADS_COLS_NAMES
+from xpath.common.utils import prettifier, to_hex, prepare_payload_request, clean_up_offset_payload
 
 
 class ColumnsExtractor:
@@ -42,39 +42,21 @@ class ColumnsExtractor:
     Extracts columns for a table in database
     """
 
-    def __init__(
-        self,
-        url,
-        data="",
-        payload="",
-        regex="",
-        headers="",
-        injected_param="",
-        session_filepath="",
-        payloads="",
-        injection_type="",
-    ):
-        self.url = url
-        self.data = data
-        self.payload = payload
-        self.payloads = payloads
-        self.headers = headers
-        self.regex = regex
-        self.session_filepath = session_filepath
-        self._injected_param = injected_param
-        self._injection_type = injection_type
-
     def _generate_col_payloads(self, col_count, payload, index=0):
-        payload = "{index},".join(payload.rsplit("0,"))
+        payload = clean_up_offset_payload(payload)
         payloads = [payload.format(index=i) for i in range(index, col_count)]
         return payloads
 
     def _col_count(self, db="", tbl=""):
         _temp = []
         if db and tbl:
-            encode_db = to_hex(db)
-            encode_tbl = to_hex(tbl)
-            for entry in PAYLOADS_COLS_COUNT:
+            count_payloads = []
+            [count_payloads.extend(v) for _, v in PAYLOADS_COLS_COUNT.items()]
+            encode_db = to_hex(db, dbms=self._dbms)
+            encode_tbl = to_hex(tbl, dbms=self._dbms)
+            if self._dbms:
+                count_payloads = PAYLOADS_COLS_COUNT.get(self._dbms, count_payloads)
+            for entry in count_payloads:
                 data = entry.format(db=encode_db, tbl=encode_tbl)
                 _temp.append(data)
         payloads = self._generat_payload(payloads_list=_temp)
@@ -90,9 +72,13 @@ class ColumnsExtractor:
             "ColumnsResponse", ["fetched", "count", "database", "table", "columns"]
         )
         if db and tbl:
-            encode_db = to_hex(db)
-            encode_tbl = to_hex(tbl)
-            for entry in PAYLOADS_COLS_NAMES:
+            dump_payloads = []
+            [dump_payloads.extend(v) for _, v in PAYLOADS_COLS_NAMES.items()]
+            encode_db = to_hex(db, dbms=self._dbms)
+            encode_tbl = to_hex(tbl, dbms=self._dbms)
+            if self._dbms:
+                dump_payloads = PAYLOADS_COLS_NAMES.get(self._dbms, dump_payloads)
+            for entry in dump_payloads:
                 data = entry.format(db=encode_db, tbl=encode_tbl)
                 _temp_payloads.append(data)
         try:
@@ -107,7 +93,17 @@ class ColumnsExtractor:
         retval = self._col_count(db=db, tbl=tbl)
         if retval.is_injected:
             col_count = int(retval.result)
-            logger.info("used SQL query returns %d entries" % (col_count))
+            if col_count != 0:
+                logger.info("used SQL query returns %d entries" % (col_count))
+            if col_count == 0:
+                logger.warning("used SQL query returns %d entries for table '%s' in database: '%s'" % (col_count, tbl, db))
+                return ColumnsResponse(
+                        fetched=False,
+                        count=col_count,
+                        database=db,
+                        table=tbl,
+                        columns=[],
+                    )
             if is_resumed:
                 for entry in fetched_data:
                     name = entry.get("colname")
@@ -208,7 +204,7 @@ class ColumnsExtractor:
             headers = payload_request.headers
             try:
                 response = request.inject_payload(
-                    url=url, regex=regex, data=data, headers=headers
+                    url=url, regex=regex, data=data, headers=headers, proxy=self._proxy
                 )
             except KeyboardInterrupt:
                 logger.warning(

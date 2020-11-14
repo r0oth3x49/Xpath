@@ -42,39 +42,17 @@ from xpath.common.lib import (
 from xpath.common.session import session
 from xpath.logger.colored_logger import logger
 from xpath.injector.request import request
-from xpath.common.utils import prettifier, to_hex, prepare_injection_payload
+from xpath.common.utils import prettifier, to_hex, prepare_injection_payload, clean_up_offset_payload
 
 
 class Search:
     """
     This class will perform search across databases for database/tables or columns using like query.
     """
-
-    def __init__(
-        self,
-        url,
-        data="",
-        payload="",
-        regex="",
-        headers="",
-        injected_param="",
-        session_filepath="",
-        payloads="",
-        injection_type="",
-    ):
-        self.url = url
-        self.data = data
-        self.payload = payload
-        self.payloads = payloads
-        self.headers = headers
-        self.regex = regex
-        self.session_filepath = session_filepath
-        self._injected_param = injected_param
-        self._injection_type = injection_type
-
+    
     def _generate_search_dump_payloads(self, count, payload, index=0):
-        payload = "{offset},".join(payload.rsplit("0,"))
-        payloads = [payload.format(offset=i) for i in range(index, count)]
+        payload = clean_up_offset_payload(payload)
+        payloads = [payload.format(index=i) for i in range(index, count)]
         return payloads
 
     def _search_payloads(self, db="", tbl="", col="", search_type=""):
@@ -173,6 +151,9 @@ class Search:
         SearchResponse = collections.namedtuple(
             "SearchResponse", ["fetched", "count", "results"],
         )
+        if self._dbms and self._dbms == "PostgreSQL":
+            logger.warning(f"Search is not implemeted yet for PostgreSQL..")
+            return SearchResponse(fetched=False, count=0, results=[])
         payloads = self._search_payloads(
             db=db, tbl=tbl, col=col, search_type=search_type
         )
@@ -441,7 +422,7 @@ class Search:
         result = ""
         try:
             response = request.inject_payload(
-                url=url, regex=regex, data=data, headers=headers
+                url=url, regex=regex, data=data, headers=headers, proxy=self._proxy
             )
             if response.ok:
                 result = response.result

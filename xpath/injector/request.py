@@ -58,7 +58,14 @@ class HTTPRequestHandler:
     """
 
     def inject_payload(
-        self, url, regex, data="", headers="", use_requests=False, timeout=30
+        self,
+        url,
+        regex,
+        data="",
+        headers="",
+        proxy=None,
+        use_requests=False,
+        timeout=30,
     ):
         req = prepare_request(
             url=url, data=data, custom_headers=headers, use_requests=use_requests
@@ -71,14 +78,16 @@ class HTTPRequestHandler:
         result = ""
         error = ""
         status_code = 0
+        response_url = ""
         reason = ""
         headers = {}
         Response = collections.namedtuple(
             "Response",
-            ["ok", "status_code", "text", "result", "headers", "reason", "error"],
+            ["ok", "url", "status_code", "text", "result", "headers", "reason", "error"],
         )
         _temp = Response(
             ok=ok,
+            url=response_url,
             status_code=status_code,
             text=text,
             result=result,
@@ -86,44 +95,23 @@ class HTTPRequestHandler:
             reason=reason,
             error=error,
         )
+        if proxy and proxy.for_urllib and not use_requests:
+            proxy = proxy.for_urllib
+        elif proxy and proxy.for_requests and use_requests:
+            proxy = proxy.for_requests
+        else:
+            proxy = None
         if not data:
             try:
                 if not use_requests:
                     opener = compat_opener()
+                    if proxy:
+                        opener = compat_opener(proxy)
                     opener.addheaders = custom_headers
                     resp = opener.open(url, timeout=timeout)
                 else:
-                    resp = requests.get(url, headers=custom_headers, timeout=timeout)
-                    resp.raise_for_status()
-            except (compat_httperr, requests.exceptions.HTTPError) as e:
-                error_resp = parse_http_error(e)
-                text = error_resp.text
-                headers = error_resp.headers
-                status_code = error_resp.status_code
-                error = error_resp.error
-                reason = error_resp.reason
-            except compat_urlerr as e:
-                logger.error(e)
-            except KeyboardInterrupt as e:
-                raise e
-            except Exception as e:
-                raise e
-            else:
-                http_response = parse_http_response(resp)
-                headers = http_response.headers
-                text = http_response.text
-                status_code = http_response.status_code
-                reason = http_response.reason
-        if data:
-            try:
-                if not use_requests:
-                    data = data.encode("utf-8")
-                    opener = compat_opener()
-                    opener.addheaders = custom_headers
-                    resp = opener.open(url, data, timeout=timeout)
-                else:
                     resp = requests.get(
-                        url, data=data, headers=custom_headers, timeout=timeout
+                        url, headers=custom_headers, proxies=proxy, timeout=timeout
                     )
                     resp.raise_for_status()
             except (compat_httperr, requests.exceptions.HTTPError) as e:
@@ -133,6 +121,7 @@ class HTTPRequestHandler:
                 status_code = error_resp.status_code
                 error = error_resp.error
                 reason = error_resp.reason
+                response_url = error_resp.url
             except compat_urlerr as e:
                 logger.error(e)
             except KeyboardInterrupt as e:
@@ -145,11 +134,58 @@ class HTTPRequestHandler:
                 text = http_response.text
                 status_code = http_response.status_code
                 reason = http_response.reason
+                response_url = http_response.url
+        if data:
+            try:
+                if not use_requests:
+                    data = data.encode("utf-8")
+                    opener = compat_opener()
+                    if proxy:
+                        opener = compat_opener(proxy)
+                    opener.addheaders = custom_headers
+                    resp = opener.open(url, data, timeout=timeout)
+                else:
+                    resp = requests.get(
+                        url,
+                        data=data,
+                        headers=custom_headers,
+                        proxies=proxy,
+                        timeout=timeout,
+                    )
+                    resp.raise_for_status()
+            except (compat_httperr, requests.exceptions.HTTPError) as e:
+                error_resp = parse_http_error(e)
+                text = error_resp.text
+                headers = error_resp.headers
+                status_code = error_resp.status_code
+                error = error_resp.error
+                reason = error_resp.reason
+                response_url = error_resp.url
+            except compat_urlerr as e:
+                logger.error(e)
+            except KeyboardInterrupt as e:
+                raise e
+            except Exception as e:
+                raise e
+            else:
+                http_response = parse_http_response(resp)
+                headers = http_response.headers
+                text = http_response.text
+                status_code = http_response.status_code
+                reason = http_response.reason
+                response_url = http_response.url
         is_protected = detect_cloudflare_protection(text)
         if is_protected:
             result = cloudflare_decode(extract_encoded_data(text))
+            try:
+                result = result.encode("utf-8")
+                encoding = chardet.detect(result).get("encoding", "utf-8")
+                result = result.decode(encoding)
+            except:
+                pass
             _temp = Response(
                 ok=True if result else False,
+                url=response_url,
                 status_code=status_code,
                 text="",  # text, we can add response html here
                 result=result,
@@ -161,8 +197,15 @@ class HTTPRequestHandler:
             result = search_regex(
                 pattern=regex, string=text, default="", group="xpath_data",
             )
+            try:
+                result = result.encode("utf-8")
+                encoding = chardet.detect(result).get("encoding", "utf-8")
+                result = result.decode(encoding)
+            except:
+                pass
             _temp = Response(
                 ok=True if result else False,
+                url=response_url,
                 status_code=status_code,
                 text="",  # text, we can add response html here
                 result=result,
@@ -182,21 +225,24 @@ class HTTPRequestHandler:
         timeout=30,
         use_requests=False,
         connection_test=False,
+        proxy=None,
     ):
         Response = collections.namedtuple(
-            "Response", ["ok", "status_code", "text", "headers", "reason", "error_msg"]
+            "Response", ["ok", "url", "status_code", "text", "headers", "reason", "error_msg"]
         )
         ok = False
         text = None
         reason = ""
         error_msg = ""
+        response_url = ""
         show_charset = False
         if connection_test:
-            parsed = urlparse.urlparse(url)
-            url = f"{parsed.scheme}://{parsed.netloc}"
+            # parsed = urlparse.urlparse(url)
+            # url = f"{parsed.scheme}://{parsed.netloc}"
             show_charset = True
         http_response = Response(
             ok=ok,
+            url=response_url,
             text=text,
             status_code="",
             headers=headers,
@@ -210,14 +256,24 @@ class HTTPRequestHandler:
         custom_headers = req.headers
         logger.traffic_out(f"HTTP request:\n{raw}")
         headers = {}
+        if proxy and proxy.for_urllib and not use_requests:
+            proxy = proxy.for_urllib
+        elif proxy and proxy.for_requests and use_requests:
+            proxy = proxy.for_requests
+        else:
+            proxy = None
         if not data:
             try:
                 if not use_requests:
                     opener = compat_opener()
+                    if proxy:
+                        opener = compat_opener(proxy)
                     opener.addheaders = custom_headers
                     resp = opener.open(url, timeout=timeout)
                 else:
-                    resp = requests.get(url, headers=custom_headers, timeout=timeout)
+                    resp = requests.get(
+                        url, headers=custom_headers, proxies=proxy, timeout=timeout
+                    )
                     resp.raise_for_status()
                 http_response = parse_http_response(resp)
                 ok = http_response.ok
@@ -225,8 +281,10 @@ class HTTPRequestHandler:
                 text = http_response.text
                 status_code = http_response.status_code
                 reason = http_response.reason
+                response_url = http_response.url
                 http_response = Response(
                     ok=ok,
+                    url=response_url,
                     text=text,
                     status_code=status_code,
                     headers=headers,
@@ -240,8 +298,10 @@ class HTTPRequestHandler:
                 headers = error_resp.headers
                 error_msg = error_resp.error
                 reason = error_resp.reason
+                response_url = error_resp.url
                 http_response = Response(
                     ok=True,
+                    url=response_url,
                     text=text,
                     status_code=status_code,
                     headers=headers,
@@ -257,11 +317,17 @@ class HTTPRequestHandler:
                 if not use_requests:
                     data = data.encode("utf-8")
                     opener = compat_opener()
+                    if proxy:
+                        opener = compat_opener(proxy)
                     opener.addheaders = custom_headers
                     resp = opener.open(url, data, timeout=timeout)
                 else:
                     resp = requests.get(
-                        url, data=data, headers=custom_headers, timeout=timeout
+                        url,
+                        data=data,
+                        headers=custom_headers,
+                        proxies=proxy,
+                        timeout=timeout,
                     )
                     resp.raise_for_status()
                 http_response = parse_http_response(resp)
@@ -270,8 +336,10 @@ class HTTPRequestHandler:
                 text = http_response.text
                 status_code = http_response.status_code
                 reason = http_response.reason
+                response_url = http_response.url
                 http_response = Response(
                     ok=ok,
+                    url=response_url,
                     text=text,
                     status_code=status_code,
                     headers=headers,
@@ -285,8 +353,10 @@ class HTTPRequestHandler:
                 headers = error_resp.headers
                 error_msg = error_resp.error
                 reason = error_resp.reason
+                response_url = error_resp.url
                 http_response = Response(
                     ok=True,
+                    url=response_url,
                     text=text,
                     status_code=status_code,
                     headers=headers,

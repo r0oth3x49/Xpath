@@ -62,6 +62,7 @@ class SQLitest:
         filepath=None,
         injection_type=None,
         techniques=None,
+        proxy=None,
         batch=False,
     ):
         self.url = url
@@ -74,6 +75,7 @@ class SQLitest:
         self._injection_type = injection_type
         self._techniques = techniques
         self._batch = batch
+        self._proxy = proxy
 
     def _parse_target(self):
         ParamResponse = collections.namedtuple(
@@ -164,6 +166,9 @@ class SQLitest:
         injectable = False
         _type = injection_type.upper()
         _param = injectable_param
+        dbms = None
+        Response = collections.namedtuple("Response", ["dbms", "injectable"])
+        resp = Response(dbms=dbms, injectable=injectable)
 
         def fallback_request(url, data, headers, payload, param):
             resp = ""
@@ -180,7 +185,9 @@ class SQLitest:
                     headers, payload, param=param, unknown_error_counter=5
                 )
             try:
-                resp = request.perform(url, data=data, headers=headers)
+                resp = request.perform(
+                    url, data=data, headers=headers, proxy=self._proxy
+                )
             except Exception as error:
                 logger.error(error)
             return resp
@@ -192,10 +199,11 @@ class SQLitest:
         if headers and url and "HEADER" in _type or "COOKIE" in _type:
             headers = prepare_injection_payload(headers, payload, param=_param)
         try:
-            resp = request.perform(url, data=data, headers=headers)
+            resp = request.perform(url, data=data, headers=headers, proxy=self._proxy)
         except Exception as e:
             if "URL can't contain control characters" in str(e):
                 resp = fallback_request(url, data, headers, payload, _param)
+            raise e
         if resp and resp.text:
             out = search_dbms_errors(resp.text)
             injectable = out.get("vulnerable")
@@ -206,7 +214,8 @@ class SQLitest:
                 logger.notice(
                     f"heuristic (basic) test shows that {injection_type} parameter {param} might be injectable (possible DBMS: {dbms})"
                 )
-                if _dbms.lower() != "mysql":
+                resp = Response(dbms=_dbms, injectable=injectable)
+                if _dbms.lower() not in ["mysql", "postgresql"]:
                     logger.info(
                         f"Xpath currently does not support injection for '{_dbms}', will soon add support.."
                     )
@@ -216,7 +225,8 @@ class SQLitest:
                 logger.notice(
                     f"heuristic (basic) test shows that {injection_type} parameter {param} might not be injectable"
                 )
-        return injectable
+                resp = Response(dbms=None, injectable=injectable)
+        return resp
 
     def perform(self):
         vulns = []
@@ -224,6 +234,7 @@ class SQLitest:
             "Response",
             [
                 "is_vulnerable",
+                "dbms",
                 "payloads",
                 "filepath",
                 "cookies",
@@ -252,20 +263,18 @@ class SQLitest:
                 headers=self.headers,
                 use_requests=False,
                 connection_test=True,
+                proxy=self._proxy,
             )
-            if (
-                "Set-Cookie" in resp.headers
-                and self.headers
-                and "cookie" not in self.headers.lower()
-            ):
+            if "Set-Cookie" in list(resp.headers.keys()):
                 set_cookie = (
                     ", ".join(resp.headers.get_all("Set-Cookie"))
                     if hasattr(resp.headers, "get_all")
                     else resp.headers.get("Set-Cookie")
                 )
-                _show_slice = set_cookie
+                set_cookie = re.sub(r"(?is)path=/", "", set_cookie)
+                _show_slice = set_cookie.rstrip()
                 if len(set_cookie) > 20:
-                    _show_slice = f"{set_cookie[0:20]}...."
+                    _show_slice = f"{set_cookie[0:14]}....{set_cookie[-10:-2]}"
                 question = logger.read_input(
                     f"you have not declared cookie(s), while server wants to set its own ('{_show_slice}'). Do you want to use those [Y/n] ",
                     batch=self._batch,
@@ -280,12 +289,18 @@ class SQLitest:
                             ]
                         )
                         set_cookie = ";".join(set_cookie.split(";"))
-                    set_cookie = re.sub(r"(?is)path=/", "", set_cookie)
                     set_cookie = f"Cookie: {set_cookie}"
+                    if (
+                        not self.headers
+                        or self.headers
+                        and "cookie" not in self.headers.lower()
+                    ):
+                        self.headers += set_cookie
         except Exception as error:
             logger.critical(
                 "Xpath was not able to establish connection. try checking with -v set to 5."
             )
+            logger.error(error)
             sys.exit(0)
         payloads_list = prepare_payloads(
             prefixes=PREFIX,
@@ -304,44 +319,6 @@ class SQLitest:
                 is_resumed = True
             is_questioned = False
             for pay in session_data:
-                # _type = pay.get("parameter").upper()
-                # if "custom" in _type.lower():
-                #     _type = _type.replace("CUSTOM", "custom")
-                # if not is_questioned:
-                #     is_questioned = True
-                #     if (
-                #         self._injection_type.upper() != _type
-                #         or _type not in self._injection_type.upper()
-                #         or self._injection_type.upper() not in _type
-                #     ):
-                #         _param = (
-                #             pay.get("param")
-                #             .replace("*", "")
-                #             .replace(":", "")
-                #             .replace("=", "")
-                #             .strip()
-                #         )
-                #         _p = f"{DIM}{white}'{_param}'{BRIGHT}{black}"
-                #         logger.notice(
-                #             f"previous heuristics detected that the target {_type} parameter {_p} was injectable."
-                #         )
-                #         question = logger.read_input(
-                #             f"Do you want to continue testing on {_type} parameter '{_param}'? [Y/n] ",
-                #             batch=self._batch,
-                #             user_input="Y",
-                #         )
-                #         if question in ["", "y"]:
-                #             if "HEADER" in _type:
-                #                 set_headers += f'{pay.get("param")}'
-                #             if "COOKIE" in _type:
-                #                 set_cookie += f"\n{pay.get('param')}"
-                #             self._injection_type = _type
-                #         if question == "n" and not target_info.params:
-                #             logger.critical(
-                #                 "no parameter(s) found for testing in the provided data (e.g. GET parameter 'id' in 'www.site.com/index.php?id=1')."
-                #             )
-                #             logger.end("ending")
-                #             sys.exit(0)
                 vulns.append(
                     {
                         "injection_type": f"({pay.get('parameter')})",
@@ -351,6 +328,7 @@ class SQLitest:
                         "order": pay.get("payload_order"),
                         "regex": pay.get("regex"),
                         "injected_param": pay.get("param").replace("*", ""),
+                        "dbms": pay.get("dbms"),
                     }
                 )
         except Exception as error:
@@ -370,6 +348,7 @@ class SQLitest:
             successful_payload_prefix = ""
             vulnerable_param = ""
             unknown_error_counter = 0
+            dbms = ""
             for entry in params:
                 param = entry.get("key")
                 param_value = entry.get("value")
@@ -379,7 +358,7 @@ class SQLitest:
                 injectable_param = (
                     f"{param}{sep}{param_value}" if param_value else f"{param}{sep}"
                 )
-                is_injectable = self.is_injectable(
+                resp = self.is_injectable(
                     self.url,
                     self.data,
                     self.headers,
@@ -387,12 +366,19 @@ class SQLitest:
                     injectable_param=injectable_param,
                     injection_type=injection_type,
                 )
+                if not dbms:
+                    dbms = resp.dbms
+                is_injectable = resp.injectable
                 logger.info(
                     f"testing for SQL injection on {injection_type} parameter '{param if not is_custom_injection else '#1*'}'"
                 )
                 next_param_test = False
                 for entry in payloads_list:
+                    backend = entry.get("back_end")
                     title = entry.get("title")
+                    if dbms and dbms.lower() != backend.lower():
+                        logger.debug(f"Skipped '{title}'")
+                        continue
                     regex = entry.get("regex")
                     order = entry.get("order")
                     payloads = entry.get("payloads")
@@ -444,6 +430,7 @@ class SQLitest:
                                 data=data,
                                 headers=headers,
                                 use_requests=self._use_requests,
+                                proxy=self._proxy,
                             )
                         except KeyboardInterrupt as e:
                             question = logger.read_input(
@@ -490,6 +477,7 @@ class SQLitest:
                                         "injected_param": injectable_param.replace(
                                             "*", ""
                                         ),
+                                        "dbms": dbms,
                                     }
                                 )
                                 _ = session.dump(
@@ -504,6 +492,7 @@ class SQLitest:
                                         regex,
                                         "test",
                                         injectable_param,
+                                        dbms,
                                     ),
                                 )
                                 vulnerable_param = param
@@ -543,6 +532,7 @@ class SQLitest:
                 else k.get("payload_order"),
                 reverse=True,
             )
+            dbms = vulns[0].get("dbms")
             injection_type = vulns[0].get("injection_type")
             injected_param = vulns[0].get("injected_param")
             recommended_payload = vulns[0].get("payload")
@@ -589,6 +579,7 @@ class SQLitest:
             resp = Response(
                 is_vulnerable=True,
                 payloads=vulns,
+                dbms=dbms,
                 filepath=self._filepath,
                 cookies=set_cookie,
                 headers=set_headers,
@@ -601,6 +592,7 @@ class SQLitest:
         else:
             resp = Response(
                 is_vulnerable=False,
+                dbms=dbms,
                 payloads=vulns,
                 filepath=None,
                 cookies=set_cookie,

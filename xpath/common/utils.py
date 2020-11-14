@@ -35,6 +35,7 @@ from xpath.common.lib import (
     NO_DEFAULT,
     SQL_ERRORS,
     collections,
+    ProxyHandler,
     compat_urlencode,
 )
 from xpath.logger.colored_logger import logger
@@ -43,8 +44,11 @@ from xpath.common.prettytable import PrettyTable, from_db_cursor
 INVALID_URL = False
 
 
-def to_hex(value):
-    return f"0x{binascii.hexlify(value.encode()).decode()}"
+def to_hex(value, dbms="MySQL"):
+    if dbms == "MySQL":
+        return f"0x{binascii.hexlify(value.encode()).decode()}"
+    if dbms == "PostgreSQL":
+        return f"({'||'.join([f'CHR({ord(i)})' for i in value.strip()])})"
 
 
 def prettifier(cursor_or_list, field_names="", header=False):
@@ -65,9 +69,19 @@ def prettifier(cursor_or_list, field_names="", header=False):
     return _temp
 
 
+def prepare_proxy(proxy):
+    Response = collections.namedtuple("Response", ["for_requests", "for_urllib"])
+    for_urllib = None
+    for_requests = None
+    if proxy:
+        for_requests = {"http": proxy, "https": proxy}
+        for_urllib = ProxyHandler(for_requests)
+    return Response(for_requests=for_requests, for_urllib=for_urllib)
+
+
 def parse_http_error(error):
     Response = collections.namedtuple(
-        "Response", ["text", "headers", "status_code", "reason", "error"]
+        "Response", ["url", "text", "headers", "status_code", "reason", "error"]
     )
     text = ""
     status_code = 0
@@ -79,14 +93,17 @@ def parse_http_error(error):
         status_code = error.response.status_code
         reason = error.response.reason
         headers = error.response.headers
+        url = error.response.url
         error_msg = f"{status_code} ({reason})"
     else:
         text = unescape_html(error)
         status_code = error.code
         reason = error.reason
         headers = dict(error.info())
+        url = error.geturl()
         error_msg = f"{status_code} ({reason})"
     return Response(
+        url=url,
         text=text,
         headers=headers,
         status_code=status_code,
@@ -97,7 +114,7 @@ def parse_http_error(error):
 
 def parse_http_response(resp):
     Response = collections.namedtuple(
-        "Response", ["ok", "text", "headers", "status_code", "reason", "error"]
+        "Response", ["ok", "url", "text", "headers", "status_code", "reason", "error"]
     )
     text = ""
     status_code = 0
@@ -106,6 +123,7 @@ def parse_http_response(resp):
     reason = ""
     if hasattr(resp, "text"):
         text = resp.text
+        url = resp.url
         status_code = resp.status_code
         reason = resp.reason
         headers = resp.headers
@@ -113,6 +131,7 @@ def parse_http_response(resp):
         error_msg = f"{status_code} ({reason})"
     else:
         text = unescape_html(resp)
+        url = resp.geturl()
         status_code = resp.status
         ok = bool(200 == status_code)
         reason = resp.reason
@@ -120,6 +139,7 @@ def parse_http_response(resp):
         error_msg = f"{status_code} ({reason})"
     return Response(
         ok=ok,
+        url=url,
         text=text,
         headers=headers,
         status_code=status_code,
@@ -169,11 +189,19 @@ def prepare_custom_headers(
 
 
 def value_cleanup(value):
+    if value and "S3PR4T0R" in value:
+        value = value.strip().split("S3PR4T0R")
+        value = f'{len(value)}'
     return re.sub(r"\s+", " ", re.sub(r"\(+", "", value))
 
 
 def search_regex(
-    pattern, string, default=NO_DEFAULT, fatal=True, flags=0, group=None,
+    pattern,
+    string,
+    default=NO_DEFAULT,
+    fatal=True,
+    flags=0,
+    group=None,
 ):
     """
     Perform a regex search on the given string, using a single or a list of
@@ -273,6 +301,7 @@ def prepare_payloads(prefixes, suffixes, payloads, techniques=""):
     if techniques:
         techniques = techniques.strip()
         [techniques_to_test.extend(techniques_dict.get(i)) for i in techniques]
+        techniques_to_test.append(16)
     _temp = []
     for entry in payloads:
         order = entry.get("order")
@@ -304,16 +333,20 @@ def prepare_request(url, data, custom_headers, use_requests=False):
         custom_headers += f"\nUser-agent: {useragent}"
     if custom_headers and "host" not in custom_headers.lower():
         custom_headers += f"\nHost: {parsed.netloc}"
-    custom_headers = "\n".join(
-        [i.strip() for i in custom_headers.split("\n") if i.strip()]
-    )
+    # custom_headers += "\nCache-control: no-cache"
+    # custom_headers += "\nAccepts: */*"
+    # custom_headers += "\nAccept-encoding: gzip,deflate"
+    custom_headers = "\n".join([i.strip() for i in custom_headers.split("\n") if i])
     raw = f"{request_type} {path} HTTP/1.1\n"
     raw += f"{custom_headers if custom_headers else ''}\n"
+    if data:
+        raw += f"\n{data}\n"
     header = {}
     headers = custom_headers.split("\n")
     for i in headers:
         sph = [i.strip() for i in i.split(":")]
-        header.update({sph[0]: sph[1]})
+        if sph and len(sph) == 2:
+            header.update({sph[0]: sph[1]})
     if not use_requests:
         _temp = []
         for key, value in header.items():
@@ -329,6 +362,8 @@ def prepare_response(resp):
     raw_response = f"({resp.status_code} {resp.reason}):\n"
     raw_headers = "\n".join([f"{k}: {v}" for k, v in resp.headers.items()])
     raw_response += f"{raw_headers}"
+    if hasattr(resp, "url"):
+        raw_response += f"\nURI: {resp.url}"
     return raw_response
 
 
@@ -387,8 +422,17 @@ def prepare_injection_payload(text, payload, param="", unknown_error_counter=0):
     return prepared_payload
 
 
-def clean_up_payload(payload, replaceable_string="0x72306f746833783439"):
-    return payload.replace(replaceable_string, "{banner}")
+def clean_up_payload(payload, replaceable_string="0x72306f746833783439", replace_with="{banner}"):
+    s = re.sub(r"(?is)(?:0x72306f746833783439|1337)", replace_with, payload)
+    return s
+
+
+def clean_up_offset_payload(payload):
+    if "0," in payload:
+        payload = "{index},".join(payload.rsplit("0,"))
+    if "OFFSET" in payload:
+        payload = "OFFSET {index} ".join(payload.rsplit("OFFSET 0"))
+    return payload
 
 
 def prepare_payload_request(self, payload, unknown_error_counter=0):

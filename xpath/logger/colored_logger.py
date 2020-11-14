@@ -175,14 +175,21 @@ class ColoredLogger:
             lambda message, *args: logger._log(logging.END, message, args),
         )
         setattr(
-            logger, "read_input", self.read_input,
+            logger,
+            "read_input",
+            self.read_input,
         )
         self.logger = logger
         self.stream_handler = stream_handler
 
     def set_level(self, level, filepath):
+        if not os.path.isfile(filepath):
+            with open(filepath, "a", encoding="utf-8") as fd:
+                pass
         self.stream_handler.setLevel(level)
-        handler = logging.FileHandler(filepath)
+        handler = logging.FileHandler(
+            filepath, mode="a", encoding="utf-8", errors="ignore"
+        )
         ff = logging.Formatter("%(message)s")
         handler.setFormatter(ff)
         handler.setLevel(logging.SUCCESS)

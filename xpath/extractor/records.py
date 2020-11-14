@@ -26,9 +26,14 @@ THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 from xpath.common.session import session
 from xpath.injector.request import request
 from xpath.logger.colored_logger import logger
-from xpath.common.utils import prettifier, prepare_payload_request
 from xpath.common.lib import compat_urlencode, re, collections, TBL_RECS
 from xpath.common.payloads import PAYLOADS_RECS_COUNT, PAYLOADS_RECS_DUMP
+from xpath.common.utils import (
+    prettifier,
+    prepare_payload_request,
+    clean_up_payload,
+    clean_up_offset_payload,
+)
 
 
 class RecordsExtractor(object):
@@ -36,46 +41,31 @@ class RecordsExtractor(object):
     Extracts entries from tables...
     """
 
-    def __init__(
-        self,
-        url,
-        data="",
-        payload="",
-        regex="",
-        headers="",
-        injected_param="",
-        session_filepath="",
-        payloads="",
-        injection_type="",
-    ):
-        self.url = url
-        self.data = data
-        self.payload = payload
-        self.payloads = payloads
-        self.headers = headers
-        self.regex = regex
-        self.session_filepath = session_filepath
-        self._injected_param = injected_param
-        self._injection_type = injection_type
-
     def _clean_up_cols(self, columns):
         return re.sub(" +", "", columns).split(",")
 
     def _generate_data_payloads(self, data_count, payload, cols=[], index=0):
-        payload = "{index},".join(payload.rsplit("0,"))
+        payload = clean_up_offset_payload(payload)
         payloads = {}
         for i in range(index, data_count):
             payloads.update({i: []})
             for c in cols:
                 payloads[i].append(
-                    {"column": c, "payload": payload.format(col=c, index=i),}
+                    {
+                        "column": c,
+                        "payload": payload.format(col=c, index=i),
+                    }
                 )
         return payloads
 
     def _data_count(self, db="", tbl=""):
         _temp = []
         if db and tbl:
-            for i in PAYLOADS_RECS_COUNT:
+            count_payloads = []
+            [count_payloads.extend(v) for _, v in PAYLOADS_RECS_COUNT.items()]
+            if self._dbms:
+                count_payloads = PAYLOADS_RECS_COUNT.get(self._dbms, count_payloads)
+            for i in count_payloads:
                 data = i.format(db=db, tbl=tbl)
                 _temp.append(data)
         payloads = self._generat_payload(payloads_list=_temp)
@@ -109,8 +99,14 @@ class RecordsExtractor(object):
             ["fetched", "count", "database", "table", "columns", "records"],
         )
         if db and tbl and cols and isinstance(cols, list):
-            for i in PAYLOADS_RECS_DUMP:
-                data = i.format(col="0x72306f746833783439", db=db, tbl=tbl)
+            dump_payloads = []
+            [dump_payloads.extend(v) for _, v in PAYLOADS_RECS_DUMP.items()]
+            test_column = "0x72306f746833783439"
+            if self._dbms:
+                dump_payloads = PAYLOADS_RECS_DUMP.get(self._dbms, dump_payloads)
+                test_column = "1337"
+            for i in dump_payloads:
+                data = i.format(col=test_column, db=db, tbl=tbl)
                 _temp_payloads.append(data)
 
         try:
@@ -134,7 +130,21 @@ class RecordsExtractor(object):
         retval = self._data_count(db=db, tbl=tbl)
         if retval.is_injected:
             data_count = int(retval.result)
-            logger.info("used SQL query returns %d entries" % (data_count))
+            if data_count != 0:
+                logger.info("used SQL query returns %d entries" % (data_count))
+            if data_count == 0:
+                logger.warning(
+                    "used SQL query returns %d entries of columns '%s' for table '%s' in database '%s'"
+                    % (data_count, ", ".join(cols), tbl, db)
+                )
+                return RecordsResponse(
+                    fetched=False,
+                    count=data_count,
+                    database=db,
+                    table=tbl,
+                    columns=cols,
+                    records=[],
+                )
             if is_resumed:
                 _temp = fetched_data
                 for entry in fetched_data:
@@ -156,7 +166,9 @@ class RecordsExtractor(object):
                 payloads = self._generat_payload(payloads_list=_temp_payloads)
                 retval = self._extact(payloads=payloads)
                 if retval.is_injected:
-                    payload = retval.payload.replace("0x72306f746833783439", "{col}")
+                    payload = clean_up_payload(
+                        payload=retval.payload, replace_with="{col}"
+                    )
                     payloads = self._generate_data_payloads(
                         data_count=data_count, payload=payload, cols=cols, index=index
                     )
@@ -310,7 +322,11 @@ class RecordsExtractor(object):
                 headers = payload_request.headers
                 try:
                     response = request.inject_payload(
-                        url=url, regex=regex, data=data, headers=headers
+                        url=url,
+                        regex=regex,
+                        data=data,
+                        headers=headers,
+                        proxy=self._proxy,
                     )
                 except KeyboardInterrupt:
                     logger.warning(

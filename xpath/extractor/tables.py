@@ -26,8 +26,13 @@ THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 from xpath.common.session import session
 from xpath.injector.request import request
 from xpath.logger.colored_logger import logger
-from xpath.common.utils import to_hex, prettifier, prepare_payload_request
 from xpath.common.payloads import PAYLOADS_TBLS_COUNT, PAYLOADS_TBLS_NAMES
+from xpath.common.utils import (
+    to_hex,
+    prettifier,
+    prepare_payload_request,
+    clean_up_offset_payload,
+)
 from xpath.common.lib import (
     binascii,
     collections,
@@ -42,38 +47,20 @@ class TablesExtractor(object):
     Extracts table names for a database..
     """
 
-    def __init__(
-        self,
-        url,
-        data="",
-        payload="",
-        regex="",
-        headers="",
-        injected_param="",
-        session_filepath="",
-        payloads="",
-        injection_type="",
-    ):
-        self.url = url
-        self.data = data
-        self.payload = payload
-        self.payloads = payloads
-        self.headers = headers
-        self.regex = regex
-        self.session_filepath = session_filepath
-        self._injected_param = injected_param
-        self._injection_type = injection_type
-
     def _generate_tbl_payloads(self, tbl_count, payload, index=0):
-        payload = "{index},".join(payload.rsplit("0,"))
+        payload = clean_up_offset_payload(payload)
         payloads = [payload.format(index=i) for i in range(index, tbl_count)]
         return payloads
 
     def _tbl_count(self, db=""):
         _temp = []
         if db:
-            encode_string = to_hex(db)
-            for entry in PAYLOADS_TBLS_COUNT:
+            count_payloads = []
+            [count_payloads.extend(v) for _, v in PAYLOADS_TBLS_COUNT.items()]
+            encode_string = to_hex(db, dbms=self._dbms)
+            if self._dbms:
+                count_payloads = PAYLOADS_TBLS_COUNT.get(self._dbms, count_payloads)
+            for entry in count_payloads:
                 data = entry.format(db=encode_string)
                 _temp.append(data)
         payloads = self._generat_payload(payloads_list=_temp)
@@ -89,13 +76,19 @@ class TablesExtractor(object):
             "TablesResponse", ["fetched", "count", "database", "tables"]
         )
         if db:
-            encode_string = to_hex(db)
-            for entry in PAYLOADS_TBLS_NAMES:
+            dump_payloads = []
+            [dump_payloads.extend(v) for _, v in PAYLOADS_TBLS_NAMES.items()]
+            encode_string = to_hex(db, dbms=self._dbms)
+            if self._dbms:
+                dump_payloads = PAYLOADS_TBLS_NAMES.get(self._dbms, dump_payloads)
+            for entry in dump_payloads:
                 data = entry.format(db=encode_string)
                 _temp_payloads.append(data)
         try:
             fetched_data = session.fetch_from_table(
-                session_filepath=self.session_filepath, table_name=db, cursor=False,
+                session_filepath=self.session_filepath,
+                table_name=db,
+                cursor=False,
             )
             if fetched_data:
                 is_resumed = True
@@ -105,7 +98,16 @@ class TablesExtractor(object):
         retval = self._tbl_count(db=db)
         if retval.is_injected:
             tbl_count = int(retval.result)
-            logger.info("used SQL query returns %d entries" % (tbl_count))
+            if tbl_count != 0:
+                logger.info("used SQL query returns %d entries" % (tbl_count))
+            if tbl_count == 0:
+                logger.warning(
+                    "used SQL query returns %d entries for database: '%s'"
+                    % (tbl_count, db)
+                )
+                return TablesResponse(
+                    fetched=False, count=tbl_count, database=db, tables=[]
+                )
             if is_resumed:
                 for entry in fetched_data:
                     name = entry.get("tblname")
@@ -134,7 +136,9 @@ class TablesExtractor(object):
                     if response_data.is_fetched:
                         _temp.extend(response_data.result)
                     self._pprint_tables(
-                        cursor_or_list=_temp, field_names="Tables", database=db,
+                        cursor_or_list=_temp,
+                        field_names="Tables",
+                        database=db,
                     )
                     return TablesResponse(
                         fetched=True, count=tbl_count, database=db, tables=_temp
@@ -153,7 +157,9 @@ class TablesExtractor(object):
                         logger.critical(message)
             else:
                 self._pprint_tables(
-                    cursor_or_list=_temp, field_names="Tables", database=db,
+                    cursor_or_list=_temp,
+                    field_names="Tables",
+                    database=db,
                 )
                 return TablesResponse(
                     fetched=True, count=tbl_count, database=db, tables=_temp
@@ -193,7 +199,7 @@ class TablesExtractor(object):
             headers = payload_request.headers
             try:
                 response = request.inject_payload(
-                    url=url, regex=regex, data=data, headers=headers
+                    url=url, regex=regex, data=data, headers=headers, proxy=self._proxy
                 )
             except KeyboardInterrupt:
                 logger.warning(

@@ -34,8 +34,8 @@ from xpath.extractor import (
 from xpath.common.session import session
 from xpath.injector.tests import SQLitest
 from xpath.logger.colored_logger import logger, set_level
-from xpath.common.lib import os, logging, collections
-from xpath.common.utils import prepare_custom_headers
+from xpath.common.lib import os, ssl, logging, collections
+from xpath.common.utils import prepare_custom_headers, prepare_proxy
 
 
 def perform_injection(
@@ -52,6 +52,8 @@ def perform_injection(
     techniques="",
     batch=False,
     flush_session=False,
+    proxy=None,
+    force_ssl=False,
 ):
     verbose_levels = {
         1: logging.INFO,
@@ -60,6 +62,11 @@ def perform_injection(
         4: logging.TRAFFIC_OUT,
         5: logging.TRAFFIC_IN,
     }
+    if not force_ssl:
+        # monkeypatch
+        ssl._create_default_https_context = ssl._create_unverified_context
+    if proxy:
+        proxy = prepare_proxy(proxy)
     verbose_level = verbose_levels.get(verbosity, logging.INFO)
     session_path = session.generate_filepath(url, flush_session=flush_session)
     filepath = os.path.join(session_path, "log")
@@ -70,8 +77,10 @@ def perform_injection(
         [
             "is_injected",
             "payloads",
+            "dbms",
             "filepath",
             "headers",
+            "proxy",
             "injection_type",
             "injected_param",
             "session_filepath",
@@ -116,6 +125,7 @@ def perform_injection(
         injection_type=injection_type,
         techniques=techniques,
         batch=batch,
+        proxy=proxy,
     )
     resp = sqli.perform()
     if resp.cookies:
@@ -127,8 +137,10 @@ def perform_injection(
     resp = Response(
         is_injected=resp.is_vulnerable,
         payloads=resp.payloads,
+        dbms=resp.dbms,
         filepath=resp.filepath,
         headers=custom_headers,
+        proxy=proxy,
         injection_type=injection_type,
         injected_param=resp.injected_param,
         session_filepath=resp.session_filepath,
@@ -159,6 +171,8 @@ class XPATHInjector(
         injection_type="",
         session_filepath="",
         payloads="",
+        proxy=None,
+        dbms=None,
     ):
         self.url = url
         self.data = data
@@ -169,6 +183,8 @@ class XPATHInjector(
         self._injection_type = injection_type
         self.session_filepath = session_filepath
         self._injected_param = injected_param
+        self._proxy = proxy
+        self._dbms = dbms
         self._filepath = os.path.dirname(session_filepath)
 
     def __end(self, database="", table="", fetched=True):

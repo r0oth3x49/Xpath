@@ -28,7 +28,7 @@ from xpath.injector.request import request
 from xpath.logger.colored_logger import logger
 from xpath.common.payloads import PAYLOADS_DBS_COUNT, PAYLOADS_DBS_NAMES
 from xpath.common.lib import sqlite3, compat_urlencode, DBS_STATEMENT, collections
-from xpath.common.utils import to_hex, prepare_payload_request
+from xpath.common.utils import to_hex, prepare_payload_request, clean_up_offset_payload
 
 
 class DatabasesExtractor(object):
@@ -36,30 +36,8 @@ class DatabasesExtractor(object):
     Extract all databases names ..
     """
 
-    def __init__(
-        self,
-        url,
-        data="",
-        payload="",
-        regex="",
-        headers="",
-        injected_param="",
-        session_filepath="",
-        payloads="",
-        injection_type="",
-    ):
-        self.url = url
-        self.data = data
-        self.payload = payload
-        self.payloads = payloads
-        self.headers = headers
-        self.regex = regex
-        self.session_filepath = session_filepath
-        self._injected_param = injected_param
-        self._injection_type = injection_type
-
     def _generate_dbs_payloads(self, dbs_count, payload, index=0):
-        payload = "{index},".join(payload.rsplit("0,"))
+        payload = clean_up_offset_payload(payload)
         payloads = [payload.format(index=i) for i in range(index, dbs_count)]
         return payloads
 
@@ -91,7 +69,13 @@ class DatabasesExtractor(object):
         retval = self._dbs_count
         if retval.is_injected:
             dbs_count = int(retval.result)
-            logger.info("used SQL query returns %d entries" % (dbs_count))
+            if dbs_count != 0:
+                logger.info("used SQL query returns %d entries" % (dbs_count))
+            if dbs_count == 0:
+                logger.warning("used SQL query returns %d entries for database names.." % (dbs_count))
+                return DatabasesResponse(
+                        fetched=False, count=dbs_count, databases=[]
+                    )
             if is_resumed:
                 for entry in fetched_data:
                     name = entry.get("dbname")
@@ -165,7 +149,7 @@ class DatabasesExtractor(object):
             headers = payload_request.headers
             try:
                 response = request.inject_payload(
-                    url=url, regex=regex, data=data, headers=headers
+                    url=url, regex=regex, data=data, headers=headers, proxy=self._proxy
                 )
             except KeyboardInterrupt:
                 logger.warning(

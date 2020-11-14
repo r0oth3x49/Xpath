@@ -26,6 +26,7 @@ THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 import re
 import os
+import ssl
 import sys
 import csv
 import time
@@ -50,6 +51,7 @@ from urllib.parse import quote as compat_urlencode
 from urllib.request import build_opener as compat_opener
 from urllib.request import Request as compat_request
 from urllib.request import urlopen as compat_urlopen
+from urllib.request import ProxyHandler
 
 NO_DEFAULT = object()
 
@@ -68,7 +70,8 @@ CREATE TABLE tbl_payload (
  parameter text NOT NULL,
  regex text NOT NULL,
  type text NOT NULL,
- param text
+ param text,
+ dbms text
 );
 CREATE TABLE tbl_databases (
  dbs_id integer PRIMARY KEY AUTOINCREMENT,
@@ -112,8 +115,8 @@ CREATE TABLE `{name}` (
 
 PAYLOAD_STATEMENT = """
 INSERT 
-    INTO tbl_payload (`payload_type`, `payload_order`, `payload_attemps`, `payload`, `parameter`, `regex`, `type`, `param`)
-VALUES  (?, ?, ?, ?, ?, ?, ?, ?);
+    INTO tbl_payload (`payload_type`, `payload_order`, `payload_attemps`, `payload`, `parameter`, `regex`, `type`, `param`, `dbms`)
+VALUES  (?, ?, ?, ?, ?, ?, ?, ?, ?);
 """
 DBS_STATEMENT = """
 INSERT 

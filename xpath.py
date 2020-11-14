@@ -137,6 +137,20 @@ def main():
         default="",
         metavar="",
     )
+    request.add_argument(
+        "--proxy",
+        dest="proxy",
+        type=str,
+        help="Use a proxy to connect to the target URL",
+        default="",
+        metavar="",
+    )
+    request.add_argument(
+        "--force-ssl",
+        dest="force_ssl",
+        action="store_true",
+        help="Force usage of SSL/HTTPS",
+    )
     detection = parser.add_argument_group(
         "Detection",
         description="These options can be used to customize the detection phase",
@@ -149,14 +163,6 @@ def main():
         default=1,
         metavar="",
     )
-    # detection.add_argument(
-    #     "--code",
-    #     dest="code",
-    #     type=str,
-    #     help="HTTP code to match when query is evaluated to True",
-    #     default=200,
-    #     metavar="",
-    # )
     techniques = parser.add_argument_group(
         "Techniques",
         description="These options can be used to tweak testing of specific SQL injection\ntechniques",
@@ -266,6 +272,8 @@ def main():
         techniques=args.tech,
         batch=args.batch,
         flush_session=args.flush_session,
+        proxy=args.proxy,
+        force_ssl=args.force_ssl,
     )
     if resp.is_injected:
         injection_type = resp.injection_type
@@ -274,6 +282,8 @@ def main():
         recommended_payload = resp.recommended_payload
         recommended_payload_type = resp.recommended_payload_type
         headers = resp.headers
+        proxy = resp.proxy
+        dbms = resp.dbms
         target = xpath.XPATHInjector(
             url=args.url,
             data=args.data,
@@ -283,6 +293,8 @@ def main():
             injected_param=injected_param,
             injection_type=injection_type,
             session_filepath=session_filepath,
+            proxy=proxy,
+            dbms=dbms
         )
         if args.search:
             target.search_for(database=args.db, table=args.tbl, column=args.col)
