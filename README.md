@@ -33,6 +33,14 @@ You can download the latest version of udemy-dl by cloning the GitHub repository
 
     git clone https://github.com/r0oth3x49/Xpath.git
 
+## ***Fatures***
+ - Supports error based MySQL/PostgreSQL injections.
+ - Supports all types (HEADERS/COOKIE//POST/GET) for the listed dbms.
+ - Added switch to support proxy option `--proxy`.
+ - Added swicth to force SSL connection `--force-ssl`.
+ - Ability to search for db/table/column `--search`.
+
+
 ## **Advanced Usage**
 
 <pre><code>
@@ -107,6 +115,7 @@ Example:
     Developer assume no liability and is not responsible for any misuse or damage caused by this program.
 
 
-## **Legal disclaimer**
+## **TODO**
  - Add support for all other DBMS injection
- - Add Support for multipart/headers based injections
+ - Add support to multitarget injection from file.
+ - Add support for union based/booelan/time based SQL injections.
