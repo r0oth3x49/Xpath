@@ -73,6 +73,8 @@ Request:
   --cookie            HTTP Cookie header value (e.g. "PHPSESSID=a8d127e..")
   --referer           HTTP Referer header value
   --headers           Extra headers (e.g. "Accept-Language: fr\nETag: 123")
+  --proxy             Use a proxy to connect to the target URL
+  --force-ssl         Force usage of SSL/HTTPS
 
 Detection:
   These options can be used to customize the detection phase
