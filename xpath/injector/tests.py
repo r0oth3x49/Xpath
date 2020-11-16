@@ -168,7 +168,7 @@ class SQLitest:
         _param = injectable_param
         dbms = None
         Response = collections.namedtuple("Response", ["dbms", "injectable"])
-        resp = Response(dbms=dbms, injectable=injectable)
+        _temp = Response(dbms=dbms, injectable=injectable)
 
         def fallback_request(url, data, headers, payload, param):
             resp = ""
@@ -204,7 +204,7 @@ class SQLitest:
             if "URL can't contain control characters" in str(e):
                 resp = fallback_request(url, data, headers, payload, _param)
             raise e
-        if resp and resp.text:
+        if resp and resp.text or resp.error_msg:
             out = search_dbms_errors(resp.text)
             injectable = out.get("vulnerable")
             param = f"{DIM}{white}'{param}'{BRIGHT}{black}"
@@ -214,7 +214,7 @@ class SQLitest:
                 logger.notice(
                     f"heuristic (basic) test shows that {injection_type} parameter {param} might be injectable (possible DBMS: {dbms})"
                 )
-                resp = Response(dbms=_dbms, injectable=injectable)
+                _temp = Response(dbms=_dbms, injectable=injectable)
                 if _dbms.lower() not in ["mysql", "postgresql"]:
                     logger.info(
                         f"Xpath currently does not support injection for '{_dbms}', will soon add support.."
@@ -225,8 +225,8 @@ class SQLitest:
                 logger.notice(
                     f"heuristic (basic) test shows that {injection_type} parameter {param} might not be injectable"
                 )
-                resp = Response(dbms=None, injectable=injectable)
-        return resp
+                _temp = Response(dbms=None, injectable=injectable)
+        return _temp
 
     def perform(self):
         vulns = []

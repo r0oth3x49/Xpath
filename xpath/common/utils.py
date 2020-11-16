@@ -162,7 +162,9 @@ def unescape_html(resp, show=False):
         logger.debug(f"declared web page charset '{encoding}'")
     if response and not isinstance(response, str):
         response = response.decode(encoding, errors="ignore")
-    data = html.unescape(response)
+    data = ""
+    if response:
+        data = html.unescape(response)
     return data
 
 
