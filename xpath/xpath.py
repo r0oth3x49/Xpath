@@ -71,6 +71,8 @@ def perform_injection(
     session_path = session.generate_filepath(url, flush_session=flush_session)
     filepath = os.path.join(session_path, "log")
     set_level(verbose_level, filepath)
+    if not url.startswith("http"):
+        url = f"http://{url}" if not url.startswith("//") else f"http:{url}"
     logger.start("starting")
     Response = collections.namedtuple(
         "Response",

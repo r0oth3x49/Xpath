@@ -162,27 +162,30 @@ class SQLitest:
         injectable_param="",
         injection_type="",
     ):
-        payload = ".,))').\".."
-        injectable = False
-        _type = injection_type.upper()
-        _param = injectable_param
         dbms = None
+        injectable = False
+        payload = ".,))').\".."
         Response = collections.namedtuple("Response", ["dbms", "injectable"])
         _temp = Response(dbms=dbms, injectable=injectable)
 
-        def fallback_request(url, data, headers, payload, param):
+        def perform_request(url, data, headers, payload, param, injection_type, uec=0):
             resp = ""
-            if url and not data and "GET" in _type or "URI" in _type:
+            if url and not data and "GET" in injection_type or "URI" in injection_type:
                 url = prepare_injection_payload(
-                    url, payload, param=param, unknown_error_counter=5
+                    url, payload, param=param, unknown_error_counter=uec
                 )
-            if data and url and "POST" in _type:
+            if data and url and "POST" in injection_type:
                 data = prepare_injection_payload(
-                    data, payload, param=param, unknown_error_counter=5
+                    data, payload, param=param, unknown_error_counter=uec
                 )
-            if headers and url and "HEADER" in _type or "COOKIE" in _type:
+            if (
+                headers
+                and url
+                and "HEADER" in injection_type
+                or "COOKIE" in injection_type
+            ):
                 headers = prepare_injection_payload(
-                    headers, payload, param=param, unknown_error_counter=5
+                    headers, payload, param=param, unknown_error_counter=uec
                 )
             try:
                 resp = request.perform(
@@ -190,20 +193,34 @@ class SQLitest:
                 )
             except Exception as error:
                 logger.error(error)
+                raise error
             return resp
 
-        if url and not data and "GET" in _type or "URI" in _type:
-            url = prepare_injection_payload(url, payload, param=_param)
-        if data and url and "POST" in _type:
-            data = prepare_injection_payload(data, payload, param=_param)
-        if headers and url and "HEADER" in _type or "COOKIE" in _type:
-            headers = prepare_injection_payload(headers, payload, param=_param)
         try:
-            resp = request.perform(url, data=data, headers=headers, proxy=self._proxy)
+            resp = perform_request(
+                url=url,
+                data=data,
+                headers=headers,
+                payload=payload,
+                param=injectable_param,
+                injection_type=injection_type.upper(),
+            )
         except Exception as e:
             if "URL can't contain control characters" in str(e):
-                resp = fallback_request(url, data, headers, payload, _param)
-            raise e
+                try:
+                    resp = fallback_request(
+                        url=url,
+                        data=data,
+                        headers=headers,
+                        payload=payload,
+                        param=injectable_param,
+                        injection_type=injection_type.upper(),
+                        uec=5,
+                    )
+                except Exception as error:
+                    raise error
+            else:
+                raise e
         if resp and resp.text or resp.error_msg:
             out = search_dbms_errors(resp.text)
             injectable = out.get("vulnerable")
@@ -225,7 +242,7 @@ class SQLitest:
                 logger.notice(
                     f"heuristic (basic) test shows that {injection_type} parameter {param} might not be injectable"
                 )
-                _temp = Response(dbms=None, injectable=injectable)
+                _temp = Response(dbms="", injectable=injectable)
         return _temp
 
     def perform(self):

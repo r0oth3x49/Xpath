@@ -392,12 +392,12 @@ def extract_params(value, delimeter="", injection_type=""):
             if i
         ]
     if injection_type == "POST":
-        params = parse_qs(value)
+        params = parse_qs(value, keep_blank_values=True)
         params = [{"key": k, "value": "".join(v)} for k, v in params.items()]
     if injection_type == "GET":
         parsed = urlparse.urlparse(value)
         path = parsed.path
-        params = parse_qs(parsed.query)
+        params = parse_qs(parsed.query, keep_blank_values=True)
         params = [{"key": k, "value": "".join(v)} for k, v in params.items()]
         if not params and path and path != "/":
             params = [{"key": "#1*", "value": "*"}]
