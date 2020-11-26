@@ -35,7 +35,7 @@ You can download the latest version of udemy-dl by cloning the GitHub repository
 
 ## ***Features***
  - Supports error based MySQL/PostgreSQL injections.
- - Supports all types (HEADERS/COOKIE//POST/GET) for the listed dbms.
+ - Supports all types (HEADERS/COOKIE/POST/GET) for the listed dbms.
  - Added switch to support proxy option `--proxy`.
  - Added swicth to force SSL connection `--force-ssl`.
  - Ability to search for db/table/column `--search`.
