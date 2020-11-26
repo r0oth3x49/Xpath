@@ -172,7 +172,7 @@ def main():
         dest="tech",
         type=str,
         help='SQL injection techniques to use (default "XEFDBGJ")',
-        default="XEFDBGJ",
+        default="XEFDBGO",
     )
     enumeration = parser.add_argument_group(
         "Enumeration",

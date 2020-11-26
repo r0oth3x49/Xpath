@@ -187,9 +187,7 @@ class ColoredLogger:
             with open(filepath, "a", encoding="utf-8") as fd:
                 pass
         self.stream_handler.setLevel(level)
-        handler = logging.FileHandler(
-            filepath, mode="a", encoding="utf-8", errors="ignore"
-        )
+        handler = logging.FileHandler(filepath, mode="a", encoding="utf-8")
         ff = logging.Formatter("%(message)s")
         handler.setFormatter(ff)
         handler.setLevel(logging.SUCCESS)
@@ -217,7 +215,9 @@ class ColoredLogger:
             if not batch:
                 sys.stdout.write("{}".format(message))
                 sys.stdout.flush()
-                user_input = input()
+                ui = input()
+                if ui:
+                    user_input = ui
                 print("")
             if batch:
                 sys.stdout.write("{}{}".format(message, user_input))

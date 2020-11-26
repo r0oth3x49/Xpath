@@ -194,7 +194,8 @@ def value_cleanup(value):
     if value and "S3PR4T0R" in value:
         value = value.strip().split("S3PR4T0R")
         value = f'{len(value)}'
-    return re.sub(r"\s+", " ", re.sub(r"\(+", "", value))
+    value = re.sub(r"\s+", " ", re.sub(r"^\(+", "", value)).strip()
+    return value
 
 
 def search_regex(
@@ -224,7 +225,8 @@ def search_regex(
             # return the first matching group
             value = next(g for g in mobj.groups() if g is not None)
         else:
-            value = re.sub(r"\(+", "", mobj.group(group))
+            value = mobj.group(group)
+            value = re.sub(r"^\(+", "", value)
         if not value:
             value = "<blank_value>"
         value = value_cleanup(value)
@@ -298,12 +300,14 @@ def prepare_payloads(prefixes, suffixes, payloads, techniques=""):
         "B": [11],
         "G": [12, 13],
         "J": [14, 15],
+        "O": [16, 17]
     }
     techniques_to_test = []
     if techniques:
         techniques = techniques.strip()
         [techniques_to_test.extend(techniques_dict.get(i)) for i in techniques]
-        techniques_to_test.append(16)
+        # techniques_to_test.append(16)
+        # techniques_to_test.append(17)
     _temp = []
     for entry in payloads:
         order = entry.get("order")
@@ -372,8 +376,13 @@ def prepare_response(resp):
 def extract_params(value, delimeter="", injection_type=""):
     params = []
     injection_type = injection_type.upper()
+    # thanks DSSS for this
+    # I have modified a little bit to make it compatible with all
+    regex = r"(?i)(?:(?P<key>[\w_.-\[\]]+)=)(?P<value>[^;\s&#]+)?"
+    regex_headers = r"(?i)(?:(?P<key>[\w_.-]+):\s)(?P<value>(.+))?"
     if injection_type == "HEADER":
         delimeter = "\n"
+        # params = [i.groupdict() for i in re.finditer(regex_headers, value)]
         out = [i.strip() for i in value.split(delimeter)]
         params = [
             {"key": i.split(":")[0].strip(), "value": i.split(":")[-1].strip()}
@@ -381,6 +390,7 @@ def extract_params(value, delimeter="", injection_type=""):
             if i
         ]
     if injection_type == "COOKIE":
+        # params = [i.groupdict() for i in re.finditer(regex, value)]
         if not delimeter:
             if ":" in value:
                 value = value.split(":")[-1]
@@ -392,6 +402,7 @@ def extract_params(value, delimeter="", injection_type=""):
             if i
         ]
     if injection_type == "POST":
+        # params = [i.groupdict() for i in re.finditer(regex, value)]
         params = parse_qs(value, keep_blank_values=True)
         params = [{"key": k, "value": "".join(v)} for k, v in params.items()]
     if injection_type == "GET":
@@ -399,6 +410,7 @@ def extract_params(value, delimeter="", injection_type=""):
         path = parsed.path
         params = parse_qs(parsed.query, keep_blank_values=True)
         params = [{"key": k, "value": "".join(v)} for k, v in params.items()]
+        # params = [i.groupdict() for i in re.finditer(regex, value)]
         if not params and path and path != "/":
             params = [{"key": "#1*", "value": "*"}]
     return params
@@ -425,7 +437,7 @@ def prepare_injection_payload(text, payload, param="", unknown_error_counter=0):
 
 
 def clean_up_payload(payload, replaceable_string="0x72306f746833783439", replace_with="{banner}"):
-    s = re.sub(r"(?is)(?:0x72306f746833783439|1337)", replace_with, payload)
+    s = re.sub(r"(?is)(?:0x72306f746833783439|1337|CHAR\(49\)%2BCHAR\(51\)%2BCHAR\(51\)%2BCHAR\(55\))", replace_with, payload)
     return s
 
 

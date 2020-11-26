@@ -232,7 +232,7 @@ class SQLitest:
                     f"heuristic (basic) test shows that {injection_type} parameter {param} might be injectable (possible DBMS: {dbms})"
                 )
                 _temp = Response(dbms=_dbms, injectable=injectable)
-                if _dbms.lower() not in ["mysql", "postgresql"]:
+                if _dbms.lower() not in ["mysql", "postgresql", "microsoft sql server"]:
                     logger.info(
                         f"Xpath currently does not support injection for '{_dbms}', will soon add support.."
                     )
@@ -367,9 +367,11 @@ class SQLitest:
             unknown_error_counter = 0
             dbms = ""
             for entry in params:
+                logger.debug(entry)
                 param = entry.get("key")
                 param_value = entry.get("value")
-                if is_custom_injection and not param_value.endswith("*"):
+                if is_custom_injection and param_value and "*" not in param_value:
+                    logger.debug(f"Skipped parameter {param}.")
                     continue
                 sep = ": " if "header" in injection_type.lower() else "="
                 injectable_param = (
