@@ -29,7 +29,7 @@
 
 ## ***Download Xpath***
 
-You can download the latest version of udemy-dl by cloning the GitHub repository.
+You can download the latest version of Xpath by cloning the GitHub repository.
 
     git clone https://github.com/r0oth3x49/Xpath.git
 
