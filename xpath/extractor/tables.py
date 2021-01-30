@@ -61,7 +61,10 @@ class TablesExtractor(object):
             if self._dbms:
                 count_payloads = PAYLOADS_TBLS_COUNT.get(self._dbms, count_payloads)
             for entry in count_payloads:
-                data = entry.format(db=encode_string)
+                if self._dbms and self._dbms.startswith("Microsoft") and "sysobjects" in entry:
+                    data = entry.format(db=db.strip())
+                else:
+                    data = entry.format(db=encode_string)
                 _temp.append(data)
         payloads = self._generat_payload(payloads_list=_temp)
         return self._extact(payloads=payloads)
@@ -82,7 +85,13 @@ class TablesExtractor(object):
             if self._dbms:
                 dump_payloads = PAYLOADS_TBLS_NAMES.get(self._dbms, dump_payloads)
             for entry in dump_payloads:
-                data = entry.format(db=encode_string)
+                if self._dbms and self._dbms.startswith("Microsoft"):
+                    if "sysobjects" in entry:
+                        data = entry.format(db=db.strip(), db1=db.strip())
+                    else:
+                        data = entry.format(db=encode_string, db1=encode_string)
+                else:
+                    data = entry.format(db=encode_string)
                 _temp_payloads.append(data)
         try:
             fetched_data = session.fetch_from_table(

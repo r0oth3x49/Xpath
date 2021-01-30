@@ -49,6 +49,8 @@ def to_hex(value, dbms="MySQL"):
         return f"0x{binascii.hexlify(value.encode()).decode()}"
     if dbms == "PostgreSQL":
         return f"({'||'.join([f'CHR({ord(i)})' for i in value.strip()])})"
+    if dbms == "Microsoft SQL Server":
+        return f"({'%2B'.join([f'CHAR({ord(i)})' for i in value.strip()])})"
 
 
 def prettifier(cursor_or_list, field_names="", header=False):
@@ -300,7 +302,7 @@ def prepare_payloads(prefixes, suffixes, payloads, techniques=""):
         "B": [11],
         "G": [12, 13],
         "J": [14, 15],
-        "O": [16, 17]
+        "O": [16, 17, 18]
     }
     techniques_to_test = []
     if techniques:
@@ -446,6 +448,11 @@ def clean_up_offset_payload(payload):
         payload = "{index},".join(payload.rsplit("0,"))
     if "OFFSET" in payload:
         payload = "OFFSET {index} ".join(payload.rsplit("OFFSET 0"))
+    if "DB_NAME" in payload:
+        payload = payload.replace("DB_NAME(0)", "DB_NAME({index})")
+    if "TOP 0" in payload:
+        payload = "TOP {index}".join(payload.rsplit("TOP 0"))
+    logger.debug(payload)
     return payload
 
 

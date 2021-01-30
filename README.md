@@ -29,12 +29,12 @@
 
 ## ***Download Xpath***
 
-You can download the latest version of udemy-dl by cloning the GitHub repository.
+You can download the latest version of Xpath by cloning the GitHub repository.
 
     git clone https://github.com/r0oth3x49/Xpath.git
 
 ## ***Features***
- - Supports error based MySQL/PostgreSQL injections.
+ - Supports error based MySQL/PostgreSQL/MSSQL injections.
  - Supports all types (HEADERS/COOKIE/POST/GET) for the listed dbms.
  - Added switch to support proxy option `--proxy`.
  - Added swicth to force SSL connection `--force-ssl`.

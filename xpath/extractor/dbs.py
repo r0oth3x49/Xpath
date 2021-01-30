@@ -81,7 +81,7 @@ class DatabasesExtractor(object):
                     name = entry.get("dbname")
                     if name not in _temp:
                         _temp.append(name)
-                    logger.info(f"resumed: '{name}'")
+                    # logger.info(f"resumed: '{name}'")
                     index += 1
             should_fetch = True
             if is_resumed:
@@ -134,7 +134,7 @@ class DatabasesExtractor(object):
     def _available_dbs(self, count, databases):
         logger.success(f"available databases [{count}]:")
         for db in databases:
-            logger.success(f"[*] : {db}")
+            logger.success(f"[*] {db}")
 
     def _extract_dbs(self, payloads):
         _temp, index = [], 0

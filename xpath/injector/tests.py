@@ -357,17 +357,17 @@ class SQLitest:
             logger.end("ending")
             sys.exit(0)
         if not vulns:
+            dbms = ""
+            vulnerable_param = ""
+            successful_payload_prefix = ""
+            is_injected = False
+            test_dbs_specific = False
+            unknown_error_counter = 0
+            end_detection_phase = False
             params = target_info.params
             injection_type = target_info.injection_type
             is_custom_injection = target_info.is_custom_injection
-            end_detection_phase = False
-            is_injected = False
-            successful_payload_prefix = ""
-            vulnerable_param = ""
-            unknown_error_counter = 0
-            dbms = ""
             for entry in params:
-                logger.debug(entry)
                 param = entry.get("key")
                 param_value = entry.get("value")
                 if is_custom_injection and param_value and "*" not in param_value:
@@ -387,6 +387,10 @@ class SQLitest:
                 )
                 if not dbms:
                     dbms = resp.dbms
+                    message = f"it looks like the back-end DBMS is '{dbms}'. Do you want to skip test payloads specific for other DBMSes? [Y/n]"
+                    question = logger.read_input(message, user_input="Y")
+                    if question in ["", "y"]:
+                        test_dbs_specific = True
                 is_injectable = resp.injectable
                 logger.info(
                     f"testing for SQL injection on {injection_type} parameter '{param if not is_custom_injection else '#1*'}'"
@@ -395,7 +399,7 @@ class SQLitest:
                 for entry in payloads_list:
                     backend = entry.get("back_end")
                     title = entry.get("title")
-                    if dbms and dbms.lower() != backend.lower():
+                    if test_dbs_specific and dbms and dbms.lower() != backend.lower():
                         logger.debug(f"Skipped '{title}'")
                         continue
                     regex = entry.get("regex")
@@ -453,7 +457,8 @@ class SQLitest:
                             )
                         except KeyboardInterrupt as e:
                             question = logger.read_input(
-                                "how do you want to proceed? [(S)kip current test/(e)nd detection phase/(n)ext parameter/(q)uit] "
+                                "how do you want to proceed? [(S)kip current test/(e)nd detection phase/(n)ext parameter/(q)uit] ",
+                                user_input="S",
                             )
                             if question and question == "e":
                                 end_detection_phase = True
