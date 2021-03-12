@@ -385,7 +385,7 @@ class SQLitest:
                     injectable_param=injectable_param,
                     injection_type=injection_type,
                 )
-                if not dbms:
+                if not dbms and resp.dbms and resp.injectable:
                     dbms = resp.dbms
                     message = f"it looks like the back-end DBMS is '{dbms}'. Do you want to skip test payloads specific for other DBMSes? [Y/n]"
                     question = logger.read_input(message, user_input="Y")
@@ -476,11 +476,24 @@ class SQLitest:
                             unknown_error_counter += 1
                         else:
                             if response.ok:
-                                is_injected = True
+                                if not is_injected and not dbms:
+                                    dbms = backend
+                                    if param:
+                                        message = f"{injection_type} parameter '{DIM}{white}{param}{BRIGHT}{black}' appears to be '{DIM}{white}{title}{BRIGHT}{black}' injectable"
+                                    else:
+                                        message = f"{injection_type} parameter appears to be '{DIM}{white}{title}{BRIGHT}{black}' injectable"
+                                    logger.notice(message)
+                                    message = f"it looks like the back-end DBMS is '{dbms}'. Do you want to skip test payloads specific for other DBMSes? [Y/n]"
+                                    question = logger.read_input(
+                                        message, user_input="Y"
+                                    )
+                                    if question in ["", "y"]:
+                                        test_dbs_specific = True
                                 successful_payload_prefix = prefix
                                 _ = session.generate(
                                     session_filepath=self._session_filepath
                                 )
+                                is_injected = True
                                 with open(self._target_file, "w") as fd:
                                     fd.write(
                                         f"{self.url} ({'GET' if 'cookie' in injection_type.lower() else injection_type}) # {' '.join(sys.argv)}"
