@@ -26,7 +26,7 @@ THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 from xpath.common.lib import os, init, Fore, Back, Style
 
-init(autoreset=True, convert=bool(os.name=="nt"))
+init(autoreset=True, convert=bool(os.name == "nt"))
 # colors foreground text:
 cyan = Fore.CYAN
 green = Fore.GREEN
@@ -92,13 +92,13 @@ level_map = {
         "background": "",
     },
     "NOTICE": {
-        "color": "black",
+        "color": "black" if os.name == "nt" else "white",
         "faint": False,
         "bold": True,
         "normal": False,
         "background": "",
     },
-    "PAYLOAD":{
+    "PAYLOAD": {
         "color": "cyan",
         "faint": False,
         "bold": False,
