@@ -44,7 +44,7 @@ from xpath.common.utils import (
 from xpath.common.session import session
 from xpath.injector.request import request
 from xpath.logger.colored_logger import logger
-from xpath.common.colors import black, white, DIM, BRIGHT
+from xpath.common.colors import black, white, DIM, BRIGHT, nc, mc, bw
 from xpath.common.payloads import PREFIX, SUFFIX, REGEX_TESTS, PAYLOADS
 
 
@@ -224,10 +224,10 @@ class SQLitest:
         if resp and resp.text or resp.error_msg:
             out = search_dbms_errors(resp.text)
             injectable = out.get("vulnerable")
-            param = f"{DIM}{white}'{param}'{BRIGHT}{black}"
+            param = f"{mc}'{param}'{nc}"
             if injectable:
                 _dbms = out.get("dbms")
-                dbms = f"{DIM}{white}'{_dbms}'{BRIGHT}{black}"
+                dbms = f"{mc}'{_dbms}'{nc}"
                 logger.notice(
                     f"heuristic (basic) test shows that {injection_type} parameter {param} might be injectable (possible DBMS: {dbms})"
                 )
@@ -479,9 +479,9 @@ class SQLitest:
                                 if not is_injected and not dbms:
                                     dbms = backend
                                     if param:
-                                        message = f"{injection_type} parameter '{DIM}{white}{param}{BRIGHT}{black}' appears to be '{DIM}{white}{title}{BRIGHT}{black}' injectable"
+                                        message = f"{injection_type} parameter '{mc}{param}{nc}' appears to be '{mc}{title}{nc}' injectable"
                                     else:
-                                        message = f"{injection_type} parameter appears to be '{DIM}{white}{title}{BRIGHT}{black}' injectable"
+                                        message = f"{injection_type} parameter appears to be '{mc}{title}{nc}' injectable"
                                     logger.notice(message)
                                     message = f"it looks like the back-end DBMS is '{dbms}'. Do you want to skip test payloads specific for other DBMSes? [Y/n]"
                                     question = logger.read_input(
@@ -499,9 +499,9 @@ class SQLitest:
                                         f"{self.url} ({'GET' if 'cookie' in injection_type.lower() else injection_type}) # {' '.join(sys.argv)}"
                                     )
                                 if param:
-                                    message = f"{injection_type} parameter '{DIM}{white}{param}{BRIGHT}{black}' is '{DIM}{white}{title}{BRIGHT}{black}' injectable"
+                                    message = f"{injection_type} parameter '{mc}{param}{nc}' is '{mc}{title}{nc}' injectable"
                                 else:
-                                    message = f"{injection_type} parameter is '{DIM}{white}{title}{BRIGHT}{black}' injectable"
+                                    message = f"{injection_type} parameter is '{mc}{title}{nc}' injectable"
                                 logger.notice(message)
                                 vulns.append(
                                     {

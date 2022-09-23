@@ -37,6 +37,15 @@ yellow = Fore.YELLOW
 magenta = Fore.MAGENTA
 black = Fore.BLACK
 
+bright_cyan = Fore.LIGHTCYAN_EX
+bright_green = Fore.LIGHTGREEN_EX
+bright_white = Fore.LIGHTWHITE_EX
+bright_red = Fore.LIGHTRED_EX
+bright_blue = Fore.LIGHTBLUE_EX
+bright_yellow = Fore.LIGHTYELLOW_EX
+bright_magenta = Fore.LIGHTMAGENTA_EX
+bright_black = Fore.LIGHTBLACK_EX
+
 # colors background text:
 background_cyan = Back.CYAN
 background_green = Back.GREEN
@@ -92,7 +101,7 @@ level_map = {
         "background": "",
     },
     "NOTICE": {
-        "color": "black" if os.name == "nt" else "white",
+        "color": "bright_white" if not is_nt else "bright_black",
         "faint": False,
         "bold": True,
         "normal": False,
@@ -144,6 +153,14 @@ color_map = {
     "blue": blue,
     "yellow": yellow,
     "red": red,
+    "bright_cyan": bright_cyan,
+    "bright_green": bright_green,
+    "bright_white": bright_white,
+    "bright_red": bright_red,
+    "bright_blue": bright_blue,
+    "bright_yellow": bright_yellow,
+    "bright_magenta": bright_magenta,
+    "bright_black": bright_black,
 }
 bgcolor_map = {
     "white": background_white,
@@ -160,6 +177,9 @@ DIM = Style.DIM
 BRIGHT = Style.BRIGHT
 NORMAL = Style.NORMAL
 RESET = Style.RESET_ALL
+nc = bright_black if os.name == "nt" else bright_white
+mc = f"{DIM}{white}"
+bw = bright_white
 
 
 def colorize(
