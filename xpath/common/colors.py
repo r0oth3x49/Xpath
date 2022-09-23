@@ -101,7 +101,7 @@ level_map = {
         "background": "",
     },
     "NOTICE": {
-        "color": "bright_white" if not is_nt else "bright_black",
+        "color": "bright_black" if os.name == "nt" else "bright_white",
         "faint": False,
         "bold": True,
         "normal": False,

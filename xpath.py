@@ -207,7 +207,10 @@ def main():
         help="Retrieve DBMS server hostname",
     )
     enumeration.add_argument(
-        "--dbs", dest="dbs", action="store_true", help="Enumerate DBMS databases",
+        "--dbs",
+        dest="dbs",
+        action="store_true",
+        help="Enumerate DBMS databases",
     )
     enumeration.add_argument(
         "--tables",
@@ -234,7 +237,11 @@ def main():
         help="Search column(s), table(s) and/or database name(s)",
     )
     enumeration.add_argument(
-        "-D", dest="db", type=str, help="DBMS database to enumerate", default=None,
+        "-D",
+        dest="db",
+        type=str,
+        help="DBMS database to enumerate",
+        default=None,
     )
     enumeration.add_argument(
         "-T",
@@ -294,7 +301,7 @@ def main():
             injection_type=injection_type,
             session_filepath=session_filepath,
             proxy=proxy,
-            dbms=dbms
+            dbms=dbms,
         )
         if args.search:
             target.search_for(database=args.db, table=args.tbl, column=args.col)
